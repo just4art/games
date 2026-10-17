@@ -1,0 +1,759 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Five Coins Bazaar</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Marcellus&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#dcebe8; --surface:#fbf8f1; --surface2:#eef4f2; --text:#1d2340; --muted:#5d6584;
+  --saffron:#d9961a; --lapis:#2c4ba0; --pom:#b8323f; --good:#2c7a4b; --line:#c9dbd7;
+  --sand1:#ecd39b; --sand2:#dfbd78; --path:#c9a463; --night:#0d1430; --tile:#2c4ba0;
+  --alley:#e4dccb; --alley2:#f2ede3; --house:#cbbfab; --house2:#b8ab95; --water:#6fb7d6; --leaf:#5aa469; --plaza:#efe7d6;
+  color-scheme:light;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0f1529; --surface:#19213d; --surface2:#222c4f; --text:#f1e8d2; --muted:#a8afc8;
+    --saffron:#f0b733; --lapis:#7f9cf0; --pom:#ef6b77; --good:#6cd398; --line:#2c3760;
+    --sand1:#6e5a33; --sand2:#5a4828; --path:#8a7240; --night:#05081a; --tile:#3d5ec4;
+    --alley:#232840; --alley2:#2c3250; --house:#434a68; --house2:#383e5a; --water:#2f6f93; --leaf:#3f7d52; --plaza:#30375a;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0f1529; --surface:#19213d; --surface2:#222c4f; --text:#f1e8d2; --muted:#a8afc8;
+  --saffron:#f0b733; --lapis:#7f9cf0; --pom:#ef6b77; --good:#6cd398; --line:#2c3760;
+  --sand1:#6e5a33; --sand2:#5a4828; --path:#8a7240; --night:#05081a; --tile:#3d5ec4;
+    --alley:#232840; --alley2:#2c3250; --house:#434a68; --house2:#383e5a; --water:#2f6f93; --leaf:#3f7d52; --plaza:#30375a;
+  color-scheme:dark;
+}
+html{scroll-padding-top:env(safe-area-inset-top,0px);height:100%}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;font-size:15px;line-height:1.45;min-height:100%;-webkit-tap-highlight-color:transparent}
+h1,h2,h3{font-family:Marcellus,Georgia,serif;font-weight:400;margin:0}
+h1{font-size:24px;letter-spacing:.01em}
+h2{font-size:21px}
+h3{font-size:16px;margin:14px 0 2px;color:var(--lapis)}
+button{font:inherit;color:inherit}
+button:focus-visible{outline:3px solid var(--saffron);outline-offset:2px}
+.app{max-width:560px;margin:0 auto;padding:10px 12px calc(var(--barH) + 16px)}
+:root{--barH:66px}
+.top{display:flex;align-items:baseline;justify-content:space-between;gap:8px}
+.goal{font-size:12px;color:var(--muted)}
+.hud{display:grid;grid-template-columns:1.1fr 1fr 1.2fr 1fr;gap:6px;margin:8px 0 6px}
+.chip{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:5px 8px;text-align:center;font-size:12px;color:var(--muted)}
+.chip b{display:block;font-size:16px;color:var(--text);font-variant-numeric:tabular-nums}
+.sunbar{height:4px;background:var(--line);border-radius:2px;margin-top:3px;overflow:hidden}
+.sunbar i{display:block;height:100%;background:var(--saffron)}
+.next{font-size:13px;margin:0 0 4px;font-weight:600;color:var(--lapis)}
+.stall.locked .tent{border-style:dashed;opacity:.75}
+.goalbar{height:6px;background:var(--surface);border:1px solid var(--line);border-radius:4px;overflow:hidden;margin-bottom:8px}
+.goalbar i{display:block;height:100%;background:var(--lapis);transition:width .4s}
+.frame{position:relative;width:100%;width:min(100%,calc(100vh - 300px));width:min(100%,calc(100dvh - 300px));min-width:280px;margin:0 auto;padding:10px;border-radius:18px;background:conic-gradient(var(--lapis) 25%,var(--saffron) 0 50%,var(--lapis) 0 75%,var(--saffron) 0) 0 0/20px 20px;box-shadow:0 8px 24px rgba(13,20,48,.18)}
+.frame .map{outline:3px solid var(--surface)}
+.qrow{display:flex;align-items:center;gap:6px;font-size:13px;margin:6px 0 0 38px;flex-wrap:wrap}
+.qrow b{font-variant-numeric:tabular-nums}
+.mini{border:1.5px solid var(--lapis);background:transparent;color:var(--lapis);border-radius:8px;min-width:30px;height:28px;font-weight:700;cursor:pointer}
+.log{font-size:13px;padding:5px 0;border-bottom:1px dashed var(--line)}
+.stat{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:10px 0}
+.pill{position:absolute;left:12px;right:12px;bottom:12px;background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--saffron);border-radius:14px;padding:10px 12px;display:none;align-items:center;gap:10px;z-index:15;box-shadow:0 6px 20px rgba(0,0,0,.18);font-size:14px}
+.pill.on{display:flex}
+.pill .info{flex:1}
+.mapsvg{position:absolute;inset:0;width:100%;height:100%;display:block}
+.mapsvg .hit{cursor:pointer}
+#hero{transition:transform .11s linear}
+@media (prefers-reduced-motion: reduce){#hero{transition:none}}
+.map{position:relative;width:100%;aspect-ratio:1;border-radius:14px;overflow:hidden;
+  background:radial-gradient(circle at 35% 30%,var(--sand1),var(--sand2));touch-action:manipulation}
+.map svg{position:absolute;inset:0;width:100%;height:100%}
+.stall{position:absolute;transform:translate(-50%,-50%);border:none;background:none;padding:0;display:flex;flex-direction:column;align-items:center;cursor:pointer;z-index:2}
+.tent{position:relative;width:50px;height:50px;border-radius:50% 50% 12px 12px;background:var(--surface);border:2px solid var(--lapis);display:grid;place-items:center;font-size:25px;box-shadow:0 3px 0 var(--path)}
+.stall.here .tent{border-color:var(--saffron);border-width:3px}
+.lbl{font-size:11px;font-weight:600;margin-top:3px;background:var(--surface);padding:0 7px;border-radius:8px;border:1px solid var(--line);white-space:nowrap}
+.mk{position:absolute;top:-10px;right:-10px;font-size:17px}
+.eta{display:block;font-size:10px;font-weight:400;color:var(--muted);text-align:center;line-height:1.2}
+.stall.far{opacity:.45}
+.deco{position:absolute;transform:translate(-50%,-50%);font-size:22px;pointer-events:none;opacity:.85}
+.well{position:absolute;transform:translate(-50%,-50%);font-size:24px;background:none;border:none;cursor:pointer;z-index:2;padding:4px}
+.player{position:absolute;transform:translate(-50%,-50%);font-size:28px;transition:left .6s ease,top .6s ease;pointer-events:none;z-index:3;filter:drop-shadow(0 2px 1px rgba(0,0,0,.35))}
+.dusk{position:absolute;inset:0;background:var(--night);pointer-events:none;transition:opacity .6s;z-index:4}
+.bar{position:fixed;left:0;right:0;bottom:0;z-index:25;display:grid;grid-template-columns:repeat(5,1fr);gap:6px;padding:8px max(10px,calc(50% - 280px)) calc(8px + env(safe-area-inset-bottom,0px));background:var(--bg);border-top:1px solid var(--line)}
+.bbtn{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:9px 4px;display:flex;flex-direction:column;align-items:center;font-size:12px;cursor:pointer}
+.bbtn span{font-size:21px;line-height:1.2}
+.bbtn.active{border-color:var(--saffron);box-shadow:inset 0 -3px 0 var(--saffron)}
+.bbtn.rest{background:var(--lapis);color:#fff;border-color:var(--lapis)}
+.sheet-wrap{position:fixed;left:0;right:0;top:0;bottom:calc(var(--barH) + env(safe-area-inset-bottom,0px));background:rgba(5,8,26,.45);display:none;align-items:flex-end;justify-content:center;z-index:20}
+.sheet-wrap.open{display:flex}
+.sheet{background:var(--surface);width:100%;max-width:560px;max-height:86%;overflow:auto;border-radius:22px 22px 0 0;padding:16px 16px calc(18px + env(safe-area-inset-bottom,0px));border-top:4px solid var(--saffron)}
+.sh-head{display:flex;gap:12px;align-items:center}
+.big{font-size:38px}
+.x{background:var(--surface2);border:none;border-radius:50%;width:34px;height:34px;cursor:pointer;flex:none}
+.sub{font-size:13px;color:var(--muted);display:flex;gap:10px;flex-wrap:wrap}
+.bubble{background:var(--surface2);border-radius:16px 16px 16px 4px;padding:10px 13px;margin:12px 0 4px;font-family:Marcellus,Georgia,serif;font-size:16px;line-height:1.5}
+.row{display:flex;align-items:center;gap:6px;padding:8px 0;border-bottom:1px solid var(--line)}
+.gi{font-size:24px;width:32px;text-align:center;flex:none}
+.info{flex:1;min-width:0}
+.price{font-weight:700;font-variant-numeric:tabular-nums}
+.small{font-size:12px;color:var(--muted)}
+.sbtn{border:1.5px solid var(--lapis);background:transparent;color:var(--lapis);border-radius:10px;padding:7px 10px;font-weight:700;font-size:13px;cursor:pointer;flex:none}
+.sbtn.fill{background:var(--lapis);color:#fff}
+.sbtn:disabled{opacity:.35;cursor:default}
+.acts{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.good{color:var(--good);font-weight:600}
+.bad{color:var(--pom);font-weight:600}
+.news{padding:8px 0;border-bottom:1px solid var(--line)}
+.nbg{padding:8px 0;border-bottom:1px solid var(--line)}
+.q{display:inline-block;margin:2px 6px 2px 0;font-size:13px;font-variant-numeric:tabular-nums}
+.q.best{background:var(--surface2);border-radius:6px;padding:0 5px;font-weight:700}
+.toast{position:fixed;left:50%;bottom:calc(var(--barH) + 16px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--text);color:var(--bg);padding:9px 14px;border-radius:12px;font-size:14px;opacity:0;transition:opacity .25s;z-index:30;max-width:90%;text-align:center;pointer-events:none}
+.toast.on{opacity:1}
+.wide{width:100%;margin-top:14px;padding:11px}
+p{margin:8px 0}
+@media (min-width:820px) and (min-aspect-ratio:1/1){
+  .app{max-width:none;display:grid;grid-template-columns:auto 380px;gap:22px;justify-content:center;align-items:start;padding:16px 20px}
+  .stage{width:min(calc(100vh - 150px),calc(100vw - 460px));width:min(calc(100dvh - 150px),calc(100vw - 460px));min-width:420px}
+  .frame{width:100%}
+  .side{position:sticky;top:16px;display:flex;flex-direction:column;gap:12px;height:calc(100vh - 32px);height:calc(100dvh - 32px)}
+  .bar{position:static;padding:0;background:none;border:none}
+  .sheet-wrap,.sheet-wrap.open{position:static;display:flex;background:none;flex:1;min-height:0;align-items:stretch}
+  .sheet{max-height:none;height:100%;border-radius:18px;border:1px solid var(--line);border-top:4px solid var(--saffron)}
+  .toast{bottom:24px}
+}
+@media (prefers-reduced-motion: reduce){.player,.dusk,.goalbar i{transition:none}}
+</style>
+</head>
+<body>
+<div class="app">
+  <main class="stage">
+    <div class="top"><h1>Five Coins Bazaar</h1><div class="goal" id="goalTxt"></div></div>
+    <div class="hud" id="hud"></div>
+    <div class="next" id="nextTxt"></div><div class="goalbar"><i id="goalBar"></i></div>
+    <div class="frame"><div class="map" id="map"></div><div class="pill" id="pill"></div></div>
+  </main>
+  <aside class="side">
+    <nav class="bar">
+      <button class="bbtn" data-v="here" id="hereBtn" onclick="hereTap()"><span>🗺️</span>Map</button>
+      <button class="bbtn" data-v="news" onclick="showNews()"><span>📰</span>News</button>
+      <button class="bbtn" data-v="notebook" onclick="showNotebook()"><span>📒</span>Notes</button>
+      <button class="bbtn" data-v="bag" onclick="showBag()"><span>🎒</span>Bag</button>
+      <button class="bbtn rest" onclick="rest()"><span>🌙</span>Sleep</button>
+    </nav>
+    <div class="sheet-wrap" id="wrap" onclick="if(event.target===this)closeSheet()"><div class="sheet" id="sheet"></div></div>
+  </aside>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+const DAY_LEN=720, GOAL=500, IMPACT=1.015, WALK=2, WAGE=1.5, KEY='five-coins-bazaar-v1';
+const G={
+  apple:{n:'Apples',i:'🍎',b:1,w:1,s:4},
+  olive:{n:'Olives',i:'🫒',b:4,w:1,s:7},
+  fish:{n:'Fish',i:'🐟',b:3,w:1,s:1},
+  salt:{n:'Salt',i:'🧂',b:2,w:2,s:0},
+  spice:{n:'Spice',i:'🌶️',b:12,w:1,s:0},
+  cloth:{n:'Cloth',i:'🧵',b:8,w:2,s:0},
+  pottery:{n:'Pottery',i:'🏺',b:6,w:4,s:0}
+};
+const GK=Object.keys(G);
+const T={
+  miriam:{n:'Old Miriam',short:'Miriam',role:'Fruit seller',i:'🍎',x:18,y:22,sells:{apple:.9,olive:1},buys:{fish:1.05},spread:.1,haggle:.65,mg:.6,
+    hi:["Ah, a new face. Apples from my brother's orchard, crisp as morning.","Olives, apples, and advice. Only the advice is free."],
+    happy:["There's my favourite customer! I kept the good ones for you.","You remind me of my late husband. He also counted every coin."],
+    sad:["Hmph. Haggling with an old woman. Your mother would be ashamed."],
+    thx:["Come back tomorrow, regulars get my best prices.","Eat one yourself, you're too thin."],
+    hagOk:["Fine, fine. For that smile."],hagNo:["Child, I have been selling apples since before your grandfather was born."]},
+  hassan:{n:'Hassan the Spice King',short:'Hassan',role:'Spice merchant',i:'🌶️',x:80,y:18,sells:{spice:1.12,salt:1.05},buys:{olive:1.12,apple:1.18},spread:.18,haggle:.3,mg:.25,
+    hi:["Finest spice from beyond the mountains! Prices? Prices are a state of mind.","Smell that. That is the smell of profit, my friend."],
+    happy:["My friend! For you, almost fair prices."],
+    sad:["You again. Prices went up. Just now. Just for you."],
+    thx:["A pleasure robbing... I mean, serving you.","Tell your friends. Not your clever friends."],
+    hagOk:["Ugh. You drive a hard bargain. Fine. Don't tell anyone."],hagNo:["Ha! No. And now I like you less."]},
+  yusuf:{n:'Yusuf the Fisherman',short:'Yusuf',role:'Fisherman',i:'🐟',x:14,y:74,sells:{fish:.72},buys:{salt:1.25,apple:1.08},spread:.1,haggle:.5,mg:.4,
+    hi:["Fish this morning, stink by tomorrow. Sell fast, friend.","The sea was kind today. Mostly.","My cousin builds ships at the harbour. One day you'll want one, mark my words."],
+    happy:["You again! Take the big one, it looked at me funny anyway."],
+    sad:["Go buy your fish somewhere else. Oh wait. There is nowhere else."],
+    thx:["Salt is gold to a fisherman. Bring me salt.","Don't keep it overnight. Trust me."],
+    hagOk:["Eh, the fish won't care. Deal."],hagNo:["The sea doesn't haggle with me, I don't haggle with you."]},
+  leyla:{n:'Leyla the Weaver',short:'Leyla',role:'Weaver',i:'🧵',x:47,y:15,sells:{cloth:.9},buys:{spice:1.15,salt:1.08},spread:.12,haggle:.45,mg:.35,
+    hi:["Every thread counted. Every coin too.","I dye with spice, you know. Bring me some and we'll talk."],
+    happy:["You have an eye for quality. Rare in this bazaar."],
+    sad:["I'm busy. Make it quick."],
+    thx:["The caravan folk love my cloth. Just saying.","Mind the colour, it runs if you're careless."],
+    hagOk:["Very well. A small discount for a steady customer."],hagNo:["My prices are woven as tightly as my cloth."]},
+  tarik:{n:'Tarik the Potter',short:'Tarik',role:'Potter',i:'🏺',x:84,y:56,sells:{pottery:.85},buys:{fish:1.18,olive:1.15},spread:.12,haggle:.5,mg:.4,
+    hi:["Careful, heavy. Pots break, backs break.","Fired yesterday, still warm. Like my temper."],
+    happy:["Ah, my strong-backed friend! Take two."],
+    sad:["You break it, you buy it. You already annoyed me, so."],
+    thx:["The coast traders pay well for good pots.","Lift with your legs!"],
+    hagOk:["Fine. One crooked pot price for you."],hagNo:["Clay is cheap. My hands are not."]},
+  caravan:{n:'The Caravan Master',short:'Caravan',role:'Trader to the coast',i:'🐫',x:52,y:90,sells:{salt:.8,spice:.97},buys:{cloth:1.3,pottery:1.35,olive:1.08},spread:.15,haggle:.35,mg:.3,
+    hi:["We leave for the coast at dawn. Cloth and pots, that's what sells over there.","Salt from the desert, spice from the east. Buy now or wait a month."],
+    happy:["Ah, my favourite supplier! The camels like you too."],
+    sad:["Next. Next! Who's next?"],
+    thx:["Bring more pots. The coast eats them.","A donkey would carry more, you know."],
+    hagOk:["You talk like a caravan man. Fine."],hagNo:["I've crossed deserts. Your haggling doesn't scare me."]},
+  tavern:{n:'The Thirsty Camel',short:'Tavern',role:'Tavern',i:'🍺',x:28,y:46,sells:{},buys:{fish:1.15,apple:1.25,olive:1.12},spread:.1,haggle:.45,mg:.4,
+    hi:["Sit, drink, listen. Everyone talks here.","Food for the kitchen? I'll buy. Rumours? I'll sell.","Rich merchants hire street boys to run errands. Smart, if you can afford it."],
+    happy:["Your usual corner is free, friend."],
+    sad:["Pay first, then talk."],
+    thx:["The cook will be pleased.","Hungry crowd tonight."],
+    hagOk:["For a regular, sure."],hagNo:["This is a tavern, not a bazaar. Well. It's both. Still no."]}
+};
+const TK=Object.keys(T);
+const WELL={x:58,y:60};
+const MARKS=['','⭐','💰','❗','❌'];
+const QUIET=["The crier yawns. Nothing new today.","A goat escaped and ate a merchant's hat. Prices unaffected.","The Sultan's cat had kittens. The city rejoices, the market shrugs.","Two merchants argued about the weather. Nobody won.","Clear skies. Ordinary day. Good day to count coins."];
+
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+const fmt=v=>'$'+v.toFixed(2);
+function gauss(){let u=0,v=0;while(!u)u=Math.random();while(!v)v=Math.random();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v)}
+
+const EV={
+  astro:()=>{const g=pick(['spice','cloth','olive','pottery','salt','apple']);return{goods:[g],bid:1.6,ask:1.12,dur:5,
+    news:`Astrologers have proclaimed the Week of ${G[g].n}! The number of ${G[g].n.toLowerCase()} lovers in the city has doubled.`,
+    rumor:`A drunk astrologer is whispering about ${G[g].n.toLowerCase()}. Something big is coming.`}},
+  caravan:()=>({goods:['cloth','spice'],bid:.85,ask:.62,dur:3,news:'A great caravan from the East has arrived. Cloth and spice flood the market.',rumor:'A camel driver swears a big eastern caravan is a few days out. Cloth and spice will get cheap.'}),
+  storm:()=>({goods:['fish'],bid:1.9,ask:1.9,dur:2,news:'Storm at sea! The boats stayed in the harbour.',rumor:'The old sailors say they smell a storm coming.'}),
+  festival:()=>({goods:['apple','olive','fish'],bid:1.5,ask:1.1,dur:1,news:'Festival day! The whole city is feasting.',rumor:'A festival is coming soon. People will eat like kings.'}),
+  drought:()=>({goods:['pottery'],bid:1.35,ask:1.5,dur:4,news:'The clay pits dried up. No clay, no pots.',rumor:"The potters' village is short of water. Pots may get scarce."}),
+  salt:()=>({goods:['salt'],bid:1.6,ask:1.35,dur:4,news:'The Sultan has taxed salt. Suddenly everyone wants it.',rumor:"The Sultan's men were asking questions about salt..."})
+};
+function maybeEvent(){return Math.random()>.45?null:EV[pick(Object.keys(EV))]()}
+
+let S;
+function newState(){
+  const p={},mood={};
+  TK.forEach(t=>{p[t]={};mood[t]=0;[...Object.keys(T[t].sells),...Object.keys(T[t].buys)].forEach(g=>p[t][g]=Math.exp(gauss()*.06))});
+  const gw={};GK.forEach(g=>gw[g]=1);
+  const s={cash:5,day:1,t:0,at:null,x:WELL.x,y:WELL.y,inv:[{g:'apple',q:1,d:1}],cap:20,donkey:false,cart:false,p,gw,mood,nb:{},marks:{},
+    effects:[],schedule:{},news:[pick(QUIET)],rumors:[],visit:{t:null,haggled:false,tried:false,line:''},won:false,trades:0,px:6,py:6,boys:0,ms:0,store:false,storeInv:[],contract:null,offer:null,contractsDone:0};
+  for(let d=2;d<=7;d++)s.schedule[d]=maybeEvent();
+  return s;
+}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+function load(){try{const r=localStorage.getItem(KEY);return r?JSON.parse(r):null}catch(e){return null}}
+
+const weight=()=>S.inv.reduce((a,l)=>a+l.q*G[l.g].w,0);
+const count=g=>S.inv.filter(l=>l.g===g).reduce((a,l)=>a+l.q,0);
+function addLot(g){const l=S.inv.find(l=>l.g===g&&l.d===S.day);if(l)l.q++;else S.inv.push({g,q:1,d:S.day})}
+function removeOne(g){const l=S.inv.filter(l=>l.g===g).sort((a,b)=>a.d-b.d)[0];l.q--;if(!l.q)S.inv.splice(S.inv.indexOf(l),1)}
+function effM(g,k){let m=1;S.effects.forEach(e=>{if(e.goods.includes(g))m*=e[k]});return m}
+const mid=(t,g)=>G[g].b*S.gw[g]*S.p[t][g];
+const hag=t=>S.visit.t===t&&S.visit.haggled;
+function ask(t,g){const tr=T[t];return mid(t,g)*tr.sells[g]*(1+tr.spread)*(1-.02*S.mood[t])*(hag(t)?.92:1)*effM(g,'ask')}
+function bid(t,g){const tr=T[t];return mid(t,g)*tr.buys[g]*(1-tr.spread)*(1+.02*S.mood[t])*(hag(t)?1.08:1)*effM(g,'bid')}
+function clock(){const m=360+Math.min(S.t,DAY_LEN);return String(Math.floor(m/60)).padStart(2,'0')+':'+String(m%60).padStart(2,'0')}
+function dur(m){m=Math.max(0,m);const h=Math.floor(m/60),mm=m%60;return h?`${h}h ${String(mm).padStart(2,'0')}m`:`${mm} min`}
+const PL={store:{n:'Storeroom',short:'Storeroom',i:'🏚️',x:74,y:77,walk:true},stand:{n:'Boarded-up stall',short:'Your stand?',i:'🪧',x:38,y:67},harbour:{n:'The harbour',short:'Harbour',i:'⛵',x:7,y:56}};
+const P=t=>T[t]||PL[t];
+function openAt(t){T[t]?renderStall(t):showPlace(t)}
+const MS=[
+ {txt:'Make $15',title:'a peddler',ok:()=>S.cash>=15,prog:()=>S.cash/15,msg:'Word spreads about the newcomer with an eye for a bargain. The Caravan Master sells donkeys, if you can afford one.'},
+ {txt:'Buy a donkey from the Caravan Master ($60)',title:'a trader',ok:()=>S.donkey,prog:()=>S.cash/60,msg:'With Pomegranate the donkey at your side, you are a proper trader. The barman says some boys are looking for work.'},
+ {txt:'Hire an errand boy at the tavern',title:'a trader with a crew',ok:()=>(S.boys||0)>=1,prog:()=>0,msg:'Your first employee! A landlord near the caravan gate has noticed you. He has an empty storeroom.'},
+ {txt:'Rent the storeroom ($100)',title:'a merchant',ok:()=>!!S.store,prog:()=>S.cash/100,msg:'A storeroom of your own: buy when it is cheap, sell when it is dear. The Caravan Master wants to talk to you about a contract.'},
+ {txt:'Complete a contract for the Caravan Master',title:'a respected merchant',ok:()=>(S.contractsDone||0)>=1,prog:()=>S.contract?Math.min(1,count(S.contract.g)/S.contract.q):0,msg:'The Caravan Master shakes your hand in front of everyone. Merchants nod when you pass. Only one thing left: a stand of your own.'},
+ {txt:'Save $500 for your own stand',title:'a stand owner',ok:()=>S.cash>=500,prog:()=>S.cash/500,msg:''}
+];
+const MS2=[
+ {txt:'Make your first sale at your stand',title:'a shopkeeper',ok:()=>S.stand.sold>0,prog:()=>0,msg:'Your first customer! Destiny looks unimpressed, but you are officially a shopkeeper.'},
+ {txt:'Earn $100 of edge at your stand',title:'a busy shopkeeper',ok:()=>S.stand.edge>=100,prog:()=>S.stand.edge/100,msg:'The bazaar knows your stand now. The barman says his nephew is looking for work behind a counter.'},
+ {txt:'Hire a clerk at the tavern',title:'a shop owner',ok:()=>S.stand.clerk,prog:()=>0,msg:'Your clerk minds the stand while you are away. Clever merchants give their clerks rules. Check your stand.'},
+ {txt:'Give your clerk a stock rule',title:'a market maker',ok:()=>Object.values(S.stand.rules).some(r=>r.k>0),prog:()=>0,msg:'Your stand now adjusts its own prices. The harbour master has heard of you: passage on a ship costs $1,000.'},
+ {txt:'Save $1,000 for passage across the sea',title:'a sea-bound merchant',ok:()=>S.cash>=1000,prog:()=>S.cash/1000,msg:''}
+];
+function checkMs(silent){
+  const L=S.ch===2?MS2:MS,k=S.ch===2?'ms2':'ms';
+  let up=null;
+  while((S[k]||0)<L.length&&L[S[k]||0].ok()){S[k]=(S[k]||0)+1;up=L[S[k]-1]}
+  renderHud();
+  if(!up)return;
+  save();renderMap();
+  if(S[k]>=L.length){
+    if(S.ch===2){if(!S.won2){S.won2=true;save();if(!silent)setTimeout(showEnding2,500)}}
+    else if(!S.won){S.won=true;save();if(!silent)setTimeout(showEnding,500)}
+    return}
+  if(silent)return;
+  const nx=L[S[k]].txt;
+  setTimeout(()=>setSheet(`<h2>🎉 You are now ${up.title}</h2><div class="bubble">${up.msg}</div><p><b>Next goal:</b> ${nx}</p><button class="sbtn fill wide" onclick="closeSheet();if(S.at)openAt(S.at)">Continue</button>`),450);
+}
+const GW=12,START=[6,6];
+const BLK={miriam:[0,0],leyla:[1,0],hassan:[3,0],tavern:[0,1],tarik:[3,1],harbour:[0,2],stand:[1,2],store:[3,2],yusuf:[0,3],caravan:[2,3]};
+const FILL={plaza:[1,1],h1:[2,0],h2:[2,1],garden:[2,2],h3:[1,3],palms:[3,3]};
+const ROOF={stand:'#4a6fd1',miriam:'#e07a5f',leyla:'#8e7cc3',hassan:'#d1495b',tavern:'#2f9e7a',tarik:'#c47a3a',yusuf:'#3a86c8',caravan:'#e3a72f',store:'#7d8f4e'};
+const bxy=b=>[1+3*b[0],1+3*b[1]];
+const door=id=>{const [x,y]=bxy(BLK[id]);return [x,y-1]};
+const BLOCKED=new Set();
+[...Object.values(BLK),...Object.values(FILL)].forEach(b=>{const [x,y]=bxy(b);for(let i=0;i<2;i++)for(let j=0;j<2;j++)BLOCKED.add((x+i)+','+(y+j))});
+BLOCKED.add('0,7');BLOCKED.add('0,8');
+let bfsCache=null;
+function bfs(){
+  const key=S.px+','+S.py;if(bfsCache&&bfsCache.key===key)return bfsCache;
+  const prev={},dist={[key]:0},q=[[S.px,S.py]];
+  while(q.length){const [x,y]=q.shift();for(const [dx,dy] of [[1,0],[-1,0],[0,1],[0,-1]]){const nx=x+dx,ny=y+dy,k=nx+','+ny;
+    if(nx<0||ny<0||nx>=GW||ny>=GW||BLOCKED.has(k)||k in dist)continue;dist[k]=dist[x+','+y]+1;prev[k]=[x,y];q.push([nx,ny])}}
+  return bfsCache={key,prev,dist};
+}
+function pathTo(id){const [tx,ty]=door(id),{prev}=bfs();const out=[];let c=[tx,ty];while(c&&!(c[0]===S.px&&c[1]===S.py)){out.unshift(c);c=prev[c[0]+','+c[1]]}return out}
+function minPerTile(){if(S.camel)return 4;if(S.cart)return 5;if(S.donkey)return 4;return weight()>S.cap/2?7:5}
+function walkCost(t){return pathTo(t).length*minPerTile()}
+function clockAt(t){const m=360+Math.min(t,DAY_LEN);return String(Math.floor(m/60)).padStart(2,'0')+':'+String(m%60).padStart(2,'0')}
+
+function note(t){
+  const q={};
+  Object.keys(T[t].sells).forEach(g=>q[g]={k:'a',v:ask(t,g)});
+  Object.keys(T[t].buys).forEach(g=>q[g]={k:'b',v:bid(t,g)});
+  S.nb[t]={day:S.day,q};
+}
+
+/* ---------- rendering ---------- */
+function renderHud(){
+  const w=weight();
+  document.getElementById('hud').innerHTML=
+    `<div class="chip">Coins<b>${fmt(S.cash)}</b></div>`+
+    `<div class="chip">Day<b>${S.day}</b></div>`+
+    `<div class="chip">${dur(DAY_LEN-S.t)} left<b>${clock()}</b><div class="sunbar"><i style="width:${Math.min(100,S.t/DAY_LEN*100)}%"></i></div></div>`+
+    `<div class="chip">Bag<b>${w}/${S.cap}</b></div>`;
+  const c2=S.ch===2,L=c2?MS2:MS,idx=(c2?S.ms2:S.ms)||0,done=c2?S.won2:S.won,M=L[Math.min(idx,L.length-1)];
+  document.getElementById('goalTxt').textContent=`You are ${idx?L[idx-1].title:(c2?'a stand owner':'a newcomer')}`;
+  document.getElementById('nextTxt').textContent=done?(c2?'Chapter two complete':'Chapter one complete. Tap the well to begin chapter two.'):`${c2?'Chapter two. ':''}Next goal: ${M.txt}`;
+  document.getElementById('goalBar').style.width=(done?100:Math.max(0,Math.min(100,M.prog()*100)))+'%';
+}
+function drawIcon(id,cx,cy){
+  const P={
+  miriam:`<rect x=".12" y=".52" width=".76" height=".32" rx=".06" fill="#8a5a2b"/><rect x=".12" y=".62" width=".76" height=".05" fill="#6d4520"/><circle cx=".3" cy=".46" r=".14" fill="#e63946"/><circle cx=".7" cy=".46" r=".14" fill="#e63946"/><circle cx=".5" cy=".4" r=".15" fill="#f25c54"/><rect x=".49" y=".18" width=".03" height=".1" fill="#5b3a1a"/><path d="M.52 .24 q.1 -.07 .15 .02 q-.09 .05 -.15 -.02z" fill="#43a047"/>`,
+  leyla:`<rect x=".1" y=".14" width=".8" height=".06" rx=".03" fill="#5b3a1a"/><path d="M.14 .2h.22v.56l-.11 .09l-.11-.09z" fill="#e9c46a"/><path d="M.39 .2h.22v.64l-.11 .09l-.11-.09z" fill="#2a9d8f"/><path d="M.64 .2h.22v.5l-.11 .09l-.11-.09z" fill="#e76f51"/>`,
+  hassan:`<path d="M.06 .86 q-.02 -.32 .1 -.4 h.16 q.12 .08 .1 .4z" fill="#d4a373"/><path d="M.36 .86 q-.02 -.38 .12 -.46 h.14 q.14 .08 .12 .46z" fill="#c8915c"/><path d="M.66 .86 q-.02 -.3 .1 -.38 h.14 q.12 .08 .1 .38z" fill="#d4a373"/><ellipse cx=".24" cy=".47" rx=".1" ry=".05" fill="#d62828"/><ellipse cx=".54" cy=".41" rx=".1" ry=".05" fill="#f77f00"/><ellipse cx=".83" cy=".49" rx=".09" ry=".05" fill="#fcbf49"/>`,
+  tavern:`<rect x=".2" y=".32" width=".44" height=".54" rx=".07" fill="#e9c46a"/><rect x=".2" y=".24" width=".44" height=".15" rx=".07" fill="#fffaf0"/><circle cx=".3" cy=".22" r=".07" fill="#fffaf0"/><circle cx=".5" cy=".21" r=".08" fill="#fffaf0"/><path d="M.64 .44 h.08 q.1 0 .1 .1 v.1 q0 .1 -.1 .1 h-.08" stroke="#e9c46a" stroke-width=".07" fill="none"/><rect x=".3" y=".42" width=".04" height=".34" rx=".02" fill="#d4a32a"/><rect x=".46" y=".42" width=".04" height=".34" rx=".02" fill="#d4a32a"/>`,
+  tarik:`<path d="M.12 .86 q-.1 -.24 .05 -.38 q-.05 -.1 .02 -.16 h.14 q.07 .06 .02 .16 q.15 .14 .05 .38z" fill="#b5651d"/><path d="M.5 .86 q-.12 -.3 .06 -.46 q-.06 -.12 .02 -.2 h.16 q.08 .08 .02 .2 q.18 .16 .06 .46z" fill="#cb7a37"/><rect x=".53" y=".56" width=".26" height=".04" fill="#8a4a14" opacity=".6"/>`,
+  yusuf:`<path d="M.1 .5 q.32 -.32 .64 0 q-.32 .32 -.64 0z" fill="#8ecae6"/><path d="M.72 .5 l.2 -.16 v.32z" fill="#5fa8d3"/><path d="M.4 .32 q.08 -.1 .16 0z" fill="#5fa8d3"/><circle cx=".26" cy=".46" r=".04" fill="#023047"/>`,
+  caravan:`<rect x=".3" y=".56" width=".05" height=".28" fill="#a57f45"/><rect x=".4" y=".56" width=".05" height=".28" fill="#a57f45"/><rect x=".58" y=".56" width=".05" height=".28" fill="#a57f45"/><rect x=".68" y=".56" width=".05" height=".28" fill="#a57f45"/><ellipse cx=".52" cy=".52" rx=".27" ry=".13" fill="#c9a063"/><circle cx=".48" cy=".4" r=".13" fill="#c9a063"/><path d="M.76 .5 q.1 -.18 .07 -.3" stroke="#c9a063" stroke-width=".09" fill="none" stroke-linecap="round"/><ellipse cx=".86" cy=".2" rx=".08" ry=".06" fill="#c9a063"/><rect x=".36" y=".42" width=".24" height=".06" fill="#d62828"/>`,
+  store:`<rect x=".12" y=".48" width=".38" height=".38" rx=".03" fill="#a0703f"/><rect x=".5" y=".48" width=".38" height=".38" rx=".03" fill="#8a5a2b"/><rect x=".3" y=".12" width=".38" height=".36" rx=".03" fill="#b5834e"/><path d="M.12 .48 l.38 .38 M.5 .48 l-.38 .38 M.5 .48 l.38 .38 M.88 .48 l-.38 .38 M.3 .12 l.38 .36 M.68 .12 l-.38 .36" stroke="#6d4520" stroke-width=".03"/>`,
+  storeLocked:`<rect x=".18" y=".3" width=".64" height=".54" rx=".04" fill="#9a8f80"/><path d="M.18 .3 l.32 -.16 l.32 .16z" fill="#7d7366"/><rect x=".4" y=".54" width=".2" height=".3" fill="#6b6257"/>`,
+  stand:`<rect x=".14" y=".52" width=".72" height=".32" rx=".03" fill="#8a5a2b"/><path d="M.08 .5 l.1 -.26 h.64 l.1 .26z" fill="#e63946"/><path d="M.26 .24 l-.04 .26 h.16 l.02 -.26z M.58 .24 l.02 .26 h.16 l-.04 -.26z" fill="#fffaf0"/><circle cx=".3" cy=".48" r=".06" fill="#e9c46a"/><circle cx=".5" cy=".46" r=".07" fill="#2a9d8f"/><circle cx=".7" cy=".48" r=".06" fill="#e76f51"/>`,
+  standLocked:`<rect x=".14" y=".3" width=".72" height=".52" rx=".04" fill="#9a8f80"/><path d="M.14 .42 h.72 M.14 .56 h.72 M.14 .7 h.72" stroke="#6b6257" stroke-width=".05"/><rect x=".3" y=".2" width=".4" height=".14" fill="#c9b99a"/>`,
+  boat:`<path d="M.12 .66 h.76 l-.12 .16 h-.52z" fill="#8a5a2b"/><rect x=".48" y=".14" width=".03" height=".52" fill="#5b3a1a"/><path d="M.52 .16 l.3 .46 h-.3z" fill="#fffaf0"/><path d="M.47 .22 l-.24 .4 h.24z" fill="#f1e8d2"/>`
+  };
+  return `<g transform="translate(${cx-.5},${cy-.5})">${P[id]||''}</g>`;
+}
+function svgTxt(x,y,t,size,fill,w){return `<text x="${x}" y="${y}" font-size="${size}" fill="${fill}" font-weight="${w||700}" text-anchor="middle" dominant-baseline="central" font-family="system-ui,-apple-system,sans-serif">${t}</text>`}
+function drawFill(k,b){
+  const [x,y]=bxy(b);
+  if(k==='plaza')return `<g class="hit" onclick="showNews()"><rect x="${x+.06}" y="${y+.06}" width="1.88" height="1.88" rx=".3" fill="var(--plaza)" stroke="var(--house2)" stroke-width=".04"/><circle cx="${x+1}" cy="${y+1}" r=".52" fill="var(--water)" stroke="var(--house2)" stroke-width=".12"/><circle cx="${x+1}" cy="${y+1}" r=".16" fill="var(--plaza)"/>${svgTxt(x+1,y+1.78,'Well','.24','var(--muted)')}</g>`;
+  if(k==='garden')return `<rect x="${x+.06}" y="${y+.06}" width="1.88" height="1.88" rx=".3" fill="var(--leaf)" opacity=".35"/>`+[[.5,.5],[1.45,.6],[.9,1.35],[1.5,1.5]].map(([a,c])=>`<circle cx="${x+a}" cy="${y+c}" r=".3" fill="var(--leaf)"/>`).join('');
+  if(k==='palms')return [[.55,.55],[1.4,.9],[.7,1.5]].map(([a,c])=>`<circle cx="${x+a}" cy="${y+c}" r=".36" fill="var(--leaf)"/><circle cx="${x+a}" cy="${y+c}" r=".1" fill="var(--house2)"/>`).join('');
+  return `<rect x="${x+.06}" y="${y+.06}" width="1.88" height="1.88" rx=".18" fill="var(--house)"/><rect x="${x+.06}" y="${y+.95}" width="1.88" height=".99" rx=".18" fill="var(--house2)"/><rect x="${x+.06}" y="${y+.06}" width="1.88" height="1.88" rx=".18" fill="url(#rf)"/>`;
+}
+function drawPlace(id,far){
+  const [x,y]=bxy(BLK[id]),[dx,dy]=door(id),here=S.at===id,mk=MARKS[S.marks[id]||0];
+  const isPL=!!PL[id],open=!isPL||(id==='store'&&S.store)||(id==='stand'&&S.ch===2),name=id==='stand'&&S.ch===2?'Your stand':isPL?PL[id].short:T[id].short;
+  let g=`<g class="hit" onclick="tapPlace('${id}')" opacity="${far?.45:1}">`;
+  if(id==='harbour'){
+    g+=`<rect x="${x-1}" y="${y+.06}" width="2.94" height="1.88" rx=".2" fill="var(--water)"/>`;
+    g+=[0,1,2].map(i=>`<path d="M${x-.6+i*.9} ${y+.5+i*.45} q.15 -.12 .3 0 t.3 0" stroke="#fff" stroke-width=".06" fill="none" opacity=".7"/>`).join('');
+    g+=drawIcon('boat',x+1.1,y+.8)+svgTxt(x+1,y+1.65,'Harbour 🔒','.26','#fff');
+    return g+'</g>';
+  }
+  const roof=open?ROOF[id]:'var(--house)';
+  g+=`<rect x="${dx+.18}" y="${dy+.62}" width=".64" height=".38" rx=".08" fill="${roof}" opacity=".55"/>`;
+  g+=`<rect x="${x+.06}" y="${y+.06}" width="1.88" height="1.88" rx=".18" fill="${roof}" ${open?'':'stroke="var(--muted)" stroke-width=".05" stroke-dasharray=".14 .1"'} ${here?'stroke="var(--saffron)" stroke-width=".12"':''}/>`;
+  if(open)g+=`<rect x="${x+.06}" y="${y+.06}" width="1.88" height=".34" rx=".1" fill="url(#aw)"/>`;
+  g+=`<rect x="${x+.06}" y="${y+.06}" width="1.88" height="1.88" rx=".18" fill="url(#rf)" pointer-events="none"/>`;
+  g+=`<circle cx="${x+1}" cy="${y+.95}" r=".44" fill="var(--alley2)" opacity="${open?1:.75}"/>`+drawIcon(open?id:(id==='store'?'storeLocked':id==='stand'?'standLocked':id),x+1,y+.95);
+  g+=svgTxt(x+1,y+1.66,name+(open?'':' 🔒'),'.25',open?'#fff':'var(--text)');
+  if(mk)g+=svgTxt(x+1.78,y+.3,mk,'.42','#000',400);
+  return g+'</g>';
+}
+function heroSvg(){
+  const load=Math.min(1,weight()/S.cap);
+  let g=`<g id="hero" style="transform:translate(${S.px+.5}px,${S.py+.5}px)" pointer-events="none">`;
+  if(S.donkey)g+=`<g transform="translate(-.3,.12)"><ellipse cx="0" cy="0" rx=".2" ry=".13" fill="${S.camel?'#c9a063':'#8d8a86'}"/><circle cx="-.2" cy="-.1" r=".08" fill="${S.camel?'#c9a063':'#8d8a86'}"/><rect x="-.27" y="-.27" width=".04" height=".1" fill="#6f6c69"/>${S.cart?'<rect x=".12" y="-.12" width=".22" height=".2" rx=".03" fill="#9a6b3f"/>':''}</g>`;
+  g+=`<ellipse cx="0" cy=".28" rx=".2" ry=".06" fill="#000" opacity=".18"/>`;
+  g+=`<circle cx=".14" cy=".03" r="${(.06+.13*load).toFixed(3)}" fill="#a0703f"/>`;
+  g+=`<rect x="-.13" y="-.08" width=".26" height=".34" rx=".1" fill="var(--lapis)"/>`;
+  g+=`<circle cx="0" cy="-.2" r=".12" fill="#e2b48a"/><path d="M-.13 -.24 q.13 -.16 .26 0 z" fill="#fff"/>`;
+  return g+'</g>';
+}
+function renderMap(){
+  updateHere();
+  const left=DAY_LEN-S.t;
+  let h=`<svg class="mapsvg" viewBox="0 0 12 12" xmlns="http://www.w3.org/2000/svg"><defs><pattern id="sq" width="1" height="1" patternUnits="userSpaceOnUse"><rect x=".05" y=".05" width=".9" height=".9" rx=".14" fill="var(--alley2)"/></pattern><pattern id="rf" width=".24" height=".24" patternUnits="userSpaceOnUse"><path d="M0 .23 h.24 M.12 0 v.12" stroke="#000" stroke-width=".018" opacity=".13"/></pattern><pattern id="aw" width=".36" height="1" patternUnits="userSpaceOnUse"><rect width=".18" height="1" fill="#fff" opacity=".8"/></pattern></defs>`;
+  h+=`<rect width="12" height="12" fill="var(--alley)"/><rect width="12" height="12" fill="url(#sq)"/>`;
+  if(preview)preview.path.forEach(([x,y],i)=>h+=`<circle cx="${x+.5}" cy="${y+.5}" r="${i===preview.path.length-1?.2:.11}" fill="var(--saffron)"/>`);
+  Object.entries(FILL).forEach(([k,b])=>h+=drawFill(k,b));
+  Object.keys(BLK).forEach(id=>{const far=!PL[id]&&S.at!==id&&walkCost(id)>left;h+=drawPlace(id,far)});
+  h+=heroSvg();
+  h+=`<rect width="12" height="12" fill="var(--night)" opacity="${(Math.max(0,(S.t-480)/240)*.5).toFixed(3)}" pointer-events="none"/></svg>`;
+  document.getElementById('map').innerHTML=h;
+}
+function render(){renderHud();renderMap()}
+
+function setNav(v){document.querySelectorAll('.bbtn[data-v]').forEach(b=>b.classList.toggle('active',b.dataset.v===v))}
+function setSheet(h){const sh=document.getElementById('sheet');sh.innerHTML=h;sh.scrollTop=0;document.getElementById('wrap').classList.add('open');setNav('')}
+const HINT=`<h2>The bazaar</h2><p class="small">Tap a stall on the map to see the route and how long it takes. Tap it again, or press Walk, to go there.</p><p class="small">Tap the well for today's news. Stalls, news, notes and your bag all open here.</p>`;
+function closeSheet(){document.getElementById('wrap').classList.remove('open');document.getElementById('sheet').innerHTML=HINT;setNav(S&&S.at?'':'here')}
+function updateHere(){const b=document.getElementById('hereBtn');if(!b||!S)return;if(S.at){const p=T[S.at]||PL[S.at],icon=T[S.at]?T[S.at].i:S.at==='stand'?'🪧':(S.store?'📦':'🏚️');b.innerHTML=`<span>${icon}</span>${S.at==='stand'?'Stand':p.short}`}else b.innerHTML='<span>🗺️</span>Map'}
+function hereTap(){clearPreview();const b=document.getElementById('hereBtn'),open=document.getElementById('wrap').classList.contains('open');if(S.at&&!(open&&b.classList.contains('active')))openAt(S.at);else closeSheet()}
+let toastT;
+function toast(m){const e=document.getElementById('toast');e.textContent=m;e.classList.add('on');clearTimeout(toastT);toastT=setTimeout(()=>e.classList.remove('on'),2300)}
+
+/* ---------- movement ---------- */
+let preview=null,walking=false;
+function goTo(t){tapPlace(t)}
+function tapPlace(id){
+  if(walking)return;
+  if(PL[id]&&!(id==='store'&&S.store)&&!(id==='stand'&&S.ch===2)){clearPreview();showPlace(id);return}
+  if(S.at===id){clearPreview();openAt(id);return}
+  if(preview&&preview.id===id){go();return}
+  const path=pathTo(id),m=minPerTile(),c=path.length*m;
+  preview={id,path,m,c};renderMap();
+  const name=id==='stand'&&S.ch===2?'Your stand':(T[id]||PL[id]).n,ok=S.t+c<=DAY_LEN;
+  const pill=document.getElementById('pill');
+  pill.innerHTML=`<div class="info"><b>${name}</b><div class="small">${path.length} squares × ${m} min = ${c} min. ${ok?'Arrive '+clockAt(S.t+c):'You won\u2019t make it before sunset.'}</div></div>${ok?'<button class="sbtn fill" onclick="go()">Walk</button>':''}<button class="x" onclick="clearPreview()" aria-label="Cancel">✕</button>`;
+  pill.classList.add('on');
+}
+function clearPreview(){preview=null;document.getElementById('pill').classList.remove('on');if(!walking)renderMap()}
+function go(){
+  if(!preview)return;const {id,path,m}=preview;
+  if(S.t+path.length*m>DAY_LEN){toast('The stalls will be closed by then. Time to sleep 🌙');return}
+  preview=null;document.getElementById('pill').classList.remove('on');closeSheet();
+  walking=true;S.at=null;renderMap();
+  let i=0;const hero=()=>document.getElementById('hero');
+  const step=()=>{
+    if(i>=path.length){walking=false;arrive(id);return}
+    const [x,y]=path[i++];S.px=x;S.py=y;S.t+=m;
+    const el=hero();if(el)el.style.transform=`translate(${x+.5}px,${y+.5}px)`;
+    renderHud();setTimeout(step,115);
+  };
+  setTimeout(step,30);
+}
+function arrive(id){S.at=id;S.visit={t:id,haggled:false,tried:false,line:T[id]?greet(id):''};if(T[id])note(id);save();renderMap();openAt(id)}
+function moodFace(m){return m<=-1.5?'😠':m<-.3?'😒':m<1?'🙂':m<2?'😊':'🥰'}
+function greet(t){const tr=T[t],m=S.mood[t];return pick(m>=1.5?tr.happy:m<=-1?tr.sad:tr.hi)}
+
+/* ---------- stall ---------- */
+function renderStall(t){
+  const tr=T[t],mk=MARKS[S.marks[t]||0];
+  let h=`<div class="sh-head"><div class="big">${tr.i}</div><div style="flex:1"><h2>${tr.n}</h2><div class="sub"><span>${tr.role}</span><span>Mood ${moodFace(S.mood[t])}</span>${hag(t)?'<span class="good">Haggled: better prices this visit</span>':''}</div></div><button class="x" onclick="closeSheet()" aria-label="Close">✕</button></div>`;
+  h+=`<div class="bubble">“${S.visit.line||greet(t)}”</div>`;
+  const sells=Object.keys(tr.sells),buys=Object.keys(tr.buys);
+  if(sells.length){h+=`<h3>For sale</h3>`;sells.forEach(g=>{const p=ask(t,g);
+    h+=`<div class="row"><div class="gi">${G[g].i}</div><div class="info"><b>${G[g].n}</b> <span class="price">${fmt(p)}</span><div class="small">Weight ${G[g].w}${G[g].s?`, spoils after ${G[g].s} night${G[g].s>1?'s':''}`:''}. You have ${count(g)}.</div></div><button class="sbtn" onclick="trade('buy','${t}','${g}',1)">Buy</button><button class="sbtn" onclick="trade('buy','${t}','${g}',5)">Buy 5</button></div>`})}
+  if(buys.length){h+=`<h3>Wants to buy</h3>`;buys.forEach(g=>{const p=bid(t,g),c=count(g);
+    h+=`<div class="row"><div class="gi">${G[g].i}</div><div class="info"><b>${G[g].n}</b> <span class="price">${fmt(p)}</span><div class="small">You have ${c}.</div></div><button class="sbtn" ${c?'':'disabled'} onclick="trade('sell','${t}','${g}',1)">Sell</button><button class="sbtn fill" ${c?'':'disabled'} onclick="trade('sell','${t}','${g}',${c||1})">Sell all</button></div>`})}
+  h+=`<div class="acts">`;
+  h+=`<button class="sbtn" ${S.visit.tried?'disabled':''} onclick="haggle('${t}')">🤝 Haggle (15 min)</button>`;
+  if(t==='tavern'){h+=`<button class="sbtn" onclick="rumor()">🍺 Buy a drink and listen ($1, 20 min)</button>`;
+    const b=S.boys||0;
+    if((S.ms||0)>=2&&b<3)h+=`<button class="sbtn" onclick="hire(1)">🧒 Hire an errand boy ($${WAGE.toFixed(2)} a day)</button>`;
+    if(b>0)h+=`<button class="sbtn" onclick="hire(-1)">Let one boy go (${b} working)</button>`;
+    if(S.ch===2&&(S.ms2||0)>=2&&!S.stand.clerk)h+=`<button class="sbtn fill" onclick="hireClerk()">🧑‍💼 Hire a clerk for your stand ($4 a day)</button>`;}
+  if(t==='caravan'){
+    if(!S.donkey)h+=`<button class="sbtn" onclick="upgrade('donkey')">🫏 Buy a donkey ($60, bag 50)</button>`;
+    else if(!S.cart)h+=`<button class="sbtn" onclick="upgrade('cart')">🛞 Buy a cart ($220, bag 110)</button>`;
+    if((S.ms||0)>=4){
+      if(S.contract){const c=S.contract,have=count(c.g),left=c.until-S.day+1;h+=`<button class="sbtn fill" ${have>=c.q?'':'disabled'} onclick="deliver()">📜 Deliver ${c.q} ${G[c.g].i} for ${fmt(c.pay)} (you carry ${have}, ${left} day${left>1?'s':''} left)</button>`}
+      else if(S.offer)h+=`<button class="sbtn fill" onclick="accept()">📜 Accept: ${S.offer.q} ${G[S.offer.g].i} within 5 days for ${fmt(S.offer.pay)}</button>`;
+      else h+=`<button class="sbtn" onclick="askContract()">📜 Ask about a contract</button>`;
+    }
+  }
+  h+=`<button class="sbtn" onclick="mark('${t}')">📍 Map mark ${mk||'(none)'}</button></div>`;
+  setSheet(h);
+}
+function trade(kind,t,g,n){
+  let done=0,total=0,msg='';
+  for(let i=0;i<n;i++){
+    if(kind==='buy'){
+      const p=ask(t,g);
+      if(S.cash<p){msg='Not enough coins';break}
+      if(weight()+G[g].w>S.cap){msg='Your bag is full';break}
+      S.cash-=p;addLot(g);S.p[t][g]*=IMPACT;
+    }else{
+      if(!count(g))break;
+      const p=bid(t,g);S.cash+=p;removeOne(g);S.p[t][g]/=IMPACT;
+    }
+    done++;S.trades++;S.mood[t]=Math.min(3,S.mood[t]+T[t].mg*.15);
+  }
+  if(done){
+    toast(`${kind==='buy'?'Bought':'Sold'} ${done} ${G[g].i}${msg?'. '+msg+'.':''}`);
+    if(Math.random()<.3)S.visit.line=pick(T[t].thx);
+  }else if(msg)toast(msg+'.');
+  note(t);save();renderHud();renderMap();renderStall(t);
+  checkMs();
+}
+function haggle(t){
+  if(S.visit.tried)return;
+  if(S.t+15>DAY_LEN){toast('No time left to haggle today.');return}
+  S.t+=15;S.visit.tried=true;
+  if(Math.random()<T[t].haggle+.08*S.mood[t]){S.visit.haggled=true;S.visit.line=pick(T[t].hagOk)}
+  else{S.mood[t]=Math.max(-3,S.mood[t]-1);S.visit.line=pick(T[t].hagNo)}
+  note(t);save();renderHud();renderMap();renderStall(t);
+}
+function rumor(){
+  if(S.cash<1){toast('You need $1 for a drink.');return}
+  if(S.t+20>DAY_LEN){toast('The tavern is closing for the night.');return}
+  S.cash-=1;S.t+=20;
+  const up=[];for(let d=S.day+1;d<=S.day+3;d++)if(S.schedule[d])up.push(S.schedule[d]);
+  let txt;
+  if(up.length&&Math.random()<.75)txt=pick(up).rumor;
+  else if(Math.random()<.5)txt=EV[pick(Object.keys(EV))]().rumor;
+  else txt="The barman shrugs. Quiet times, friend.";
+  S.rumors.unshift({day:S.day,txt});S.rumors=S.rumors.slice(0,8);
+  S.visit.line=txt;save();renderHud();renderMap();renderStall('tavern');
+}
+function upgrade(k){
+  const c=k==='donkey'?60:220;
+  if(S.cash<c){toast(`You need ${fmt(c)}.`);return}
+  S.cash-=c;
+  if(k==='donkey'){S.donkey=true;S.cap=50;S.visit.line='Her name is Pomegranate. She bites, but only merchants she dislikes.'}
+  else{S.cart=true;S.cap=110;S.visit.line='A fine cart. The wheels are almost round.'}
+  save();renderHud();renderStall('caravan');checkMs();
+}
+function hire(n){S.boys=Math.max(0,Math.min(3,(S.boys||0)+n));S.visit.line=n>0?'A barefoot boy grins at you. Every morning he will run around the bazaar and bring you fresh prices from three stalls.':'The boy shrugs and runs off to work for Hassan.';save();renderStall('tavern');checkMs()}
+function askContract(){const g=pick(['cloth','pottery']),q=g==='cloth'?20:12;S.offer={g,q,pay:Math.round(q*G[g].b*1.6)};S.visit.line=`I need ${q} ${G[g].n.toLowerCase()} for the coast within five days. Deliver and I pay ${fmt(S.offer.pay)}. Fail me and I'll remember.`;save();renderStall('caravan')}
+function accept(){S.contract={...S.offer,until:S.day+4};S.offer=null;S.visit.line='Good. We shake on it. Five days, not one more.';save();renderStall('caravan')}
+function deliver(){const c=S.contract;if(!c||count(c.g)<c.q)return;for(let i=0;i<c.q;i++)removeOne(c.g);S.cash+=c.pay;S.contract=null;S.contractsDone=(S.contractsDone||0)+1;S.mood.caravan=Math.min(3,S.mood.caravan+1.5);S.visit.line='Exactly as promised. I like doing business with you.';save();renderHud();renderStall('caravan');checkMs()}
+function rent(){if((S.ms||0)<3)return;if(S.cash<100){toast('You need $100.');return}S.cash-=100;S.store=true;S.storeInv=S.storeInv||[];save();render();showPlace('store');checkMs()}
+const scount=g=>(S.storeInv||[]).filter(l=>l.g===g).reduce((a,l)=>a+l.q,0);
+function moveGoods(g,n,toStore){S.storeInv=S.storeInv||[];const from=toStore?S.inv:S.storeInv,to=toStore?S.storeInv:S.inv;let k=0;
+  while(k<n){const lots=from.filter(l=>l.g===g).sort((a,b)=>a.d-b.d);if(!lots.length)break;if(!toStore&&weight()+G[g].w>S.cap)break;
+    const l=lots[0];l.q--;if(!l.q)from.splice(from.indexOf(l),1);const x=to.find(y=>y.g===g&&y.d===l.d);if(x)x.q++;else to.push({g,q:1,d:l.d});k++}
+  return k}
+function mv(g,n,toStore){const k=moveGoods(g,n,toStore);if(!k&&!toStore)toast('Your bag is full.');save();renderHud();showPlace('store')}
+function showPlace(t){
+  const head=(i,n,sub)=>`<div class="sh-head"><div class="big">${i}</div><div style="flex:1"><h2>${n}</h2><div class="sub"><span>${sub}</span></div></div><button class="x" onclick="closeSheet()" aria-label="Close">✕</button></div>`;
+  let h='';
+  if(t==='harbour')h=head('⛵','The harbour','Ships to faraway markets')+`<div class="bubble">The harbour master laughs. “${S.ch===2?((S.ms2||0)>=4?'Passage for a merchant and a camel: one thousand coins. Save it and the sea is yours.':'You own a stand now, I hear. Make a name with it first.'):'Ships are for merchants with a name. Come back when you own a stand.'}”</div><p class="small">${S.ch===2?'Opens at the end of chapter two.':'Opens in chapter two.'}</p>`;
+  else if(t==='stand'&&S.ch===2)h=standSheet(head);
+  else if(t==='stand')h=head('🪧','A boarded-up stall','Your future, maybe')+`<div class="bubble">A faded sign: “For rent to a respected merchant. ${fmt(GOAL)} a season.”</div><p class="small">${S.won?'You could rent it now.':'Become a respected merchant and save '+fmt(GOAL)+' to claim it.'}</p>`;
+  else if(!S.store){const ok=(S.ms||0)>=3;h=head('🏚️','An empty storeroom','Near the caravan gate')+`<div class="bubble">${ok?'The landlord rubs his hands. “A hundred coins and it’s yours for good. Dry, safe, and the rats are mostly polite.”':'The landlord looks you up and down. “I rent to merchants, not newcomers. Come back when you have a crew.”'}</div>`+(ok?`<button class="sbtn fill wide" onclick="rent()">Rent it for $100</button>`:'');}
+  else{
+    h=head('📦','Your storeroom','No weight limit, but food still spoils')+`<div class="bubble">Cool and dry. Pomegranate refuses to go inside.</div>`;
+    const bag=GK.filter(g=>count(g)),st=GK.filter(g=>scount(g));
+    h+=`<h3>In your bag</h3>`+(bag.length?bag.map(g=>`<div class="row"><div class="gi">${G[g].i}</div><div class="info"><b>${count(g)} ${G[g].n}</b></div><button class="sbtn" onclick="mv('${g}',1,true)">Store 1</button><button class="sbtn fill" onclick="mv('${g}',999,true)">Store all</button></div>`).join(''):'<p class="small">Nothing to store.</p>');
+    h+=`<h3>In the storeroom</h3>`+(st.length?st.map(g=>`<div class="row"><div class="gi">${G[g].i}</div><div class="info"><b>${scount(g)} ${G[g].n}</b></div><button class="sbtn" onclick="mv('${g}',1,false)">Take 1</button><button class="sbtn fill" onclick="mv('${g}',999,false)">Take all</button></div>`).join(''):'<p class="small">Empty. Stock up when prices are low.</p>');
+  }
+  setSheet(h);
+}
+function mark(t){S.marks[t]=((S.marks[t]||0)+1)%MARKS.length;save();renderMap();renderStall(t)}
+
+/* ---------- day cycle ---------- */
+function rest(){
+  closeSheet();
+  const log=[];
+  if(S.ch===2&&S.stand)standNight(log);
+  if(S.cash>=.5){S.cash-=.5;log.push('Soup and a mat at the inn cost you $0.50.')}
+  else log.push('No coins for the inn. You slept under the stars.');
+  S.day++;
+  const sp={};
+  const rot=l=>{const s=G[l.g].s;if(s&&S.day-l.d>=s){sp[l.g]=(sp[l.g]||0)+l.q;return false}return true};
+  S.inv=S.inv.filter(rot);if(S.storeInv)S.storeInv=S.storeInv.filter(rot);
+  Object.entries(sp).forEach(([g,q])=>log.push(`${q} ${G[g].n.toLowerCase()} ${G[g].i} went bad overnight.`));
+  TK.forEach(t=>Object.keys(S.p[t]).forEach(g=>{S.p[t][g]=(1+(S.p[t][g]-1)*.4)*Math.exp(gauss()*.06)}));
+  GK.forEach(g=>{S.gw[g]=Math.exp(Math.log(S.gw[g])*.85+gauss()*.05)});
+  TK.forEach(t=>S.mood[t]*=.92);
+  if(S.contract&&S.day>S.contract.until){log.push(`Your contract for ${S.contract.q} ${G[S.contract.g].n.toLowerCase()} expired. The Caravan Master is not pleased.`);S.mood.caravan=Math.max(-3,S.mood.caravan-2);S.contract=null}
+  S.effects=S.effects.filter(e=>e.until>=S.day);
+  const ev=S.schedule[S.day];delete S.schedule[S.day];
+  S.news=[];
+  if(ev){S.effects.push({...ev,until:S.day+ev.dur-1});S.news.push(ev.news)}else S.news.push(pick(QUIET));
+  for(let d=S.day+1;d<=S.day+6;d++)if(!(d in S.schedule))S.schedule[d]=maybeEvent();
+  S.t=0;S.at=null;S.px=START[0];S.py=START[1];S.visit={t:null,haggled:false,tried:false,line:''};
+  let boys=S.boys||0;
+  if(boys){const pay=Math.min(boys,Math.floor(S.cash/WAGE));S.cash-=pay*WAGE;
+    if(pay<boys){log.push(`You couldn't pay ${boys-pay} errand boy${boys-pay>1?'s':''}, so ${boys-pay>1?'they':'he'} quit.`);S.boys=boys=pay}
+    if(boys){log.push(`Your errand boys cost you ${fmt(boys*WAGE)}.`);
+      const pool=[...TK].sort(()=>Math.random()-.5).slice(0,Math.min(TK.length,boys*3));pool.forEach(t=>note(t));
+      log.push(`They brought fresh prices from ${pool.map(t=>T[t].short).join(', ')}. Check your notebook.`)}}
+  save();render();
+  setSheet(`<h2>☀️ Day ${S.day}</h2>${log.map(l=>`<p>${l}</p>`).join('')}<h3>The crier at the well</h3>${S.news.map(n=>`<div class="bubble">${n}</div>`).join('')}<button class="sbtn fill wide" onclick="closeSheet()">Go to the bazaar</button>`);
+}
+function effText(e){
+  const parts=[];
+  if(e.bid>1.05)parts.push('traders pay more');else if(e.bid<.95)parts.push('traders pay less');
+  if(e.ask<.95)parts.push('cheaper to buy');else if(e.ask>1.05)parts.push('pricier to buy');
+  const left=e.until-S.day+1;
+  return `${e.goods.map(g=>G[g].i).join(' ')} ${parts.join(', ')}. ${left} day${left>1?'s':''} left.`;
+}
+function showNews(){
+  let h=`<div class="sh-head"><div class="big">⛲</div><div style="flex:1"><h2>News at the well</h2><div class="sub"><span>Day ${S.day}</span></div></div><button class="x" onclick="closeSheet()" aria-label="Close">✕</button></div>`;
+  h+=S.news.map(n=>`<div class="bubble">${n}</div>`).join('');
+  h+=`<h3>What's moving prices</h3>`;
+  h+=S.effects.length?S.effects.map(e=>`<div class="news">${effText(e)}</div>`).join(''):`<p class="small">Nothing unusual. Prices drift on their own.</p>`;
+  h+=`<h3>Rumours you've heard</h3>`;
+  h+=S.rumors.length?S.rumors.map(r=>`<div class="news"><span class="small">Day ${r.day}</span><br>${r.txt}</div>`).join(''):`<p class="small">Buy a drink at the tavern to hear what people whisper. Not every rumour is true.</p>`;
+  if(S.won&&S.ch!==2)h+=`<button class="sbtn fill wide" onclick="startCh2()">Begin chapter two</button>`;
+  h+=`<button class="sbtn wide" onclick="confirmNew()">Start a new game</button>`;
+  setSheet(h);
+}
+function ago(d){const a=S.day-d;return a===0?'today':a===1?'yesterday':`${a} days ago`}
+function showNotebook(){
+  let h=`<div class="sh-head"><div class="big">📒</div><div style="flex:1"><h2>Your notebook</h2><div class="sub"><span>Prices you've seen with your own eyes</span></div></div><button class="x" onclick="closeSheet()" aria-label="Close">✕</button></div>`;
+  let any=false;
+  GK.forEach(g=>{
+    const A=[],B=[];
+    TK.forEach(t=>{const n=S.nb[t];if(n&&n.q[g]){(n.q[g].k==='a'?A:B).push({t,v:n.q[g].v,d:n.day})}});
+    if(!A.length&&!B.length)return;any=true;
+    A.sort((a,b)=>a.v-b.v);B.sort((a,b)=>b.v-a.v);
+    h+=`<div class="nbg"><b>${G[g].i} ${G[g].n}</b>`;
+    if(A.length)h+=`<div><span class="small">Buy from </span>${A.map((q,i)=>`<span class="q${i===0?' best':''}">${T[q.t].short} ${fmt(q.v)} <span class="small">${ago(q.d)}</span></span>`).join('')}</div>`;
+    if(B.length)h+=`<div><span class="small">Sell to </span>${B.map((q,i)=>`<span class="q${i===0?' best':''}">${T[q.t].short} ${fmt(q.v)} <span class="small">${ago(q.d)}</span></span>`).join('')}</div>`;
+    if(A.length&&B.length){const m=(B[0].v/A[0].v-1)*100;h+=`<div class="small">Best known margin: <span class="${m>0?'good':'bad'}">${m>0?'+':''}${m.toFixed(0)}%</span> per unit, before your own trades move the price.</div>`}
+    h+=`</div>`;
+  });
+  if(!any)h+=`<p class="small">Empty for now. Visit stalls and every price you see gets written here.</p>`;
+  setSheet(h);
+}
+function showBag(){
+  const w=weight();
+  let h=`<div class="sh-head"><div class="big">🎒</div><div style="flex:1"><h2>Your bag</h2><div class="sub"><span>${w} of ${S.cap} weight used</span><span>${fmt(S.cash)}</span></div></div><button class="x" onclick="closeSheet()" aria-label="Close">✕</button></div>`;
+  if(!S.inv.length)h+=`<p class="small">Empty. Find something cheap and someone who wants it.</p>`;
+  [...S.inv].sort((a,b)=>a.g.localeCompare(b.g)||a.d-b.d).forEach(l=>{
+    const s=G[l.g].s;let life='keeps forever';
+    if(s){const left=l.d+s-S.day;life=left<=1?'<span class="bad">goes bad tonight</span>':`${left} nights left`}
+    h+=`<div class="row"><div class="gi">${G[l.g].i}</div><div class="info"><b>${l.q} ${G[l.g].n}</b><div class="small">Bought ${ago(l.d)}, ${life}</div></div></div>`;
+  });
+  h+=`<h3>Animals and carts</h3><p class="small">${S.cart?'Donkey and cart. 🫏🛞':S.donkey?'One donkey, Pomegranate. 🫏 A cart would carry more.':'Just your own back. The Caravan Master sells donkeys.'}</p>`;
+  h+=`<h3>Walking speed</h3><p class="small">${minPerTile()} min per square right now. On foot: 5, or 7 with a bag over half full. Donkey: 4. Cart: 5.</p>`;
+  h+=`<h3>Helpers</h3><p class="small">${S.boys?`${S.boys} errand boy${S.boys>1?'s':''} scouting prices every morning.`:'No helpers yet. Hire errand boys at the tavern.'}</p>`;
+  setSheet(h);
+}
+function intro(){
+  setSheet(`<h2>Five Coins Bazaar</h2>
+  <div class="bubble">You arrive at the great bazaar with five coins and one apple. Save ${fmt(GOAL)} and you can rent a stand of your own.</div>
+  <p>The line at the top shows your next goal. Reach it and new things open up.</p>
+  <p>Walk between stalls by tapping them. Tap once to see the route and its time, tap again (or Walk) to go. Each day runs from 06:00 to 18:00. Every square takes 5 minutes on foot, 7 if your bag is over half full, 4 with a donkey, 5 with a cart.</p>
+  <p>Everyone buys and sells different things. Your notebook remembers every price you've seen, but prices move, so old notes can lie.</p>
+  <p>Buying pushes a trader's price up and selling pushes it down. Fish spoils overnight, apples in a few days. Check the news at the well each morning, and buy a drink at the tavern to hear rumours or hire errand boys who scout prices every morning.</p>
+  <button class="sbtn fill wide" onclick="closeSheet()">Start trading</button>`);
+}
+function showEnding(){
+  setSheet(`<h2>End of chapter one</h2>
+  <div class="bubble">You count your coins. ${fmt(S.cash)}. Enough to rent a stand of your own. Tomorrow you become a merchant.</div>
+  <p>Just then a breathless messenger pushes through the crowd with a sealed letter. Your uncle, the one you barely remember, has died. He left you everything: three palaces, a fleet of ships, and a camel named Destiny.</p>
+  <p class="small">It took you ${S.day} days and ${S.trades} trades.</p>
+  <button class="sbtn fill wide" onclick="startCh2()">Begin chapter two</button>
+  <button class="sbtn wide" onclick="closeSheet()">Keep trading anyway</button>
+  <button class="sbtn wide" onclick="newGame()">Start over with five coins</button>`);
+}
+/* ================= CHAPTER TWO ================= */
+const PEOPLE=['A sailor','A housewife','A soldier','A pilgrim','A cook from the palace','A tired porter','A schoolteacher','A young couple'];
+const HUNTERS=['A penny-pinching uncle','A bargain hunter','A haggling grandmother'];
+function effOn(g,k,day){let m=1;S.effects.forEach(e=>{if(e.until>=day&&e.goods.includes(g))m*=e[k]});const ev=S.schedule[day];if(ev&&ev.goods.includes(g))m*=ev[k];return m}
+const street=g=>G[g].b*S.gw[g]*Math.sqrt(effM(g,'bid')*effM(g,'ask'));
+const futureStreet=g=>G[g].b*S.gw[g]*Math.sqrt(effOn(g,'bid',S.day+1)*effOn(g,'ask',S.day+1));
+function skewM(g){const r=S.stand.rules[g];if(!S.stand.clerk||!r||!r.k)return 1;return Math.max(.7,Math.min(1.3,1-r.k/100*(scount(g)-r.target)))}
+const qBuy=g=>street(g)*S.stand.bq[g]*skewM(g), qSell=g=>street(g)*S.stand.sq[g]*skewM(g);
+function addStore(g){S.storeInv=S.storeInv||[];const l=S.storeInv.find(l=>l.g===g&&l.d===S.day);if(l)l.q++;else S.storeInv.push({g,q:1,d:S.day})}
+function removeStoreOne(g){const l=S.storeInv.filter(l=>l.g===g).sort((a,b)=>a.d-b.d)[0];if(!l)return;l.q--;if(!l.q)S.storeInv.splice(S.storeInv.indexOf(l),1)}
+function startCh2(){
+  S.ch=2;S.ms2=0;S.camel=true;S.donkey=true;S.cap=Math.max(S.cap,150);S.store=true;S.storeInv=S.storeInv||[];S.won=true;
+  S.stand={on:{},bq:{},sq:{},log:[],edge:0,dayEdge:0,dayTrades:0,sold:0,clerk:false,rules:{},minded:0,slots:3};
+  save();render();
+  setSheet(`<h2>Chapter two: The Stand</h2><div class="bubble">The lawyer clears his throat and reads the will again, slower this time.</div>
+  <p>The palaces were mortgaged. The fleet sank eleven years ago. Your uncle's only real possession was a camel. Her name is Destiny.</p>
+  <p>Well. You still have your coins, your storeroom, and now a stand of your own. Destiny carries 150 and walks like a queen.</p>
+  <p><b>How the stand works.</b> Pick up to three goods and set the price you buy at and the price you sell at, compared to today's street price. Customers come while you mind the stand. Stock comes from your storeroom.</p>
+  <p>Too greedy and nobody comes. Too generous and you give money away. And watch for sharp-eyed merchants 🕵️: they sometimes know tomorrow's prices.</p>
+  <button class="sbtn fill wide" onclick="closeSheet()">Open for business</button>`);
+}
+function doStand(side,g,q,price,st,who){
+  for(let i=0;i<q;i++){if(side==='buy'){removeStoreOne(g);S.cash+=price}else{addStore(g);S.cash-=price}}
+  const e=(side==='buy'?price-st:st-price)*q;
+  S.stand.edge+=e;S.stand.dayEdge+=e;S.stand.dayTrades++;if(side==='buy')S.stand.sold+=q;
+  S.stand.log.unshift(`<span class="small">${clock()}</span> ${who} ${side==='buy'?'buys':'sells you'} ${q} ${G[g].i} at ${fmt(price)}.`);
+  S.stand.log=S.stand.log.slice(0,12);
+}
+function simHour(eff){
+  const goods=GK.filter(g=>S.stand.on[g]);if(!goods.length)return 0;
+  const tm=S.schedule[S.day+1],lam=(2+goods.length)*eff;
+  let n=-1,p=1;const L=Math.exp(-lam);do{n++;p*=Math.random()}while(p>L);
+  let tr=0;
+  for(let i=0;i<n;i++){
+    const g=pick(goods),st=street(g),bp=qBuy(g),sp=qSell(g);
+    if(Math.random()<.04+(tm&&tm.goods.includes(g)?.35:0)){
+      const fs=futureStreet(g);
+      if(fs>sp*1.03&&scount(g)>0){doStand('buy',g,Math.min(scount(g),3+Math.floor(Math.random()*8)),sp,st,'🕵️ A sharp-eyed merchant');tr++;continue}
+      if(fs<bp*.97){const q=Math.min(Math.floor(S.cash/bp),3+Math.floor(Math.random()*8));if(q>0){doStand('sell',g,q,bp,st,'🕵️ A sharp-eyed merchant');tr++;continue}}
+    }
+    const hunter=Math.random()<.25,w=hunter?.08:.3,who=hunter?pick(HUNTERS):pick(PEOPLE);
+    if(Math.random()<.5){const res=st*(1+Math.random()*w);if(sp<=res&&scount(g)>0){doStand('buy',g,Math.min(scount(g),1+Math.floor(Math.random()*3)),sp,st,who);tr++}}
+    else{const res=st*(1-Math.random()*w);if(bp>=res){const q=Math.min(Math.floor(S.cash/bp),1+Math.floor(Math.random()*3));if(q>0){doStand('sell',g,q,bp,st,who);tr++}}}
+  }
+  return tr;
+}
+function mind(h){
+  if(S.at!=='stand')return;
+  const mins=Math.min(h*60,DAY_LEN-S.t);if(mins<=0){toast('The bazaar is closing for the night.');return}
+  if(!GK.some(g=>S.stand.on[g])){toast('Pick at least one good to deal in first.');return}
+  let t=0,tr=0;while(t<mins){const st=Math.min(60,mins-t);S.t+=st;S.stand.minded+=st;tr+=simHour(st/60);t+=st}
+  toast(tr?`${tr} customer${tr>1?'s':''} traded with you.`:'Quiet. Nobody bought or sold.');
+  save();renderHud();renderMap();showPlace('stand');checkMs();
+}
+function toggleDeal(g){const st=S.stand,n=GK.filter(x=>st.on[x]).length;
+  if(st.on[g])st.on[g]=false;else{if(n>=st.slots){toast(`Your stand has room for ${st.slots} goods.`);return}st.on[g]=true;if(st.bq[g]==null){st.bq[g]=.9;st.sq[g]=1.1}}
+  save();showPlace('stand')}
+function adj(g,k,d){const st=S.stand;let v=Math.round((st[k][g]+d*.02)*100)/100;
+  if(k==='bq')v=Math.max(.5,Math.min(st.sq[g]-.02,v));else v=Math.min(1.6,Math.max(st.bq[g]+.02,v));
+  st[k][g]=v;save();showPlace('stand')}
+function adjRule(g,f,d){const r=S.stand.rules[g]||(S.stand.rules[g]={target:10,k:0});
+  if(f==='target')r.target=Math.max(0,Math.min(60,r.target+d*2));else r.k=Math.max(0,Math.min(5,r.k+d));
+  save();showPlace('stand');checkMs()}
+function unload(){let k=0;GK.forEach(g=>{k+=moveGoods(g,999,true)});toast(k?`Destiny carries ${k} goods into stock.`:'Your bag is empty.');save();renderHud();renderMap();showPlace('stand')}
+function hireClerk(){S.stand.clerk=true;S.stand.slots=5;S.visit.line="The barman's nephew bows. He can count, he can smile, and he does exactly what you tell him. Nothing more.";save();renderStall('tavern');checkMs()}
+function standNight(log){
+  const st=S.stand;
+  if(st.clerk){const h=Math.floor(Math.max(0,DAY_LEN-st.minded)/60),e0=st.dayEdge,t0=st.dayTrades;for(let i=0;i<h;i++)simHour(.6);
+    log.push(`Your clerk minded the stand for ${h} hours: ${st.dayTrades-t0} trades, edge ${fmt(st.dayEdge-e0)}.`)}
+  log.push(`Your stand today: ${st.dayTrades} trades, edge earned ${fmt(st.dayEdge)}.`);
+  const cost=5+(st.clerk?4:0);S.cash-=cost;log.push(`Stand rent${st.clerk?' and clerk wage':''}: ${fmt(cost)}.`);
+  st.minded=0;st.dayEdge=0;st.dayTrades=0;
+}
+function standSheet(head){
+  const st=S.stand,here=S.at==='stand',n=GK.filter(g=>st.on[g]).length,pc=v=>Math.round(v*100)+'%';
+  let h=head('🪧','Your stand',`Rent $5 a day. Deals ${n} of ${st.slots} goods.`);
+  h+=`<div class="stat"><div class="chip">Today<b>${st.dayTrades}</b>trades</div><div class="chip">Edge today<b>${fmt(st.dayEdge)}</b></div><div class="chip">Total edge<b>${fmt(st.edge)}</b></div></div>`;
+  h+=`<p class="small">Edge is how much better your prices were than the street price. Stock comes from your storeroom.${st.clerk?' Your clerk runs the stand when you are away.':''}</p>`;
+  if(here){
+    h+=`<div class="acts" style="margin-top:4px"><button class="sbtn fill" onclick="mind(1)">Mind 1 hour</button><button class="sbtn fill" onclick="mind(3)">Mind 3 hours</button><button class="sbtn" onclick="mind(99)">Until sunset</button><button class="sbtn" onclick="unload()">🐪 Unload bag into stock</button></div>`;
+  }else h+=`<div class="bubble">Walk here to mind the stand yourself.</div>`;
+  h+=`<h3>Your prices</h3>`;
+  GK.forEach(g=>{
+    const on=st.on[g],s=street(g),k=scount(g);
+    h+=`<div class="nbg"><div style="display:flex;align-items:center;gap:6px"><span class="gi">${G[g].i}</span><div class="info"><b>${G[g].n}</b><div class="small">Street ${fmt(s)}, in stock ${k}</div></div><button class="sbtn${on?'':' fill'}" ${!on&&n>=st.slots?'disabled':''} onclick="toggleDeal('${g}')">${on?'Stop':'Deal'}</button></div>`;
+    if(on){
+      h+=`<div class="qrow">You buy at <b>${pc(st.bq[g])}</b> = ${fmt(qBuy(g))}<button class="mini" onclick="adj('${g}','bq',-1)">−</button><button class="mini" onclick="adj('${g}','bq',1)">+</button></div>`;
+      h+=`<div class="qrow">You sell at <b>${pc(st.sq[g])}</b> = ${fmt(qSell(g))}<button class="mini" onclick="adj('${g}','sq',-1)">−</button><button class="mini" onclick="adj('${g}','sq',1)">+</button></div>`;
+      if(st.clerk){const r=st.rules[g]||{target:10,k:0};
+        h+=`<div class="qrow">Clerk keeps about <b>${r.target}</b> in stock<button class="mini" onclick="adjRule('${g}','target',-1)">−</button><button class="mini" onclick="adjRule('${g}','target',1)">+</button></div>`;
+        h+=`<div class="qrow">and shifts both prices <b>${r.k}%</b> per unit above or below it<button class="mini" onclick="adjRule('${g}','k',-1)">−</button><button class="mini" onclick="adjRule('${g}','k',1)">+</button></div>`;}
+    }
+    h+=`</div>`;
+  });
+  h+=`<h3>Recent customers</h3>`+(st.log.length?st.log.map(l=>`<div class="log">${l}</div>`).join(''):'<p class="small">No customers yet.</p>');
+  return h;
+}
+function showEnding2(){setSheet(`<h2>End of chapter two</h2>
+  <div class="bubble">The harbour master counts your coins twice, then grins. “Passage for one merchant and one very proud camel.”</div>
+  <p>At dawn the ship leaves the bay. The bazaar shrinks behind you: Miriam waving an apple, Hassan pretending not to care, your clerk already lowering prices.</p>
+  <p>Destiny is seasick. You are not.</p>
+  <p class="small">Chapter three: the sea. It took you ${S.day} days.</p>
+  <button class="sbtn fill wide" onclick="closeSheet()">Keep trading</button>`)}
+function confirmNew(){setSheet(`<h2>Start over?</h2><p>Your coins, goods and notebook will be gone.</p><button class="sbtn fill wide" onclick="newGame()">Start a new game</button><button class="sbtn wide" onclick="closeSheet()">Keep playing</button>`)}
+function newGame(){S=newState();save();render();intro()}
+
+S=load();
+for(const [n,v] of [['showNews','news'],['showNotebook','notebook'],['showBag','bag']]){const f=window[n];window[n]=function(){f();setNav(v)}}
+{const f=window.renderStall;window.renderStall=function(t){f(t);setNav('here')}}
+{const f=window.showPlace;window.showPlace=function(t){f(t);if(S.at===t)setNav('here')}}
+if(!S){S=newState();save();render();intro()}else{closeSheet();if(S.px==null){S.px=START[0];S.py=START[1];S.at=null}render();checkMs(true)}
+</script>
+</body>
+</html>
