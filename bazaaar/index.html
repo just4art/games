@@ -345,8 +345,8 @@ const MS2=[
  {txt:'Sell $60 at the shop in one day',title:'a known merchant',ok:()=>Math.max(S.shop.best||0,S.shop.today)>=60,prog:()=>Math.max(S.shop.best||0,S.shop.today)/60,msg:'Word of your shop reaches the docks. The road to the Harbour Quarter is open: tap the harbour on the map.'},
  {txt:'Travel to the Harbour Quarter',title:'a traveller',ok:()=>!!S.visitedHarbour,prog:()=>0,msg:'Tea, perfume and silk. Put them on your shelves and watch what they earn.'},
  {txt:'Sell tea, perfume or silk in your shop',title:'a fine merchant',ok:()=>!!S.shop.soldPrem,prog:()=>0,msg:'Fine goods, fine customers, fine profits.'},
- {txt:'Sell $300 at the shop in one day',title:'a merchant prince',ok:()=>Math.max(S.shop.best||0,S.shop.today)>=300,prog:()=>Math.max(S.shop.best||0,S.shop.today)/300,msg:'Captain Idris says a ship of your own costs $5,000. He knows one for sale.'},
- {txt:'Save $5,000 for a ship of your own',title:'a shipowner',ok:()=>S.cash>=5000,prog:()=>S.cash/5000,msg:''}
+ {txt:'Sell $300 at the shop in one day',title:'a merchant prince',ok:()=>Math.max(S.shop.best||0,S.shop.today)>=300,prog:()=>Math.max(S.shop.best||0,S.shop.today)/300,msg:'Captain Idris is getting too old for the sea. He will sell you his own ship for $5,000. Find him at his stall in the Harbour Quarter whenever you feel ready. No rush: a stronger shop makes the sea easier.'},
+ {txt:'Buy Captain Idris\'s ship ($5,000)',title:'a shipowner',ok:()=>!!S.shipBought,prog:()=>Math.min(S.cash,5000)/5000,msg:''}
 ];
 function checkMs(silent){
   const L=S.ch===3?MS3:S.ch===2?MS2:MS,k=S.ch===3?'ms3':S.ch===2?'ms2':'ms';
@@ -736,6 +736,7 @@ function renderStall(t){
       else h+=`<button class="sbtn" onclick="askContract()">📜 Ask about a contract</button>`;
     }
   }
+  if(t==='idris'&&S.ch===2&&(S.ms2||0)>=7&&!S.shipBought)h+=`<button class="sbtn fill" onclick="buyShipAsk()">⛵ Buy his ship ($5,000)</button>`;
   if(t==='idris'&&S.ch>=3)h+=`<button class="sbtn fill" onclick="boardShip()">⛵ Board your ship</button>`;
   h+=`<button class="sbtn" onclick="mark('${t}')">📍 Map mark ${mk||'(none)'}</button></div>`;
   setSheet(h);
@@ -1271,8 +1272,9 @@ const MS3=[
 ];
 function startCh3(){
   S.ch=3;S.ms3=0;S.won3=false;S.mode='sea';S.sea=newSea();snapshot();learn('beirut',0);
+  S.sea.cargo={oil:40};S.sea.basis={oil:0};
   save();closeSheet();render();
-  setSheet(`<h2>Chapter three: The Sea</h2><div class="bubble">Anno 1490. Captain Idris hands you the key to a sturdy little cog. You name her the Pomegranate, after the donkey.</div>
+  setSheet(`<h2>Chapter three: The Sea</h2><div class="bubble">Anno 1490. Captain Idris hands you the key to a sturdy little cog. You name her the Pomegranate, after the donkey. In the hold you find 40 jars of olive oil. “For luck,” says Idris.</div>
   <p>Venice rules the sea trade. It has held Cyprus since 1489 and Crete for centuries. The Ottomans have ruled Constantinople since 1453, and the Mamluk sultans of Egypt control the pepper that comes from India through the Red Sea.</p>
   <p><b>How it works.</b> Tap a port to see the route and how many days it takes, then tap again to sail. Buy cheap where goods are made, sell where they're wanted, but every crate you sell pushes the price down, so spread big cargoes across ports. Prices you know get older every day you're at sea.</p>
   <p>Back home, your shop and runners keep working. To go ashore in Beirut, use the button in the port screen.</p>
@@ -1293,9 +1295,14 @@ function jumpCh(n){
   Object.assign(S,{cash:500,donkey:true,cap:50,boys:1,store:true,storeInv:[],contractsDone:1,ms:6,won:true,inv:[]});
   startCh2();
   if(n===3){const sp=S.shop;sp.open=true;sp.lv.shelves=2;sp.lv.runners=2;sp.shelves=[{g:'spice',q:10,acc:0},{g:'cloth',q:10,acc:0},{g:'pottery',q:10,acc:0},{g:'olive',q:10,acc:0}];
-    Object.assign(S,{cash:5000,ms2:8,won2:true,visitedHarbour:true});startCh3();}
+    Object.assign(S,{cash:1500,ms2:8,won2:true,visitedHarbour:true,shipBought:true});startCh3();}
   save();
 }
+function buyShipAsk(){
+  if(S.cash<5000){toast(`You need $5,000. You have ${fmt(S.cash)}.`);return}
+  const left=S.cash-5000,day=shopRate()*12;
+  setSheet(`${sh_head(portrait('idris'),'Captain Idris\u2019s ship','A sturdy little cog')}<div class="bubble">\u201cShe\u2019s old but honest, like me. Five thousand coins, and she\u2019s yours.\u201d</div><p>After buying her you\u2019ll have <b>${fmt(left)}</b> left for cargo. Idris will throw in a first cargo of olive oil.</p><p>Your shop keeps selling while you\u2019re at sea: ${day>0?`right now about <b>${fmt(day)}</b> a day`:'but right now its shelves are empty, so it earns nothing until they\u2019re stocked'}${S.shop.lv.runners?`, and your ${S.shop.lv.runners} runner${S.shop.lv.runners>1?'s':''} keep it supplied`:'. With no runners, nobody restocks it while you\u2019re away'}.</p><p class="small">There\u2019s no rush. Upgrading the shop first makes the sea easier.</p><button class="sbtn fill wide" onclick="buyShip()">Buy the ship for $5,000</button><button class="sbtn wide" onclick="closeSheet()">Not yet</button>`)}
+function buyShip(){if(S.cash<5000)return;S.cash-=5000;S.shipBought=true;save();closeSheet();renderHud();checkMs()}
 function confirmNew(){setSheet(`<h2>Start over?</h2><p>Your coins, goods and notebook will be gone.</p><button class="sbtn fill wide" onclick="newGame()">Start a new game</button><button class="sbtn wide" onclick="closeSheet()">Keep playing</button>`)}
 function newGame(){S=newState();setDistrict('bazaar');save();render();intro()}
 
