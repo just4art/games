@@ -1,0 +1,1343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Five Coins Bazaar</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Marcellus&family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#dcebe8; --surface:#fbf8f1; --surface2:#eef4f2; --text:#1d2340; --muted:#5d6584;
+  --saffron:#d9961a; --lapis:#2c4ba0; --pom:#b8323f; --good:#2c7a4b; --line:#c9dbd7;
+  --sand1:#ecd39b; --sand2:#dfbd78; --path:#c9a463; --night:#0d1430; --tile:#2c4ba0;
+  --alley:#e4dccb; --alley2:#f2ede3; --house:#cbbfab; --house2:#b8ab95; --water:#6fb7d6; --leaf:#5aa469; --plaza:#efe7d6;
+  color-scheme:light;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0f1529; --surface:#19213d; --surface2:#222c4f; --text:#f1e8d2; --muted:#a8afc8;
+    --saffron:#f0b733; --lapis:#7f9cf0; --pom:#ef6b77; --good:#6cd398; --line:#2c3760;
+    --sand1:#6e5a33; --sand2:#5a4828; --path:#8a7240; --night:#05081a; --tile:#3d5ec4;
+    --alley:#232840; --alley2:#2c3250; --house:#434a68; --house2:#383e5a; --water:#2f6f93; --leaf:#3f7d52; --plaza:#30375a;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0f1529; --surface:#19213d; --surface2:#222c4f; --text:#f1e8d2; --muted:#a8afc8;
+  --saffron:#f0b733; --lapis:#7f9cf0; --pom:#ef6b77; --good:#6cd398; --line:#2c3760;
+  --sand1:#6e5a33; --sand2:#5a4828; --path:#8a7240; --night:#05081a; --tile:#3d5ec4;
+    --alley:#232840; --alley2:#2c3250; --house:#434a68; --house2:#383e5a; --water:#2f6f93; --leaf:#3f7d52; --plaza:#30375a;
+  color-scheme:dark;
+}
+html{scroll-padding-top:env(safe-area-inset-top,0px);height:100%}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;font-size:15px;line-height:1.45;min-height:100%;-webkit-tap-highlight-color:transparent}
+h1,h2,h3{font-family:Marcellus,Georgia,serif;font-weight:400;margin:0}
+h1{font-size:24px;letter-spacing:.01em}
+h2{font-size:21px}
+h3{font-size:16px;margin:14px 0 2px;color:var(--lapis)}
+button{font:inherit;color:inherit}
+button:focus-visible{outline:3px solid var(--saffron);outline-offset:2px}
+.app{max-width:560px;margin:0 auto;padding:10px 12px calc(var(--barH) + 16px)}
+:root{--barH:66px}
+.top{display:flex;align-items:baseline;justify-content:space-between;gap:8px}
+.goal{font-size:12px;color:var(--muted)}
+.hud{display:grid;grid-template-columns:1.1fr 1fr 1.2fr 1fr;gap:6px;margin:8px 0 6px}
+.chip{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:5px 8px;text-align:center;font-size:12px;color:var(--muted)}
+.chip b{display:block;font-size:16px;color:var(--text);font-variant-numeric:tabular-nums}
+.sunbar{height:4px;background:var(--line);border-radius:2px;margin-top:3px;overflow:hidden}
+.sunbar i{display:block;height:100%;background:var(--saffron)}
+.next{font-size:13px;margin:0 0 4px;font-weight:600;color:var(--lapis)}
+.stall.locked .tent{border-style:dashed;opacity:.75}
+.goalbar{height:6px;background:var(--surface);border:1px solid var(--line);border-radius:4px;overflow:hidden;margin-bottom:8px}
+.goalbar i{display:block;height:100%;background:var(--lapis);transition:width .4s}
+.frame{position:relative;width:100%;width:min(100%,calc(100vh - 300px));width:min(100%,calc(100dvh - 300px));min-width:280px;margin:0 auto;padding:10px;border-radius:18px;background:conic-gradient(var(--lapis) 25%,var(--saffron) 0 50%,var(--lapis) 0 75%,var(--saffron) 0) 0 0/20px 20px;box-shadow:0 8px 24px rgba(13,20,48,.18)}
+.frame .map{outline:3px solid var(--surface)}
+.qrow{display:flex;align-items:center;gap:6px;font-size:13px;margin:6px 0 0 38px;flex-wrap:wrap}
+.qrow b{font-variant-numeric:tabular-nums}
+.mini{border:1.5px solid var(--lapis);background:transparent;color:var(--lapis);border-radius:8px;min-width:30px;height:28px;font-weight:700;cursor:pointer}
+.tw{overflow-x:auto;margin:6px 0}
+table.rep{width:100%;border-collapse:collapse;font-size:12.5px;font-variant-numeric:tabular-nums}
+.rep th,.rep td{padding:5px 6px;text-align:right;border-bottom:1px solid var(--line);white-space:nowrap}
+.rep th{color:var(--muted);font-weight:600;font-size:11.5px}
+.rep th:first-child,.rep td:first-child{text-align:left}
+.rep .tot td{font-weight:700;border-bottom:none}
+.viewbtn{position:absolute;top:18px;left:18px;z-index:5;display:none;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:9px 14px;font-weight:700;font-size:14px;cursor:pointer;box-shadow:0 3px 10px rgba(0,0,0,.15)}
+.viewbtn.on{display:block}
+.mapctl{position:absolute;left:12px;bottom:12px;display:flex;gap:8px;z-index:5}
+.mapctl.top{top:12px;bottom:auto}
+.mapctl .viewbtn{position:static}
+.mapctl .pausebtn{background:var(--lapis);color:#fff}
+.mapctl .pausebtn.paused{background:var(--saffron);color:#1d2340}
+.uprow{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--line)}
+.lv{letter-spacing:2px;color:var(--saffron)}
+.rep-wrap{margin:10px 0;padding:4px 10px;background:var(--surface2);border-radius:12px}
+.rep-wrap summary{cursor:pointer;padding:6px 0}
+.sel{width:100%;padding:10px 12px;border-radius:12px;border:1px solid var(--line);background:var(--surface2);color:var(--text);font:inherit;margin:4px 0 12px}
+.mrow{padding:10px 0;border-bottom:1px solid color-mix(in srgb,var(--line) 70%,transparent)}
+.mtop{display:flex;align-items:center;gap:8px}
+.btns{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end;margin-top:6px}
+.chip b.sm{font-size:13.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.log{font-size:13px;padding:5px 0;border-bottom:1px dashed var(--line)}
+.stat{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:10px 0}
+.pill{position:absolute;left:12px;right:12px;bottom:12px;background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--saffron);border-radius:14px;padding:10px 12px;display:none;align-items:center;gap:10px;z-index:15;box-shadow:0 6px 20px rgba(0,0,0,.18);font-size:14px}
+.pill.on{display:flex}
+.pill .info{flex:1}
+.mapsvg{position:absolute;inset:0;width:100%;height:100%;display:block}
+.mapsvg .hit{cursor:pointer}
+#hero{transition:transform .11s linear}
+@media (prefers-reduced-motion: reduce){#hero{transition:none}}
+.map{position:relative;width:100%;aspect-ratio:1;border-radius:14px;overflow:hidden;
+  background:radial-gradient(circle at 35% 30%,var(--sand1),var(--sand2));touch-action:manipulation}
+.map svg{position:absolute;inset:0;width:100%;height:100%}
+.stall{position:absolute;transform:translate(-50%,-50%);border:none;background:none;padding:0;display:flex;flex-direction:column;align-items:center;cursor:pointer;z-index:2}
+.tent{position:relative;width:50px;height:50px;border-radius:50% 50% 12px 12px;background:var(--surface);border:2px solid var(--lapis);display:grid;place-items:center;font-size:25px;box-shadow:0 3px 0 var(--path)}
+.stall.here .tent{border-color:var(--saffron);border-width:3px}
+.lbl{font-size:11px;font-weight:600;margin-top:3px;background:var(--surface);padding:0 7px;border-radius:8px;border:1px solid var(--line);white-space:nowrap}
+.mk{position:absolute;top:-10px;right:-10px;font-size:17px}
+.eta{display:block;font-size:10px;font-weight:400;color:var(--muted);text-align:center;line-height:1.2}
+.stall.far{opacity:.45}
+.deco{position:absolute;transform:translate(-50%,-50%);font-size:22px;pointer-events:none;opacity:.85}
+.well{position:absolute;transform:translate(-50%,-50%);font-size:24px;background:none;border:none;cursor:pointer;z-index:2;padding:4px}
+.player{position:absolute;transform:translate(-50%,-50%);font-size:28px;transition:left .6s ease,top .6s ease;pointer-events:none;z-index:3;filter:drop-shadow(0 2px 1px rgba(0,0,0,.35))}
+.dusk{position:absolute;inset:0;background:var(--night);pointer-events:none;transition:opacity .6s;z-index:4}
+.bar{position:fixed;left:0;right:0;bottom:0;z-index:25;display:grid;grid-template-columns:repeat(5,1fr);gap:6px;padding:8px max(10px,calc(50% - 280px)) calc(8px + env(safe-area-inset-bottom,0px));background:var(--bg);border-top:1px solid var(--line)}
+.bbtn{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:9px 4px;display:flex;flex-direction:column;align-items:center;font-size:12px;cursor:pointer}
+.bbtn span{font-size:21px;line-height:1.2}
+.bbtn.active{border-color:var(--saffron);box-shadow:inset 0 -3px 0 var(--saffron)}
+.bbtn.rest{background:var(--lapis);color:#fff;border-color:var(--lapis)}
+.sheet-wrap{position:fixed;left:0;right:0;top:0;bottom:calc(var(--barH) + env(safe-area-inset-bottom,0px));background:rgba(5,8,26,.45);display:none;align-items:flex-end;justify-content:center;z-index:20}
+.sheet-wrap.open{display:flex}
+.sheet{background:var(--surface);width:100%;max-width:560px;max-height:86%;overflow:auto;border-radius:22px 22px 0 0;padding:16px 16px calc(18px + env(safe-area-inset-bottom,0px));border-top:4px solid var(--saffron)}
+.sh-head{display:flex;gap:12px;align-items:center}
+.big{font-size:38px;line-height:1}
+.big svg{width:58px;height:58px;display:block}
+.gi svg{width:28px;height:28px;display:block;margin:0 auto}
+.gname{display:inline-flex;align-items:center;gap:5px}
+.gname svg{width:20px;height:20px}
+#crowd,#shopfx{position:absolute;inset:10px;width:calc(100% - 20px);height:calc(100% - 20px);pointer-events:none;border-radius:14px;transition:opacity .6s}
+.x{background:var(--surface2);border:none;border-radius:50%;width:34px;height:34px;cursor:pointer;flex:none}
+.sub{font-size:13px;color:var(--muted);display:flex;gap:10px;flex-wrap:wrap}
+.bubble{background:var(--surface2);border-radius:16px 16px 16px 4px;padding:10px 13px;margin:12px 0 4px;font-family:Marcellus,Georgia,serif;font-size:16px;line-height:1.5}
+.row{display:flex;align-items:center;gap:6px;padding:8px 0;border-bottom:1px solid var(--line)}
+.gi{font-size:24px;width:32px;text-align:center;flex:none}
+.info{flex:1;min-width:0}
+.price{font-weight:700;font-variant-numeric:tabular-nums}
+.small{font-size:12px;color:var(--muted)}
+.sbtn{border:1.5px solid var(--lapis);background:transparent;color:var(--lapis);border-radius:10px;padding:7px 10px;font-weight:700;font-size:13px;cursor:pointer;flex:none}
+.sbtn.fill{background:var(--lapis);color:#fff}
+.sbtn:disabled{opacity:.35;cursor:default}
+.acts{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.good{color:var(--good);font-weight:600}
+.bad{color:var(--pom);font-weight:600}
+.news{padding:8px 0;border-bottom:1px solid var(--line)}
+.nbg{padding:8px 0;border-bottom:1px solid var(--line)}
+.q{display:inline-block;margin:2px 6px 2px 0;font-size:13px;font-variant-numeric:tabular-nums}
+.q.best{background:var(--surface2);border-radius:6px;padding:0 5px;font-weight:700}
+.toast{position:fixed;left:50%;bottom:calc(var(--barH) + 16px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--text);color:var(--bg);padding:9px 14px;border-radius:12px;font-size:14px;opacity:0;transition:opacity .25s;z-index:30;max-width:90%;text-align:center;pointer-events:none}
+.toast.on{opacity:1}
+.wide{width:100%;margin-top:14px;padding:11px}
+p{margin:8px 0}
+@media (min-width:820px) and (min-aspect-ratio:1/1){
+  .app{max-width:none;display:grid;grid-template-columns:auto 380px;gap:22px;justify-content:center;align-items:start;padding:16px 20px}
+  .stage{width:min(calc(100vh - 150px),calc(100vw - 460px));width:min(calc(100dvh - 150px),calc(100vw - 460px));min-width:420px}
+  .frame{width:100%}
+  .side{position:sticky;top:16px;display:flex;flex-direction:column;gap:12px;height:calc(100vh - 32px);height:calc(100dvh - 32px)}
+  .bar{position:static;padding:0;background:none;border:none}
+  .sheet-wrap,.sheet-wrap.open{position:static;display:flex;background:none;flex:1;min-height:0;align-items:stretch}
+  .sheet{max-height:none;height:100%;border-radius:18px;border:1px solid var(--line);border-top:4px solid var(--saffron)}
+  .toast{bottom:24px}
+}
+@media (prefers-reduced-motion: reduce){.player,.dusk,.goalbar i{transition:none}}
+/* ---------- modern pass ---------- */
+body{font-family:"Plus Jakarta Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--bg);background:linear-gradient(180deg,var(--bg),color-mix(in srgb,var(--bg) 88%,var(--lapis)))}
+h1{font-size:22px}
+.chip{background:var(--surface);border:none;border-radius:16px;padding:8px 10px;box-shadow:0 1px 2px rgba(13,20,48,.06),0 6px 18px rgba(13,20,48,.06);font-size:10.5px;text-transform:uppercase;letter-spacing:.06em;font-weight:700}
+.chip b{font-size:17px;letter-spacing:0;text-transform:none;font-weight:800;margin-top:2px}
+.goalbar{height:8px;border:none;background:color-mix(in srgb,var(--lapis) 14%,transparent);border-radius:99px}
+.goalbar i{background:linear-gradient(90deg,var(--lapis),var(--saffron));border-radius:99px}
+.next{font-size:13px;font-weight:700}
+.frame{padding:0;background:none;border-radius:24px;box-shadow:0 2px 4px rgba(13,20,48,.06),0 18px 40px rgba(13,20,48,.14);overflow:hidden}
+.frame .map{outline:none;border-radius:24px}
+#crowd,#shopfx{inset:0;width:100%;height:100%;border-radius:24px}
+.viewbtn{top:12px;left:12px;border:none;border-radius:99px;background:color-mix(in srgb,var(--surface) 88%,transparent);backdrop-filter:blur(8px)}
+.pill{left:10px;right:10px;bottom:10px;border:none;border-radius:18px;background:color-mix(in srgb,var(--surface) 94%,transparent);backdrop-filter:blur(10px)}
+.bar{background:color-mix(in srgb,var(--bg) 82%,transparent);backdrop-filter:blur(14px);border-top:none;box-shadow:0 -6px 24px rgba(13,20,48,.08)}
+.bbtn{border:none;background:transparent;border-radius:14px;font-weight:700;color:var(--muted)}
+.bbtn.active{background:color-mix(in srgb,var(--lapis) 14%,transparent);color:var(--lapis);box-shadow:none}
+.bbtn.rest{background:var(--lapis);color:#fff}
+.sheet{border-top:none;border-radius:26px 26px 0 0;padding-top:24px;position:relative;box-shadow:0 -10px 40px rgba(13,20,48,.18)}
+.sheet::before{content:"";position:absolute;top:9px;left:50%;width:40px;height:4px;margin-left:-20px;border-radius:4px;background:var(--line)}
+.sbtn{border:none;background:color-mix(in srgb,var(--lapis) 12%,transparent);color:var(--lapis);border-radius:12px;padding:9px 13px}
+.sbtn.fill{background:var(--lapis);color:#fff}
+.mini{border:none;background:color-mix(in srgb,var(--lapis) 12%,transparent)}
+.bubble{border-radius:18px 18px 18px 6px}
+.row,.nbg,.uprow,.news{border-bottom-color:color-mix(in srgb,var(--line) 70%,transparent)}
+.toast{border-radius:99px;padding:10px 18px;box-shadow:0 8px 24px rgba(0,0,0,.2)}
+.stat .chip{box-shadow:none;background:var(--surface2)}
+.uprow .lv{font-size:12px;font-weight:700;color:var(--saffron);letter-spacing:0}
+.best{display:inline-block;margin-left:6px;font-size:10.5px;font-weight:800;color:#fff;background:var(--good);border-radius:99px;padding:1px 7px;vertical-align:middle}
+@media (min-width:820px) and (min-aspect-ratio:1/1){.sheet{border-radius:24px;border:none;box-shadow:0 2px 4px rgba(13,20,48,.06),0 18px 40px rgba(13,20,48,.12)}.sheet::before{display:none}.bar{background:none;backdrop-filter:none;box-shadow:none}}
+</style>
+</head>
+<body>
+<div class="app">
+  <main class="stage">
+    <div class="top"><h1>Five Coins Bazaar</h1><div class="goal" id="goalTxt"></div></div>
+    <div class="hud" id="hud"></div>
+    <div class="next" id="nextTxt"></div><div class="goalbar"><i id="goalBar"></i></div>
+    <div class="frame"><div class="map" id="map"></div><svg id="crowd" viewBox="0 0 12 12" aria-hidden="true"></svg><svg id="shopfx" viewBox="0 0 12 12" aria-hidden="true"></svg><div class="mapctl" id="mapctl"><button id="viewBtn" class="viewbtn" onclick="toggleView()"></button><button id="pauseBtn" class="viewbtn pausebtn" onclick="togglePause()"></button></div><div class="pill" id="pill"></div></div>
+  </main>
+  <aside class="side">
+    <nav class="bar">
+      <button class="bbtn" data-v="here" id="hereBtn" onclick="hereTap()"><span>🗺️</span>Map</button>
+      <button class="bbtn" data-v="news" onclick="showNews()"><span>📰</span>News</button>
+      <button class="bbtn" data-v="notebook" onclick="showNotebook()"><span>📒</span>Notes</button>
+      <button class="bbtn" data-v="bag" onclick="showBag()"><span>🎒</span>Bag</button>
+      <button class="bbtn rest" id="restBtn" onclick="sleepBtn()"><span>🌙</span>Sleep</button>
+    </nav>
+    <div class="sheet-wrap" id="wrap" onclick="if(event.target===this)closeSheet()"><div class="sheet" id="sheet"></div></div>
+  </aside>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+const DAY_LEN=720, GOAL=500, IMPACT=1.015, WALK=2, WAGE=1.5, KEY='five-coins-bazaar-v1';
+const G={
+  apple:{n:'Apples',i:'🍎',b:1,w:1,s:4},
+  olive:{n:'Olives',i:'🫒',b:4,w:1,s:7},
+  fish:{n:'Fish',i:'🐟',b:3,w:1,s:1},
+  salt:{n:'Salt',i:'🧂',b:2,w:2,s:0},
+  spice:{n:'Spice',i:'🌶️',b:12,w:1,s:0},
+  cloth:{n:'Cloth',i:'🧵',b:8,w:2,s:0},
+  pottery:{n:'Pottery',i:'🏺',b:6,w:4,s:0},
+  tea:{n:'Tea',i:'🍵',b:15,w:1,s:0},
+  perfume:{n:'Perfume',i:'🧴',b:30,w:1,s:0},
+  silk:{n:'Silk',i:'🧣',b:45,w:1,s:0}
+};
+const PREM=['tea','perfume','silk'];
+function unlocked(g){return true;const i=PREM.indexOf(g);return i<0||!!(S&&S.stand&&S.stand.up&&(S.stand.up.supply||0)>i)}
+const GK=Object.keys(G);
+const T={
+  miriam:{n:'Old Miriam',short:'Miriam',role:'Fruit seller',i:'🍎',x:18,y:22,sells:{apple:.9,olive:1},buys:{fish:1.05},spread:.1,haggle:.65,mg:.6,
+    hi:["Ah, a new face. Apples from my brother's orchard, crisp as morning.","Olives, apples, and advice. Only the advice is free."],
+    happy:["There's my favourite customer! I kept the good ones for you.","You remind me of my late husband. He also counted every coin."],
+    sad:["Hmph. Haggling with an old woman. Your mother would be ashamed."],
+    thx:["Come back tomorrow, regulars get my best prices.","Eat one yourself, you're too thin."],
+    hagOk:["Fine, fine. For that smile."],hagNo:["Child, I have been selling apples since before your grandfather was born."]},
+  hassan:{n:'Hassan the Spice King',short:'Hassan',role:'Spice merchant',i:'🌶️',x:80,y:18,sells:{spice:1.12,salt:1.05},buys:{olive:1.12,apple:1.18,tea:1.2},spread:.18,haggle:.3,mg:.25,
+    hi:["Finest spice from beyond the mountains! Prices? Prices are a state of mind.","Smell that. That is the smell of profit, my friend."],
+    happy:["My friend! For you, almost fair prices."],
+    sad:["You again. Prices went up. Just now. Just for you."],
+    thx:["A pleasure robbing... I mean, serving you.","Tell your friends. Not your clever friends."],
+    hagOk:["Ugh. You drive a hard bargain. Fine. Don't tell anyone."],hagNo:["Ha! No. And now I like you less."]},
+  yusuf:{n:'Yusuf the Fisherman',short:'Yusuf',role:'Fisherman',i:'🐟',x:14,y:74,sells:{fish:.72},buys:{salt:1.25,apple:1.08},spread:.1,haggle:.5,mg:.4,
+    hi:["Fish this morning, stink by tomorrow. Sell fast, friend.","The sea was kind today. Mostly.","My cousin builds ships at the harbour. One day you'll want one, mark my words."],
+    happy:["You again! Take the big one, it looked at me funny anyway."],
+    sad:["Go buy your fish somewhere else. Oh wait. There is nowhere else."],
+    thx:["Salt is gold to a fisherman. Bring me salt.","Don't keep it overnight. Trust me."],
+    hagOk:["Eh, the fish won't care. Deal."],hagNo:["The sea doesn't haggle with me, I don't haggle with you."]},
+  leyla:{n:'Leyla the Weaver',short:'Leyla',role:'Weaver',i:'🧵',x:47,y:15,sells:{cloth:.9},buys:{spice:1.15,salt:1.08},spread:.12,haggle:.45,mg:.35,
+    hi:["Every thread counted. Every coin too.","I dye with spice, you know. Bring me some and we'll talk."],
+    happy:["You have an eye for quality. Rare in this bazaar."],
+    sad:["I'm busy. Make it quick."],
+    thx:["The caravan folk love my cloth. Just saying.","Mind the colour, it runs if you're careless."],
+    hagOk:["Very well. A small discount for a steady customer."],hagNo:["My prices are woven as tightly as my cloth."]},
+  tarik:{n:'Tarik the Potter',short:'Tarik',role:'Potter',i:'🏺',x:84,y:56,sells:{pottery:.85},buys:{fish:1.18,olive:1.15},spread:.12,haggle:.5,mg:.4,
+    hi:["Careful, heavy. Pots break, backs break.","Fired yesterday, still warm. Like my temper."],
+    happy:["Ah, my strong-backed friend! Take two."],
+    sad:["You break it, you buy it. You already annoyed me, so."],
+    thx:["The coast traders pay well for good pots.","Lift with your legs!"],
+    hagOk:["Fine. One crooked pot price for you."],hagNo:["Clay is cheap. My hands are not."]},
+  caravan:{n:'The Caravan Master',short:'Caravan',role:'Trader to the coast',i:'🐫',x:52,y:90,sells:{salt:.8,spice:.97},buys:{cloth:1.3,pottery:1.35,olive:1.08,tea:1.15,perfume:1.25,silk:1.3},spread:.15,haggle:.35,mg:.3,
+    hi:["We leave for the coast at dawn. Cloth and pots, that's what sells over there.","Salt from the desert, spice from the east. Buy now or wait a month."],
+    happy:["Ah, my favourite supplier! The camels like you too."],
+    sad:["Next. Next! Who's next?"],
+    thx:["Bring more pots. The coast eats them.","A donkey would carry more, you know."],
+    hagOk:["You talk like a caravan man. Fine."],hagNo:["I've crossed deserts. Your haggling doesn't scare me."]},
+  tavern:{n:'The Thirsty Camel',short:'Tavern',role:'Tavern',i:'🍺',x:28,y:46,sells:{},buys:{fish:1.15,apple:1.25,olive:1.12},spread:.1,haggle:.45,mg:.4,
+    hi:["Sit, drink, listen. Everyone talks here.","Food for the kitchen? I'll buy. Rumours? I'll sell.","Rich merchants hire street boys to run errands. Smart, if you can afford it."],
+    happy:["Your usual corner is free, friend."],
+    sad:["Pay first, then talk."],
+    thx:["The cook will be pleased.","Hungry crowd tonight."],
+    hagOk:["For a regular, sure."],hagNo:["This is a tavern, not a bazaar. Well. It's both. Still no."]}
+};
+Object.assign(T,{
+  kettle:{n:'The Golden Kettle',short:'Kettle',role:'Tea house',i:'🫖',x:0,y:0,sells:{},buys:{tea:1.4,apple:1.3,olive:1.2},spread:.1,haggle:.5,mg:.4,
+    hi:["Tea? Tea. Everyone needs tea.","Sit, sip, gossip. Bring me tea leaves and fruit."],happy:["Your usual cushion is waiting."],sad:["We are full. Mostly of people I like."],thx:["The captains drink this by the barrel."],hagOk:["For a regular, a sweeter price."],hagNo:["My tea is bitter enough. Don't add haggling."]},
+  zara:{n:'Zara the Perfumer',short:'Zara',role:'Perfumer',i:'🧴',x:0,y:0,sells:{perfume:.85},buys:{spice:1.4,olive:1.25},spread:.14,haggle:.4,mg:.35,
+    hi:["Close your eyes. Smell that? That is money.","I need spice for my blends. Lots of spice."],happy:["My favourite nose in the city!"],sad:["You smell of fish and stinginess."],thx:["The silk merchant pays well for my perfume."],hagOk:["Fine. A little discount, like a little drop."],hagNo:["Perfume is precise. So are my prices."]},
+  fishmkt:{n:'The Fish Market',short:'Fish market',role:'Wholesale fish',i:'🐟',x:0,y:0,sells:{fish:.55},buys:{salt:1.45},spread:.08,haggle:.5,mg:.3,
+    hi:["Fish by the cartload! Cheaper than Yusuf, don't tell him.","Salt! We always need salt for the barrels."],happy:["Ah, my salt friend!"],sad:["Buy or move, you're blocking the carts."],thx:["Fresh today, rotten tomorrow. Hurry."],hagOk:["Eh, fine, the gulls eat the rest anyway."],hagNo:["Wholesale prices are already a gift."]},
+  anwar:{n:'Anwar of the Silk House',short:'Anwar',role:'Silk merchant',i:'🧣',x:0,y:0,sells:{silk:.9},buys:{cloth:1.35,perfume:1.3},spread:.14,haggle:.35,mg:.3,
+    hi:["Silk from the far east. Touch it. Gently.","Cloth from the bazaar weavers? I take all of it."],happy:["My discerning friend returns."],sad:["Silk is not for everyone. Apparently."],thx:["Perfume and silk: the two things rich people never stop buying."],hagOk:["For you, a whisper of a discount."],hagNo:["Silk does not haggle. It drapes."]},
+  idris:{n:'Captain Idris',short:'Idris',role:'Ship captain',i:'⚓',x:0,y:0,sells:{tea:.75},buys:{pottery:1.45,cloth:1.2,salt:1.2},spread:.12,haggle:.45,mg:.35,
+    hi:["Tea from my last voyage, cheap before it gets around.","Pots and cloth sell well overseas. Bring them."],happy:["Welcome aboard, friend!"],sad:["Landlubbers. Hmph."],thx:["One day you'll want a ship of your own. I know the look."],hagOk:["Aye, fine. The sea's been kind."],hagNo:["I've haggled with pirates. You're not even close."]}
+});
+const TK=Object.keys(T);
+const WELL={x:58,y:60};
+const MARKS=['','⭐','💰','❗','❌'];
+const QUIET=["The crier yawns. Nothing new today.","A goat escaped and ate a merchant's hat. Prices unaffected.","The Sultan's cat had kittens. The city rejoices, the market shrugs.","Two merchants argued about the weather. Nobody won.","Clear skies. Ordinary day. Good day to count coins."];
+
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+const fmt=v=>'$'+v.toFixed(2);
+function gauss(){let u=0,v=0;while(!u)u=Math.random();while(!v)v=Math.random();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v)}
+
+const EV={
+  astro:()=>{const g=pick(['spice','cloth','olive','pottery','salt','apple']);return{k:'astro',goods:[g],bid:1.6,ask:1.12,dur:5,
+    news:`Astrologers have proclaimed the Week of ${G[g].n}! The number of ${G[g].n.toLowerCase()} lovers in the city has doubled.`,
+    rumor:`A drunk astrologer is whispering about ${G[g].n.toLowerCase()}. Something big is coming.`}},
+  caravan:()=>({k:'caravan',goods:['cloth','spice'],bid:.85,ask:.62,dur:3,news:'A great caravan from the East has arrived. Cloth and spice flood the market.',rumor:'A camel driver swears a big eastern caravan is a few days out. Cloth and spice will get cheap.'}),
+  storm:()=>({k:'storm',goods:['fish'],bid:1.9,ask:1.9,dur:2,news:'Storm at sea! The boats stayed in the harbour.',rumor:'The old sailors say they smell a storm coming.'}),
+  festival:()=>({k:'festival',goods:['apple','olive','fish'],bid:1.5,ask:1.1,dur:1,news:'Festival day! The whole city is feasting.',rumor:'A festival is coming soon. People will eat like kings.'}),
+  drought:()=>({k:'drought',goods:['pottery'],bid:1.35,ask:1.5,dur:4,news:'The clay pits dried up. No clay, no pots.',rumor:"The potters' village is short of water. Pots may get scarce."}),
+  salt:()=>({k:'salt',goods:['salt'],bid:1.6,ask:1.35,dur:4,news:'The Sultan has taxed salt. Suddenly everyone wants it.',rumor:"The Sultan's men were asking questions about salt..."})
+};
+function maybeEvent(){return Math.random()>.45?null:EV[pick(Object.keys(EV))]()}
+
+let S;
+function newState(){
+  const p={},mood={};
+  TK.forEach(t=>{p[t]={};mood[t]=0;[...Object.keys(T[t].sells),...Object.keys(T[t].buys)].forEach(g=>p[t][g]=Math.exp(gauss()*.06))});
+  const gw={};GK.forEach(g=>gw[g]=1);
+  const s={cash:5,day:1,t:0,at:null,x:WELL.x,y:WELL.y,inv:[{g:'apple',q:1,d:1}],cap:20,donkey:false,cart:false,p,gw,mood,nb:{},marks:{},
+    effects:[],schedule:{},news:[pick(QUIET)],rumors:[],visit:{t:null,haggled:false,tried:false,line:''},won:false,trades:0,px:6,py:6,boys:0,ms:0,store:false,storeInv:[],contract:null,offer:null,contractsDone:0};
+  for(let d=2;d<=7;d++)s.schedule[d]=maybeEvent();
+  return s;
+}
+function save(){if(S)S.savedAt=Date.now();try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}pushCloud()}
+function load(){try{const r=localStorage.getItem(KEY);return r?JSON.parse(r):null}catch(e){return null}}
+
+const weight=()=>S.inv.reduce((a,l)=>a+l.q*G[l.g].w,0);
+const count=g=>S.inv.filter(l=>l.g===g).reduce((a,l)=>a+l.q,0);
+function addLot(g){const l=S.inv.find(l=>l.g===g&&l.d===S.day);if(l)l.q++;else S.inv.push({g,q:1,d:S.day})}
+function removeOne(g){const l=S.inv.filter(l=>l.g===g).sort((a,b)=>a.d-b.d)[0];l.q--;if(!l.q)S.inv.splice(S.inv.indexOf(l),1)}
+function effM(g,k){let m=1;S.effects.forEach(e=>{if(e.goods.includes(g))m*=e[k]});return m}
+const imp=(t,g)=>(S.imp&&S.imp[t]&&S.imp[t][g])||1;
+function bump(t,g,f){S.imp=S.imp||{};S.imp[t]=S.imp[t]||{};S.imp[t][g]=imp(t,g)*f}
+function timePass(dt,carry){if(carry==null&&dt>0)clerkTick(dt);if(!S.imp)return;const k=carry!=null?carry:1;for(const t in S.imp)for(const g in S.imp[t])S.imp[t][g]=1+(S.imp[t][g]-1)*k}
+const mid=(t,g)=>G[g].b*S.gw[g]*S.p[t][g]*imp(t,g);
+const hag=t=>S.visit.t===t&&S.visit.haggled;
+function ask(t,g){const tr=T[t];return mid(t,g)*tr.sells[g]*(1+tr.spread)*(1-.02*S.mood[t])*(hag(t)?.92:1)*effM(g,'ask')}
+function bid(t,g){const tr=T[t];return mid(t,g)*tr.buys[g]*(1-tr.spread)*(1+.02*S.mood[t])*(hag(t)?1.08:1)*effM(g,'bid')}
+function clock(){const m=360+Math.min(S.t,DAY_LEN);return String(Math.floor(m/60)).padStart(2,'0')+':'+String(m%60).padStart(2,'0')}
+function dur(m){m=Math.max(0,m);const h=Math.floor(m/60),mm=m%60;return h?`${h}h ${String(mm).padStart(2,'0')}m`:`${mm} min`}
+const PL={gate:{n:'Bazaar gate',short:'To the bazaar',i:'🏛️'},store:{n:'Storeroom',short:'Storeroom',i:'🏚️',x:74,y:77,walk:true},stand:{n:'Boarded-up stall',short:'Your stand?',i:'🪧',x:38,y:67},harbour:{n:'The harbour',short:'Harbour',i:'⛵',x:7,y:56},rival:{n:"Hassan's second stall",short:'Rival',i:'🌶️'}};
+const P=t=>T[t]||PL[t];
+function openAt(t){T[t]?renderStall(t):showPlace(t)}
+const MS=[
+ {txt:'Make $15',title:'a peddler',ok:()=>S.cash>=15,prog:()=>S.cash/15,msg:'Word spreads about the newcomer with an eye for a bargain. The Caravan Master sells donkeys, if you can afford one.'},
+ {txt:'Buy a donkey from the Caravan Master ($60)',title:'a trader',ok:()=>S.donkey,prog:()=>S.cash/60,msg:'With Pomegranate the donkey at your side, you are a proper trader. The barman says some boys are looking for work.'},
+ {txt:'Hire an errand boy at the tavern',title:'a trader with a crew',ok:()=>(S.boys||0)>=1,prog:()=>0,msg:'Your first employee! A landlord near the caravan gate has noticed you. He has an empty storeroom.'},
+ {txt:'Rent the storeroom ($100)',title:'a merchant',ok:()=>!!S.store,prog:()=>S.cash/100,msg:'A storeroom of your own: buy when it is cheap, sell when it is dear. The Caravan Master wants to talk to you about a contract.'},
+ {txt:'Complete a contract for the Caravan Master',title:'a respected merchant',ok:()=>(S.contractsDone||0)>=1,prog:()=>S.contract?Math.min(1,count(S.contract.g)/S.contract.q):0,msg:'The Caravan Master shakes your hand in front of everyone. Merchants nod when you pass. Only one thing left: a stand of your own.'},
+ {txt:'Save $500 for your own stand',title:'a stand owner',ok:()=>S.cash>=500,prog:()=>S.cash/500,msg:''}
+];
+const MS2=[
+ {txt:'Open your shop ($400)',title:'a shopkeeper',ok:()=>!!(S.shop&&S.shop.open),prog:()=>S.cash/400,msg:'The shop is yours. Buy goods around the bazaar, bring them here and put them on the shelves. Stocked shelves sell all day long.'},
+ {txt:'Fill every shelf',title:'a busy shopkeeper',ok:()=>S.shop.shelves.every(x=>x.q>0),prog:()=>S.shop.shelves.filter(x=>x.q>0).length/S.shop.shelves.length,msg:'Every shelf earning. About restocking: the street boys would happily run errands for you. Hire a runner in the shop.'},
+ {txt:'Hire a runner to restock a shelf',title:'a shop owner',ok:()=>S.shop.lv.runners>=1,prog:()=>0,msg:'Your runner refills a shelf every dawn. More runners, more shelves that look after themselves.'},
+ {txt:'Sell $60 at the shop in one day',title:'a known merchant',ok:()=>Math.max(S.shop.best||0,S.shop.today)>=60,prog:()=>Math.max(S.shop.best||0,S.shop.today)/60,msg:'Word of your shop reaches the docks. The road to the Harbour Quarter is open: tap the harbour on the map.'},
+ {txt:'Travel to the Harbour Quarter',title:'a traveller',ok:()=>!!S.visitedHarbour,prog:()=>0,msg:'Tea, perfume and silk. Put them on your shelves and watch what they earn.'},
+ {txt:'Sell tea, perfume or silk in your shop',title:'a fine merchant',ok:()=>!!S.shop.soldPrem,prog:()=>0,msg:'Fine goods, fine customers, fine profits.'},
+ {txt:'Sell $300 at the shop in one day',title:'a merchant prince',ok:()=>Math.max(S.shop.best||0,S.shop.today)>=300,prog:()=>Math.max(S.shop.best||0,S.shop.today)/300,msg:'Captain Idris says a ship of your own costs $5,000. He knows one for sale.'},
+ {txt:'Save $5,000 for a ship of your own',title:'a shipowner',ok:()=>S.cash>=5000,prog:()=>S.cash/5000,msg:''}
+];
+function checkMs(silent){
+  const L=S.ch===3?MS3:S.ch===2?MS2:MS,k=S.ch===3?'ms3':S.ch===2?'ms2':'ms';
+  let up=null;
+  while((S[k]||0)<L.length&&L[S[k]||0].ok()){S[k]=(S[k]||0)+1;up=L[S[k]-1]}
+  renderHud();
+  if(!up)return;
+  save();renderMap();
+  if(S[k]>=L.length){
+    if(S.ch===3){if(!S.won3){S.won3=true;save();if(!silent)setTimeout(showEnding3,500)}}
+    else if(S.ch===2){if(!S.won2){S.won2=true;save();if(!silent)setTimeout(showEnding2,500)}}
+    else if(!S.won){S.won=true;save();if(!silent)setTimeout(showEnding,500)}
+    return}
+  if(silent)return;
+  const nx=L[S[k]].txt;
+  setTimeout(()=>setSheet(`<h2>🎉 You are now ${up.title}</h2><div class="bubble">${up.msg}</div><p><b>Next goal:</b> ${nx}</p><button class="sbtn fill wide" onclick="closeSheet();if(S.mode==='sea'&&!sailing)portSheet();else if(S.at)openAt(S.at)">Continue</button>`),450);
+}
+const GW=12,START=[6,6];
+const DIST={
+  bazaar:{BLK:{rival:[1,3],miriam:[0,0],leyla:[1,0],hassan:[3,0],tavern:[0,1],tarik:[3,1],harbour:[0,2],stand:[1,2],store:[3,2],yusuf:[0,3],caravan:[2,3]},FILL:{plaza:[1,1],h1:[2,0],h2:[2,1],garden:[2,2],palms:[3,3]},start:[6,6]},
+  harbour:{BLK:{kettle:[0,0],zara:[1,0],fishmkt:[2,1],anwar:[3,1],gate:[0,2],idris:[3,2]},FILL:{h1:[2,0],customs:[3,0],h2:[0,1],plaza:[1,1],h3:[1,2],garden:[2,2],sea0:[0,3],sea1:[1,3],sea2:[2,3],sea3:[3,3]},start:[6,6]}
+};
+let BLK=DIST.bazaar.BLK,FILL=DIST.bazaar.FILL,BLOCKED=new Set();
+const ROOF={rival:'#a33a2f',stand:'#4a6fd1',miriam:'#e07a5f',leyla:'#8e7cc3',hassan:'#d1495b',tavern:'#2f9e7a',tarik:'#c47a3a',yusuf:'#3a86c8',caravan:'#e3a72f',store:'#7d8f4e',kettle:'#2a9d8f',zara:'#b5179e',fishmkt:'#3a86c8',anwar:'#e76f51',idris:'#264653'};
+const bxy=b=>[1+3*b[0],1+3*b[1]];
+const door=id=>{const [x,y]=bxy(BLK[id]);return [x,y-1]};
+function setDistrict(d){
+  BLK=DIST[d].BLK;FILL=DIST[d].FILL;BLOCKED=new Set();bfsCache=null;
+  [...Object.values(BLK),...Object.values(FILL)].forEach(b=>{const [x,y]=bxy(b);for(let i=0;i<2;i++)for(let j=0;j<2;j++)BLOCKED.add((x+i)+','+(y+j))});
+  if(d==='bazaar'){BLOCKED.add('0,7');BLOCKED.add('0,8')}else for(let x=0;x<GW;x++){BLOCKED.add(x+',10');BLOCKED.add(x+',11')}
+}
+let bfsCache=null;
+function bfs(){
+  const key=S.px+','+S.py;if(bfsCache&&bfsCache.key===key)return bfsCache;
+  const prev={},dist={[key]:0},q=[[S.px,S.py]];
+  while(q.length){const [x,y]=q.shift();for(const [dx,dy] of [[1,0],[-1,0],[0,1],[0,-1]]){const nx=x+dx,ny=y+dy,k=nx+','+ny;
+    if(nx<0||ny<0||nx>=GW||ny>=GW||BLOCKED.has(k)||k in dist)continue;dist[k]=dist[x+','+y]+1;prev[k]=[x,y];q.push([nx,ny])}}
+  return bfsCache={key,prev,dist};
+}
+function pathTo(id){const [tx,ty]=door(id),{prev}=bfs();const out=[];let c=[tx,ty];while(c&&!(c[0]===S.px&&c[1]===S.py)){out.unshift(c);c=prev[c[0]+','+c[1]]}return out}
+function minPerTile(){if(S.camel)return 4;if(S.cart)return 5;if(S.donkey)return 4;return weight()>S.cap/2?7:5}
+function walkCost(t){return pathTo(t).length*minPerTile()}
+function clockAt(t){const m=360+Math.min(t,DAY_LEN);return String(Math.floor(m/60)).padStart(2,'0')+':'+String(m%60).padStart(2,'0')}
+
+function note(t){
+  const q={};
+  Object.keys(T[t].sells).filter(unlocked).forEach(g=>q[g]={k:'a',v:ask(t,g)});
+  Object.keys(T[t].buys).forEach(g=>q[g]={k:'b',v:bid(t,g)});
+  S.nb[t]={day:S.day,tm:S.t,q};
+}
+
+/* ---------- rendering ---------- */
+function renderHud(){
+  const w=weight();
+  document.getElementById('hud').innerHTML=
+    `<div class="chip">Coins<b>${fmt(S.cash)}</b></div>`+
+    `<div class="chip">Day<b>${S.day}</b></div>`+
+    `<div class="chip">${dur(DAY_LEN-S.t)} left<b>${clock()}</b><div class="sunbar"><i style="width:${Math.min(100,S.t/DAY_LEN*100)}%"></i></div></div>`+
+    `<div class="chip">Bag<b>${w}/${S.cap}</b></div>`;
+  if(S.mode==='sea')document.getElementById('hud').innerHTML=seaHud();
+  const ch=S.ch||1,L=ch===3?MS3:ch===2?MS2:MS,idx=(ch===3?S.ms3:ch===2?S.ms2:S.ms)||0,done=ch===3?S.won3:ch===2?S.won2:S.won,M=L[Math.min(idx,L.length-1)];
+  document.getElementById('goalTxt').textContent=`You are ${idx?L[idx-1].title:(ch===3?'a shipowner':ch===2?'a stand owner':'a newcomer')}`;
+  document.getElementById('nextTxt').textContent=done?(ch===3?'Chapter three complete':ch===2?'Chapter two complete. Open the news to begin chapter three.':'Chapter one complete. Tap the well to begin chapter two.'):`${ch===3?'Chapter three. ':ch===2?'Chapter two. ':''}Next goal: ${M.txt}`;
+  document.getElementById('goalBar').style.width=(done?100:Math.max(0,Math.min(100,M.prog()*100)))+'%';
+}
+function drawIcon(id,cx,cy){
+  const P={
+  miriam:`<rect x=".12" y=".52" width=".76" height=".32" rx=".06" fill="#8a5a2b"/><rect x=".12" y=".62" width=".76" height=".05" fill="#6d4520"/><circle cx=".3" cy=".46" r=".14" fill="#e63946"/><circle cx=".7" cy=".46" r=".14" fill="#e63946"/><circle cx=".5" cy=".4" r=".15" fill="#f25c54"/><rect x=".49" y=".18" width=".03" height=".1" fill="#5b3a1a"/><path d="M.52 .24 q.1 -.07 .15 .02 q-.09 .05 -.15 -.02z" fill="#43a047"/>`,
+  leyla:`<rect x=".1" y=".14" width=".8" height=".06" rx=".03" fill="#5b3a1a"/><path d="M.14 .2h.22v.56l-.11 .09l-.11-.09z" fill="#e9c46a"/><path d="M.39 .2h.22v.64l-.11 .09l-.11-.09z" fill="#2a9d8f"/><path d="M.64 .2h.22v.5l-.11 .09l-.11-.09z" fill="#e76f51"/>`,
+  hassan:`<path d="M.06 .86 q-.02 -.32 .1 -.4 h.16 q.12 .08 .1 .4z" fill="#d4a373"/><path d="M.36 .86 q-.02 -.38 .12 -.46 h.14 q.14 .08 .12 .46z" fill="#c8915c"/><path d="M.66 .86 q-.02 -.3 .1 -.38 h.14 q.12 .08 .1 .38z" fill="#d4a373"/><ellipse cx=".24" cy=".47" rx=".1" ry=".05" fill="#d62828"/><ellipse cx=".54" cy=".41" rx=".1" ry=".05" fill="#f77f00"/><ellipse cx=".83" cy=".49" rx=".09" ry=".05" fill="#fcbf49"/>`,
+  tavern:`<rect x=".2" y=".32" width=".44" height=".54" rx=".07" fill="#e9c46a"/><rect x=".2" y=".24" width=".44" height=".15" rx=".07" fill="#fffaf0"/><circle cx=".3" cy=".22" r=".07" fill="#fffaf0"/><circle cx=".5" cy=".21" r=".08" fill="#fffaf0"/><path d="M.64 .44 h.08 q.1 0 .1 .1 v.1 q0 .1 -.1 .1 h-.08" stroke="#e9c46a" stroke-width=".07" fill="none"/><rect x=".3" y=".42" width=".04" height=".34" rx=".02" fill="#d4a32a"/><rect x=".46" y=".42" width=".04" height=".34" rx=".02" fill="#d4a32a"/>`,
+  tarik:`<path d="M.12 .86 q-.1 -.24 .05 -.38 q-.05 -.1 .02 -.16 h.14 q.07 .06 .02 .16 q.15 .14 .05 .38z" fill="#b5651d"/><path d="M.5 .86 q-.12 -.3 .06 -.46 q-.06 -.12 .02 -.2 h.16 q.08 .08 .02 .2 q.18 .16 .06 .46z" fill="#cb7a37"/><rect x=".53" y=".56" width=".26" height=".04" fill="#8a4a14" opacity=".6"/>`,
+  yusuf:`<path d="M.1 .5 q.32 -.32 .64 0 q-.32 .32 -.64 0z" fill="#8ecae6"/><path d="M.72 .5 l.2 -.16 v.32z" fill="#5fa8d3"/><path d="M.4 .32 q.08 -.1 .16 0z" fill="#5fa8d3"/><circle cx=".26" cy=".46" r=".04" fill="#023047"/>`,
+  caravan:`<rect x=".3" y=".56" width=".05" height=".28" fill="#a57f45"/><rect x=".4" y=".56" width=".05" height=".28" fill="#a57f45"/><rect x=".58" y=".56" width=".05" height=".28" fill="#a57f45"/><rect x=".68" y=".56" width=".05" height=".28" fill="#a57f45"/><ellipse cx=".52" cy=".52" rx=".27" ry=".13" fill="#c9a063"/><circle cx=".48" cy=".4" r=".13" fill="#c9a063"/><path d="M.76 .5 q.1 -.18 .07 -.3" stroke="#c9a063" stroke-width=".09" fill="none" stroke-linecap="round"/><ellipse cx=".86" cy=".2" rx=".08" ry=".06" fill="#c9a063"/><rect x=".36" y=".42" width=".24" height=".06" fill="#d62828"/>`,
+  store:`<rect x=".12" y=".48" width=".38" height=".38" rx=".03" fill="#a0703f"/><rect x=".5" y=".48" width=".38" height=".38" rx=".03" fill="#8a5a2b"/><rect x=".3" y=".12" width=".38" height=".36" rx=".03" fill="#b5834e"/><path d="M.12 .48 l.38 .38 M.5 .48 l-.38 .38 M.5 .48 l.38 .38 M.88 .48 l-.38 .38 M.3 .12 l.38 .36 M.68 .12 l-.38 .36" stroke="#6d4520" stroke-width=".03"/>`,
+  storeLocked:`<rect x=".18" y=".3" width=".64" height=".54" rx=".04" fill="#9a8f80"/><path d="M.18 .3 l.32 -.16 l.32 .16z" fill="#7d7366"/><rect x=".4" y=".54" width=".2" height=".3" fill="#6b6257"/>`,
+  stand:`<rect x=".14" y=".52" width=".72" height=".32" rx=".03" fill="#8a5a2b"/><path d="M.08 .5 l.1 -.26 h.64 l.1 .26z" fill="#e63946"/><path d="M.26 .24 l-.04 .26 h.16 l.02 -.26z M.58 .24 l.02 .26 h.16 l-.04 -.26z" fill="#fffaf0"/><circle cx=".3" cy=".48" r=".06" fill="#e9c46a"/><circle cx=".5" cy=".46" r=".07" fill="#2a9d8f"/><circle cx=".7" cy=".48" r=".06" fill="#e76f51"/>`,
+  standLocked:`<rect x=".14" y=".3" width=".72" height=".52" rx=".04" fill="#9a8f80"/><path d="M.14 .42 h.72 M.14 .56 h.72 M.14 .7 h.72" stroke="#6b6257" stroke-width=".05"/><rect x=".3" y=".2" width=".4" height=".14" fill="#c9b99a"/>`,
+  idris:`<circle cx=".5" cy=".2" r=".07" fill="none" stroke="#264653" stroke-width=".05"/><path d=".5 .26 v.58" stroke="#264653" stroke-width=".08"/><path d="M.5 .26 v.58 M.32 .36 h.36" stroke="#264653" stroke-width=".07"/><path d="M.2 .6 q.04 .26 .3 .26 q.26 0 .3 -.26" stroke="#264653" stroke-width=".08" fill="none"/>`,
+  boat:`<path d="M.12 .66 h.76 l-.12 .16 h-.52z" fill="#8a5a2b"/><rect x=".48" y=".14" width=".03" height=".52" fill="#5b3a1a"/><path d="M.52 .16 l.3 .46 h-.3z" fill="#fffaf0"/><path d="M.47 .22 l-.24 .4 h.24z" fill="#f1e8d2"/>`
+  };
+  return `<g transform="translate(${cx-.5},${cy-.5})">${P[id]||P[{fishmkt:'yusuf'}[id]]||GIP[{kettle:'tea',zara:'perfume',anwar:'silk'}[id]]||''}</g>`;
+}
+const GIP={
+  pepper:`<path d="M.12 .62 h.76 q-.04 .24 -.38 .24 q-.34 0 -.38 -.24z" fill="#8a5a2b"/><path d="M.18 .62 q.32 -.4 .64 0z" fill="#2b2b2b"/><circle cx=".38" cy=".5" r=".05" fill="#666"/><circle cx=".52" cy=".43" r=".05" fill="#555"/><circle cx=".63" cy=".54" r=".05" fill="#666"/>`,
+  sugar:`<path d="M.5 .12 l.22 .62 h-.44z" fill="#f5f3ee" stroke="#cfc8bb" stroke-width=".02"/><path d="M.3 .58 h.4 l.05 .16 h-.5z" fill="#3a86c8"/><rect x=".24" y=".74" width=".52" height=".1" rx=".03" fill="#2c4ba0"/>`,
+  wine:`<rect x=".22" y=".18" width=".56" height=".68" rx=".2" fill="#9d5c2f"/><path d="M.22 .34 h.56 M.22 .7 h.56" stroke="#5b3a1a" stroke-width=".05"/><circle cx=".5" cy=".52" r=".07" fill="#7b1e3a"/>`,
+  oil:`<path d="M.32 .9 q-.18 -.3 .06 -.5 q-.08 -.12 .02 -.2 h.2 q.1 .08 .02 .2 q.24 .2 .06 .5z" fill="#7a8a2a"/><circle cx=".5" cy=".62" r=".08" fill="#c9d65a"/>`,
+  grain:`<path d="M.22 .88 q-.06 -.42 .12 -.56 l.04 -.08 h.24 l.04 .08 q.18 .14 .12 .56z" fill="#d4a373"/><path d="M.42 .24 l-.06 -.14 M.5 .22 v-.14 M.58 .24 l.06 -.14" stroke="#c9a227" stroke-width=".05"/>`,
+  glass:`<path d="M.32 .14 h.36 q0 .32 -.18 .36 q-.18 -.04 -.18 -.36z" fill="#8ecae6" stroke="#3a86c8" stroke-width=".03"/><rect x=".48" y=".5" width=".04" height=".24" fill="#3a86c8"/><rect x=".34" y=".74" width=".32" height=".06" rx=".03" fill="#3a86c8"/>`,
+  wool:`<rect x=".12" y=".36" width=".76" height=".36" rx=".18" fill="#6c7a89"/><ellipse cx=".2" cy=".54" rx=".08" ry=".18" fill="#8d99a6"/><path d="M.32 .38 v.32 M.48 .38 v.32 M.64 .38 v.32" stroke="#56626f" stroke-width=".02"/>`,
+  tea:`<path d="M.22 .5 q0 .32 .3 .32 q.3 0 .3 -.32z" fill="#2a9d8f"/><path d="M.82 .55 q.14 0 .1 .12 q-.04 .08 -.14 .06" stroke="#2a9d8f" stroke-width=".06" fill="none"/><path d="M.22 .55 l-.14 -.12" stroke="#2a9d8f" stroke-width=".06" stroke-linecap="round"/><rect x=".3" y=".44" width=".44" height=".08" rx=".04" fill="#1f7a70"/><circle cx=".52" cy=".38" r=".06" fill="#e9c46a"/><path d="M.5 .26 q.04 -.08 0 -.14 M.6 .28 q.04 -.08 0 -.14" stroke="#9aa5b1" stroke-width=".03" fill="none"/>`,
+  perfume:`<rect x=".3" y=".42" width=".4" height=".44" rx=".14" fill="#8e7cc3"/><rect x=".38" y=".48" width=".08" height=".3" rx=".04" fill="#fff" opacity=".35"/><rect x=".43" y=".3" width=".14" height=".14" fill="#e9c46a"/><circle cx=".5" cy=".24" r=".08" fill="#e9c46a"/>`,
+  silk:`<path d="M.14 .3 q.36 -.12 .72 0 v.2 q-.36 -.12 -.72 0z" fill="#d1495b"/><path d="M.14 .5 q.36 -.12 .72 0 v.2 q-.36 -.12 -.72 0z" fill="#e76f51"/><path d="M.6 .66 q.06 .14 .2 .2" stroke="#d1495b" stroke-width=".06" fill="none"/><path d="M.14 .3 q.36 -.12 .72 0" stroke="#fcbf49" stroke-width=".02" fill="none"/>`,
+  apple:`<circle cx=".5" cy=".58" r=".3" fill="#e63946"/><circle cx=".4" cy=".5" r=".08" fill="#fff" opacity=".35"/><rect x=".48" y=".16" width=".05" height=".16" rx=".02" fill="#6d4520"/><path d="M.53 .24 q.16 -.12 .24 .02 q-.13 .08 -.24 -.02z" fill="#43a047"/>`,
+  olive:`<path d="M.2 .3 q.3 -.2 .6 .05" stroke="#5b3a1a" stroke-width=".04" fill="none"/><ellipse cx=".36" cy=".58" rx=".15" ry=".2" transform="rotate(-20 .36 .58)" fill="#6a7d2c"/><ellipse cx=".64" cy=".55" rx=".15" ry=".2" transform="rotate(20 .64 .55)" fill="#4f5e1f"/><path d="M.5 .3 q.12 -.05 .2 .06 q-.12 .03 -.2 -.06z" fill="#8fa04a"/>`,
+  fish:`<path d="M.08 .5 q.34 -.34 .68 0 q-.34 .34 -.68 0z" fill="#5fa8d3"/><path d="M.74 .5 l.2 -.17 v.34z" fill="#3a86c8"/><circle cx=".24" cy=".46" r=".045" fill="#023047"/><path d="M.42 .38 q.06 .12 0 .24" stroke="#fff" stroke-width=".03" fill="none" opacity=".6"/>`,
+  salt:`<path d="M.12 .6 h.76 q-.04 .26 -.38 .26 q-.34 0 -.38 -.26z" fill="#a0703f"/><path d="M.2 .6 q.3 -.4 .6 0z" fill="#f5f3ee" stroke="#cfc8bb" stroke-width=".02"/>`,
+  spice:`<path d="M.12 .62 h.76 q-.04 .24 -.38 .24 q-.34 0 -.38 -.24z" fill="#8a5a2b"/><path d="M.18 .62 q.32 -.42 .64 0z" fill="#d62828"/><circle cx=".42" cy=".44" r=".03" fill="#fcbf49"/><circle cx=".58" cy=".5" r=".03" fill="#fcbf49"/>`,
+  cloth:`<rect x=".14" y=".6" width=".72" height=".16" rx=".06" fill="#2a9d8f"/><rect x=".18" y=".44" width=".66" height=".16" rx=".06" fill="#e9c46a"/><rect x=".22" y=".28" width=".6" height=".16" rx=".06" fill="#e76f51"/>`,
+  pottery:`<path d="M.32 .9 q-.18 -.3 .06 -.5 q-.08 -.12 .02 -.2 h.2 q.1 .08 .02 .2 q.24 .2 .06 .5z" fill="#c4692a"/><rect x=".3" y=".6" width=".4" height=".05" fill="#8a4a14" opacity=".55"/><path d="M.28 .42 q-.12 .02 -.1 .14" stroke="#c4692a" stroke-width=".05" fill="none"/>`
+  };
+function gi(g){return `<svg viewBox="0 0 1 1" aria-hidden="true">${GIP[g]||''}</svg>`}
+function portrait(id){
+  const C={
+   miriam:{bg:'#e07a5f',skin:'#e8b796',robe:'#7b5ea7',hat:'scarf',hc:'#7b5ea7',hair:'#e9e4dc',wrink:1},
+   hassan:{bg:'#d1495b',skin:'#c68b59',robe:'#9d2235',hat:'turban',hc:'#f4a261',jewel:1,must:'#2b1d12'},
+   yusuf:{bg:'#3a86c8',skin:'#b07a50',robe:'#264653',hat:'cap',hc:'#e9c46a',beard:'#4a3b2c'},
+   leyla:{bg:'#8e7cc3',skin:'#d9a27e',robe:'#2a9d8f',hat:'scarf',hc:'#2a9d8f',ear:1},
+   tarik:{bg:'#c47a3a',skin:'#a86b44',robe:'#6d4520',hat:'none',beard:'#2b1d12',bald:1,apron:1},
+   caravan:{bg:'#e3a72f',skin:'#9c6b43',robe:'#457b9d',hat:'turban',hc:'#f1e8d2',veil:'#457b9d'},
+   tavern:{bg:'#2f9e7a',skin:'#e0a77e',robe:'#7c4a2a',hat:'none',must:'#5b3a1a',bald:1},
+   kettle:{bg:'#2a9d8f',skin:'#c68b59',robe:'#e9c46a',hat:'scarf',hc:'#e76f51',ear:1},
+   zara:{bg:'#b5179e',skin:'#e0a77e',robe:'#7b2cbf',hat:'scarf',hc:'#f72585',ear:1},
+   fishmkt:{bg:'#3a86c8',skin:'#b07a50',robe:'#457b9d',hat:'cap',hc:'#8ecae6',must:'#3b2a20'},
+   anwar:{bg:'#e76f51',skin:'#c68b59',robe:'#6a4c93',hat:'turban',hc:'#6a4c93',beard:'#2b1d12'},
+   idris:{bg:'#264653',skin:'#a86b44',robe:'#1d3557',hat:'cap',hc:'#1d3557',beard:'#e9e4dc'},
+   clerk:{bg:'#4a6fd1',skin:'#d8a47f',robe:'#1d2340',hat:'cap',hc:'#1d2340'}
+  }[id];
+  if(!C)return '';
+  const m=S&&S.mood&&S.mood[id]!=null?S.mood[id]:0;
+  const mouth=m>=.8?'M27 38 q5 5 10 0':m<=-.8?'M27 40 q5 -4 10 0':'M27.5 39 h9';
+  let g=`<circle cx="32" cy="32" r="32" fill="${C.bg}"/>`;
+  g+=`<path d="M10 64 q4 -18 22 -18 q18 0 22 18z" fill="${C.robe}"/>`;
+  if(C.apron)g+=`<path d="M24 64 v-12 h16 v12z" fill="#e9dcc3"/>`;
+  g+=`<rect x="28" y="38" width="8" height="9" fill="${C.skin}"/>`;
+  if(C.hat==='scarf')g+=`<path d="M17 34 q0 -20 15 -20 q15 0 15 20 v10 q-15 6 -30 0z" fill="${C.hc}"/>`;
+  g+=`<circle cx="32" cy="31" r="12" fill="${C.skin}"/>`;
+  if(C.hair)g+=`<path d="M21 27 q11 -10 22 0 q-4 -6 -11 -6 q-7 0 -11 6z" fill="${C.hair}"/>`;
+  if(C.hat==='scarf')g+=`<path d="M19 30 q1 -14 13 -14 q12 0 13 14 q-4 -9 -13 -9 q-9 0 -13 9z" fill="${C.hc}"/>`;
+  if(C.hat==='turban')g+=`<ellipse cx="32" cy="20" rx="15" ry="9" fill="${C.hc}"/><path d="M18 21 q14 -8 28 0" stroke="#000" stroke-opacity=".12" stroke-width="2" fill="none"/><path d="M19 24 q13 -7 26 0" stroke="#000" stroke-opacity=".1" stroke-width="2" fill="none"/>`+(C.jewel?`<circle cx="32" cy="19" r="2.6" fill="#2a9d8f" stroke="#fcbf49" stroke-width="1"/>`:'');
+  if(C.hat==='cap')g+=`<path d="M20 26 q12 -14 24 0z" fill="${C.hc}"/><rect x="19" y="24.5" width="26" height="3" rx="1.5" fill="${C.hc}"/>`;
+  if(C.bald)g+=`<path d="M22 24 q10 -8 20 0" stroke="#fff" stroke-opacity=".25" stroke-width="2" fill="none"/>`;
+  g+=`<circle cx="27.5" cy="30" r="1.6" fill="#1d2340"/><circle cx="36.5" cy="30" r="1.6" fill="#1d2340"/>`;
+  if(m<=-.8)g+=`<path d="M25 26.5 l4 1.2 M39 26.5 l-4 1.2" stroke="#1d2340" stroke-width="1.2"/>`;
+  if(C.wrink)g+=`<path d="M24.5 33 q1 1 2 0 M37.5 33 q1 1 2 0" stroke="#000" stroke-opacity=".25" stroke-width=".8" fill="none"/>`;
+  if(C.beard)g+=`<path d="M21 33 q0 12 11 13 q11 -1 11 -13 q-2 4 -11 4 q-9 0 -11 -4z" fill="${C.beard}"/>`;
+  if(C.veil)g+=`<path d="M20 34 q12 6 24 0 v6 q-12 6 -24 0z" fill="${C.veil}"/>`;
+  else g+=`<path d="${mouth}" stroke="#5b2a1a" stroke-width="1.6" fill="none" stroke-linecap="round"/>`;
+  if(C.must)g+=`<path d="M25 35.5 q3.5 -3 7 -.5 q3.5 -2.5 7 .5 q-3.5 1.5 -7 0 q-3.5 1.5 -7 0z" fill="${C.must}"/>`;
+  if(C.ear)g+=`<circle cx="20.5" cy="35" r="1.6" fill="#fcbf49"/><circle cx="43.5" cy="35" r="1.6" fill="#fcbf49"/>`;
+  return `<svg viewBox="0 0 64 64" aria-hidden="true"><defs><clipPath id="pc-${id}"><circle cx="32" cy="32" r="32"/></clipPath></defs><g clip-path="url(#pc-${id})">${g}</g></svg>`;
+}
+function drawEvents(){
+  const ks=new Set(S.effects.map(e=>e.k).filter(Boolean));let h='';
+  if(ks.has('festival')){
+    for(const y of [3.15,6.15]){let p=`M0 ${y}`;for(let x=0;x<12;x+=.6)p+=` L${x+.3} ${y+.32} L${x+.6} ${y}`;h+=`<path d="M0 ${y} H12" stroke="#5b3a1a" stroke-width=".03"/>`;
+      for(let x=0,c=0;x<12;x+=.6,c++)h+=`<path d="M${x+.05} ${y} L${x+.3} ${y+.3} L${x+.55} ${y}z" fill="${['#e63946','#e9c46a','#2a9d8f','#8e7cc3'][c%4]}"/>`}
+  }
+  if(ks.has('storm')){
+    h+=`<rect x="0" y="6.6" width="3.2" height="2.8" fill="#1d2340" opacity=".25"/>`;
+    [[.9,6.9],[2.1,6.7],[1.5,7.2]].forEach(([x,y])=>h+=`<ellipse cx="${x}" cy="${y}" rx=".8" ry=".35" fill="#6b7280" opacity=".9"/>`);
+    for(let i=0;i<9;i++)h+=`<path d="M${.3+i*.3} ${7.3+(i%3)*.4} l-.12 .35" stroke="#8ecae6" stroke-width=".04"/>`;
+  }
+  if(ks.has('caravan'))[[6.4,9.5],[8.5,9.5],[9.6,9.5]].forEach(([x,y])=>h+=`<g transform="translate(${x} ${y}) scale(.75) translate(-.5 -.5)">${drawIcon('caravan',.5,.5)}</g>`);
+  if(ks.has('drought'))h+=`<rect x="10.06" y="4.06" width="1.88" height="1.88" rx=".18" fill="#fcbf49" opacity=".25"/><circle cx="11.6" cy="4.4" r=".28" fill="#fcbf49"/><path d="M10.4 5.2 l.3 .2 l-.1 .3 M10.9 5.5 l.3 -.2" stroke="#6d4520" stroke-width=".04" fill="none"/>`;
+  if(ks.has('astro'))[[4.3,3.4],[5.7,3.5],[5,3.2],[4.7,5.9],[5.5,5.8]].forEach(([x,y],i)=>h+=`<path d="M${x} ${y-.14} l.04 .1 l.1 .04 l-.1 .04 l-.04 .1 l-.04 -.1 l-.1 -.04 l.1 -.04z" fill="#fcbf49"/>`);
+  if(ks.has('salt'))h+=`<rect x="4.92" y="3.9" width=".03" height=".7" fill="#5b3a1a"/><path d="M4.95 3.92 h.45 l-.1 .14 l.1 .14 h-.45z" fill="#d62828"/>`;
+  return h;
+}
+function drawLanterns(){
+  const d=Math.max(0,(S.t-450)/270);if(d<=0)return '';
+  return Object.keys(BLK).filter(id=>T[id]||(id==='store'&&S.store)||(id==='stand'&&S.ch>=2)).map(id=>{const [x,y]=door(id);return `<circle cx="${x+.82}" cy="${y+.78}" r=".32" fill="#fcbf49" opacity="${(.22*d).toFixed(2)}"/><circle cx="${x+.82}" cy="${y+.78}" r=".08" fill="#ffd166" opacity="${Math.min(1,d*1.5).toFixed(2)}"/>`}).join('');
+}
+function initCrowd(){
+  const cr=document.getElementById('crowd');if(!cr)return;
+  const ok=(a,b)=>!(a[0]===0&&b[0]===0&&((a[1]===6&&b[1]===9)||(a[1]===9&&b[1]===6)));
+  const robes=['#e76f51','#2a9d8f','#e9c46a','#8e7cc3','#457b9d','#f1e8d2','#bc6c25'];
+  let h='';
+  for(let n=0;n<7;n++){
+    let c=[3*Math.floor(Math.random()*4),3*Math.floor(Math.random()*4)];const pts=[c];
+    for(let k=0;k<6;k++){const opts=[[3,0],[-3,0],[0,3],[0,-3]].map(([dx,dy])=>[c[0]+dx,c[1]+dy]).filter(p=>p[0]>=0&&p[0]<=9&&p[1]>=0&&p[1]<=9&&ok(c,p));c=pick(opts);pts.push(c)}
+    const off=(Math.random()-.5)*.35,all=[...pts,...pts.slice(0,-1).reverse()];
+    const d='M'+all.map(p=>`${p[0]+.5+off} ${p[1]+.5+off}`).join(' L');
+    const dur=(all.length-1)*3*1.1;
+    const r=robes[n%robes.length],goat=n===6;
+    const body=goat?`<ellipse cx="0" cy="0" rx=".16" ry=".1" fill="#f1e8d2"/><circle cx=".15" cy="-.07" r=".06" fill="#f1e8d2"/>`:`<ellipse cx="0" cy=".2" rx=".12" ry=".04" fill="#000" opacity=".15"/><rect x="-.09" y="-.06" width=".18" height=".24" rx=".07" fill="${r}"/><circle cx="0" cy="-.14" r=".08" fill="#d9a27e"/>`;
+    h+=`<g>${body}<animateMotion dur="${dur.toFixed(1)}s" repeatCount="indefinite" path="${d}" begin="-${(Math.random()*dur).toFixed(1)}s"/></g>`;
+  }
+  cr.innerHTML=h;
+}
+let shopView=true,EVQ=null;
+function shopActive(){return S.ch>=2&&S.mode!=='sea'&&S.at==='stand'&&shopView}
+function toggleView(){shopView=!shopView;clearPreview();renderMap()}
+const UPG={supply:{n:'New suppliers',d:'The Caravan Master starts selling you tea, then perfume, then silk. Pricier goods, bigger margins.',costs:[120,300,600]},shelf:{n:'Shelves',d:'Room for one more good on display.',costs:[60,150,300]},sign:{n:'Sign and awning',d:'Draws 20% more customers per level.',costs:[80,200,400]},decor:{n:'Lanterns and carpet',d:'Customers happily pay a little more.',costs:[100,250]}};
+function slotsN(){const st=S.stand,up=(st&&st.up)||{};return 3+(up.shelf||0)+(st&&st.clerk?1:0)}
+function buyUp(k){const st=S.stand;st.up=st.up||{};const lv=st.up[k]||0,c=UPG[k].costs[lv];if(c==null)return;if(S.cash<c){toast(`You need ${fmt(c)}.`);return}
+  S.cash-=c;st.up[k]=lv+1;toast(k==='supply'?`The Caravan Master now sells you ${G[PREM[lv]].n.toLowerCase()} ${G[PREM[lv]].i}.`:`${UPG[k].n} upgraded!`);save();renderHud();renderMap();showPlace('stand')}
+function keeper(x,y,robe,cap){return `<g transform="translate(${x} ${y})"><rect x="-.42" y="-.35" width=".84" height="1.1" rx=".3" fill="${robe}"/><circle cx="0" cy="-.68" r=".34" fill="#e2b48a"/>${cap?`<path d="M-.36 -.74 q.36 -.48 .72 0z" fill="${cap}"/>`:''}<circle cx="-.11" cy="-.7" r=".04" fill="#1d2340"/><circle cx=".11" cy="-.7" r=".04" fill="#1d2340"/><path d="M-.1 -.55 q.1 .08 .2 0" stroke="#5b2a1a" stroke-width=".04" fill="none"/></g>`}
+function shopScene(){
+  const sp=S.shop,L=sp.lv,r=shopRate(),cap=SH.cap(L.cap);
+  let h=`<svg class="mapsvg" viewBox="0 0 12 12" xmlns="http://www.w3.org/2000/svg"><defs><pattern id="fl" width="1" height="1" patternUnits="userSpaceOnUse"><rect width="1" height="1" fill="var(--alley)"/><rect width=".5" height=".5" fill="var(--alley2)"/><rect x=".5" y=".5" width=".5" height=".5" fill="var(--alley2)"/></pattern><pattern id="wt" width=".6" height=".6" patternUnits="userSpaceOnUse"><path d="M.3 0 L.6 .3 L.3 .6 L0 .3z" fill="var(--lapis)" opacity=".1"/></pattern></defs>`;
+  h+=`<g class="hit" onclick="openAt('stand')"><rect width="12" height="8.2" fill="var(--plaza)"/><rect width="12" height="8.2" fill="url(#wt)"/><rect y="7" width="12" height=".22" fill="var(--lapis)" opacity=".45"/><rect y="8.2" width="12" height="3.8" fill="url(#fl)"/>`;
+  const sl=Math.min(3,L.sign);
+  h+=`<rect x="${3.8-sl*.5}" y=".22" width="${4.4+sl}" height="${.78+sl*.1}" rx=".2" fill="${sl?'#4a6fd1':'#8a5a2b'}"/>`;
+  if(sl)h+=`<rect x="${3.8-sl*.5}" y="${1+sl*.1}" width="${4.4+sl}" height=".3" rx=".06" fill="#e63946" opacity=".8"/>`;
+  h+=svgTxt(6,.62+sl*.05,sp.open?(sl>=3?'✦ YOUR SHOP ✦':'Your shop'):'For rent',String(.42+sl*.05),'#fff');
+  if(sl>=2)[.5,11.5].forEach(x=>h+=`<path d="M${x} 0 v1.1" stroke="#5b3a1a" stroke-width=".04"/><circle cx="${x}" cy="1.42" r=".75" fill="#fcbf49" opacity=".18"/><rect x="${x-.2}" y="1.1" width=".4" height=".6" rx=".14" fill="#e9c46a" stroke="#8a5a2b" stroke-width=".03"/>`);
+  const shown=sp.shelves.slice(0,6);
+  shown.forEach((x,i)=>{const cx=.8+(i%3)*3.6,cy=1.75+Math.floor(i/3)*2.55;
+    h+=`<rect x="${cx-.1}" y="${cy+1.52}" width="3.2" height=".2" rx=".05" fill="#8a5a2b"/>`;
+    if(!x.g||x.q<=0){h+=`<rect x="${cx}" y="${cy+.1}" width="3" height="1.35" rx=".1" fill="none" stroke="var(--muted)" stroke-width=".04" stroke-dasharray=".15 .1"/>`+svgTxt(cx+1.5,cy+.8,x.g?`${G[x.g].n}: sold out`:'empty shelf','.28',x.g?'var(--pom)':'var(--muted)',700);return}
+    const k=Math.min(x.q,10);
+    for(let j=0;j<k;j++)h+=`<g transform="translate(${cx+.05+(j%5)*.58} ${cy+.88-Math.floor(j/5)*.6}) scale(.64)">${GIP[x.g]}</g>`;
+    h+=`<text x="${cx}" y="${cy+2.02}" font-size=".26" font-weight="700" fill="var(--text)" font-family="system-ui,sans-serif">${G[x.g].n}: ${x.q}/${cap}</text>`;
+  });
+  if(sp.shelves.length>6)h+=svgTxt(6,7.4,`+${sp.shelves.length-6} more shelves`,'.24','var(--muted)',600);
+  if(S.at==='stand')h+=keeper(6,8.25,'var(--lapis)','#fffaf0');
+  for(let c=0;c<Math.min(3,L.seller);c++)h+=keeper([3.6,8.4,2.2][c],8.25,'#1d2340','#1d2340');
+  h+=`<rect x="1.4" y="8.15" width="9.2" height="1.25" rx=".12" fill="#a0703f"/><rect x="1.4" y="8.15" width="9.2" height=".22" rx=".1" fill="#c8915c"/>`;
+  h+=svgTxt(6,8.88,sp.open?(r>0?`Selling ${fmt(r)} an hour`:'Shelves empty: nothing to sell'):'Tap to open the shop for $400','.36','#fffaf0',800);
+  h+=`<g transform="translate(10.7 10.3) scale(1.9) translate(-.5 -.5)">${drawIcon('caravan',.5,.5)}</g>`+svgTxt(10.7,11.55,'Destiny','.24','var(--muted)',600);
+  if(paused)h+=`<rect x="3.9" y="5.15" width="4.2" height="1.2" rx=".6" fill="#1d2340" opacity=".85"/>`+svgTxt(6,5.75,'⏸ Paused','.46','#fff',800);
+  h+=`</g><rect width="12" height="12" fill="var(--night)" opacity="${(Math.max(0,(S.t-480)/240)*.45).toFixed(3)}" pointer-events="none"/></svg>`;
+  return h;
+}
+let paused=false;function togglePause(){paused=!paused;renderMap()}
+let rtN=0,rtClosed=false;
+setInterval(()=>{
+  if(typeof S==='undefined'||!S||!S.shop||!S.shop.open||!shopActive()||document.hidden||walking||paused)return;
+  if(S.t>=DAY_LEN){if(!rtClosed){rtClosed=true;toast('The bazaar is closing. Time to sleep 🌙')}return}
+  rtClosed=false;S.t+=1;timePass(1);renderHud();rtN++;
+  if(rtN%5===0)renderMap();
+  if(rtN%15===0&&lastSheet==='Your shop'&&document.getElementById('wrap').classList.contains('open'))showPlace('stand');
+  if(rtN%20===0)save();
+  if(rtN%30===0)checkMs();
+},250);
+function playEvents(evs){
+  const fx=document.getElementById('shopfx');if(!fx)return;fx.innerHTML='';
+  const list=evs.slice(-24);
+  list.forEach((e,k)=>setTimeout(()=>spawnCustomer(e),k*430));
+}
+function spawnCustomer(e){
+  const fx=document.getElementById('shopfx');if(!fx||!shopActive())return;
+  const ns='http://www.w3.org/2000/svg',g=document.createElementNS(ns,'g');
+  const left=Math.random()<.5,x0=left?-1:13,x1=left?13:-1,tx=2.2+Math.random()*7.6,ty=10.2+Math.random()*.7;
+  const robe=pick(['#e76f51','#2a9d8f','#e9c46a','#8e7cc3','#457b9d','#bc6c25','#f1e8d2']),skin=pick(['#e2b48a','#c68b59','#9c6b43','#d9a27e']);
+  const M={buy:[`+${fmt(Math.max(0,e.v||0))}`,'#2c7a4b'],sell:['sold to you','#2c4ba0'],miss:['none left?','#b8323f'],pricey:['too much!','#b8323f'],hassan:['to Hassan','#b8323f'],sharp:['🕵️ all of it','#1d2340']}[e.r]||['',''];
+  g.innerHTML=`<ellipse cx="0" cy=".62" rx=".36" ry=".1" fill="#000" opacity=".15"/><rect x="-.3" y="-.18" width=".6" height=".8" rx=".24" fill="${robe}"/><circle cx="0" cy="-.46" r=".27" fill="${skin}"/>`+
+    `<g class="bub" style="opacity:0;transition:opacity .2s"><rect x="-.9" y="-2.15" width="1.8" height="1.3" rx=".28" fill="#fffaf0" stroke="#1d2340" stroke-width=".04"/><path d="M-.12 -.86 l.12 .22 l.12 -.22z" fill="#fffaf0"/><g transform="translate(-.32 -2.08) scale(.64)">${GIP[e.g]||''}</g><text x="0" y="-1.08" font-size=".26" fill="${M[1]}" font-weight="700" text-anchor="middle" font-family="system-ui,sans-serif">${M[0]}</text></g>`;
+  g.style.transform=`translate(${x0}px,${ty}px)`;g.style.transition='transform .6s ease-out';
+  fx.appendChild(g);
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{g.style.transform=`translate(${tx}px,${ty}px)`}));
+  setTimeout(()=>{const b=g.querySelector('.bub');if(b)b.style.opacity='1'},650);
+  setTimeout(()=>{const b=g.querySelector('.bub');if(b)b.style.opacity='0';g.style.transition='transform .7s ease-in';g.style.transform=`translate(${x1}px,${ty}px)`},1900);
+  setTimeout(()=>g.remove(),2700);
+}
+function svgTxt(x,y,t,size,fill,w){return `<text x="${x}" y="${y}" font-size="${size}" fill="${fill}" font-weight="${w||700}" text-anchor="middle" dominant-baseline="central" font-family="system-ui,-apple-system,sans-serif">${t}</text>`}
+function drawFill(k,b){
+  const [x,y]=bxy(b);
+  if(k==='plaza')return `<g class="hit" onclick="showNews()"><rect x="${x+.06}" y="${y+.06}" width="1.88" height="1.88" rx=".3" fill="var(--plaza)" stroke="var(--house2)" stroke-width=".04"/><circle cx="${x+1}" cy="${y+1}" r=".52" fill="var(--water)" stroke="var(--house2)" stroke-width=".12"/><circle cx="${x+1}" cy="${y+1}" r=".16" fill="var(--plaza)"/>${svgTxt(x+1,y+1.78,'Well','.24','var(--muted)')}</g>`;
+  if(k==='garden')return `<rect x="${x+.06}" y="${y+.06}" width="1.88" height="1.88" rx=".3" fill="var(--leaf)" opacity=".35"/>`+[[.5,.5],[1.45,.6],[.9,1.35],[1.5,1.5]].map(([a,c])=>`<circle cx="${x+a}" cy="${y+c}" r=".3" fill="var(--leaf)"/>`).join('');
+  if(k==='palms')return [[.55,.55],[1.4,.9],[.7,1.5]].map(([a,c])=>`<circle cx="${x+a}" cy="${y+c}" r=".36" fill="var(--leaf)"/><circle cx="${x+a}" cy="${y+c}" r=".1" fill="var(--house2)"/>`).join('');
+  if(k==='sea0'){let w=`<rect x="0" y="9.82" width="12" height="2.18" fill="var(--water)"/><rect x="0" y="9.82" width="12" height=".12" fill="#fff" opacity=".35"/>`;for(let i=0;i<8;i++)w+=`<path d="M${.4+i*1.5} ${10.5+(i%2)*.7} q.18 -.14 .36 0 t.36 0" stroke="#fff" stroke-width=".05" fill="none" opacity=".6"/>`;return w}
+  if(k==='sea1'||k==='sea3')return `<g transform="translate(${x+1} ${y+.85}) scale(1.7) translate(-.5 -.5)">${drawIcon('boat',.5,.5)}</g>`;
+  if(k.startsWith('sea'))return '';
+  return `<rect x="${x+.06}" y="${y+.06}" width="1.88" height="1.88" rx=".18" fill="var(--house)"/><rect x="${x+.06}" y="${y+.95}" width="1.88" height=".99" rx=".18" fill="var(--house2)"/><rect x="${x+.06}" y="${y+.06}" width="1.88" height="1.88" rx=".18" fill="url(#rf)"/>`;
+}
+function drawPlace(id,far){
+  const [x,y]=bxy(BLK[id]),[dx,dy]=door(id),here=S.at===id,mk=MARKS[S.marks[id]||0];
+  const isPL=!!PL[id],open=!isPL||(id==='store'&&S.store)||(id==='stand'&&S.ch>=2)||(id==='rival'&&rivalOn()),name=id==='stand'&&S.ch>=2?'Your shop':isPL?PL[id].short:T[id].short;
+  let g=`<g class="hit" onclick="tapPlace('${id}')" opacity="${far?.45:1}">`;
+  if(id==='gate'){g+=`<rect x="${x+.06}" y="${y+.06}" width="1.88" height="1.88" rx=".18" fill="#b8a07a"/><rect x="${x+.06}" y="${y+.06}" width="1.88" height=".3" rx=".1" fill="#9a845f"/><path d="M${x+.42} ${y+1.94} v-.95 q.58 -.62 1.16 0 v.95z" fill="var(--alley2)"/>`+svgTxt(x+1,y+1.45,'🏛️','.42','#000',400)+svgTxt(x+1,y+.22,'TO THE BAZAAR','.2','#fff');return g+'</g>'}
+  if(id==='harbour'){
+    g+=`<rect x="${x-1}" y="${y+.06}" width="2.94" height="1.88" rx=".2" fill="var(--water)"/>`;
+    g+=[0,1,2].map(i=>`<path d="M${x-.6+i*.9} ${y+.5+i*.45} q.15 -.12 .3 0 t.3 0" stroke="#fff" stroke-width=".06" fill="none" opacity=".7"/>`).join('');
+    g+=drawIcon('boat',x+1.1,y+.8)+svgTxt(x+1,y+1.65,(harbourOpen()?'To the harbour':'Harbour 🔒'),'.26','#fff');
+    return g+'</g>';
+  }
+  const roof=open?ROOF[id]:'var(--house)';
+  g+=`<rect x="${dx+.18}" y="${dy+.62}" width=".64" height=".38" rx=".08" fill="${roof}" opacity=".55"/>`;
+  g+=`<rect x="${x+.06}" y="${y+.06}" width="1.88" height="1.88" rx=".18" fill="${roof}" ${open?'':'stroke="var(--muted)" stroke-width=".05" stroke-dasharray=".14 .1"'} ${here?'stroke="var(--saffron)" stroke-width=".12"':''}/>`;
+  if(open)g+=`<rect x="${x+.06}" y="${y+.06}" width="1.88" height=".34" rx=".1" fill="url(#aw)"/>`;
+  g+=`<rect x="${x+.06}" y="${y+.06}" width="1.88" height="1.88" rx=".18" fill="url(#rf)" pointer-events="none"/>`;
+  g+=`<circle cx="${x+1}" cy="${y+.95}" r=".44" fill="var(--alley2)" opacity="${open?1:.75}"/>`+drawIcon(open?(id==='rival'?'hassan':id):(id==='store'?'storeLocked':id==='stand'?'standLocked':id),x+1,y+.95);
+  g+=svgTxt(x+1,y+1.66,name+(open?'':' 🔒'),'.25',open?'#fff':'var(--text)');
+  if(mk)g+=svgTxt(x+1.78,y+.3,mk,'.42','#000',400);
+  return g+'</g>';
+}
+function heroSvg(){
+  const load=Math.min(1,weight()/S.cap);
+  let g=`<g id="hero" style="transform:translate(${S.px+.5}px,${S.py+.5}px)" pointer-events="none">`;
+  if(S.donkey)g+=`<g transform="translate(-.3,.12)"><ellipse cx="0" cy="0" rx=".2" ry=".13" fill="${S.camel?'#c9a063':'#8d8a86'}"/><circle cx="-.2" cy="-.1" r=".08" fill="${S.camel?'#c9a063':'#8d8a86'}"/><rect x="-.27" y="-.27" width=".04" height=".1" fill="#6f6c69"/>${S.cart?'<rect x=".12" y="-.12" width=".22" height=".2" rx=".03" fill="#9a6b3f"/>':''}</g>`;
+  g+=`<ellipse cx="0" cy=".28" rx=".2" ry=".06" fill="#000" opacity=".18"/>`;
+  g+=`<circle cx=".14" cy=".03" r="${(.06+.13*load).toFixed(3)}" fill="#a0703f"/>`;
+  g+=`<rect x="-.13" y="-.08" width=".26" height=".34" rx=".1" fill="var(--lapis)"/>`;
+  g+=`<circle cx="0" cy="-.2" r=".12" fill="#e2b48a"/><path d="M-.13 -.24 q.13 -.16 .26 0 z" fill="#fff"/>`;
+  return g+'</g>';
+}
+function renderMap(){
+  updateHere();
+  if(S.mode==='sea'){document.getElementById('map').innerHTML=seaMap();['crowd','shopfx'].forEach(i=>{const e=document.getElementById(i);if(e)e.style.display='none'});const mc=document.getElementById('mapctl');if(mc)mc.style.display='none';return}
+  {const mc=document.getElementById('mapctl');if(mc)mc.style.display=''}
+  const vb=document.getElementById('viewBtn'),fx=document.getElementById('shopfx'),cr0=document.getElementById('crowd');
+  const atShop=S.ch>=2&&S.at==='stand';
+  if(vb){vb.classList.toggle('on',atShop);vb.textContent=shopView?'← Back to the bazaar':'🏪 Enter your shop'}
+  const pb=document.getElementById('pauseBtn');if(pb){pb.classList.toggle('on',!!(atShop&&shopView&&S.shop&&S.shop.open));pb.textContent=paused?'▶ Resume':'⏸ Pause';pb.classList.toggle('paused',paused)}
+  const mc=document.getElementById('mapctl');if(mc)mc.classList.toggle('top',!(atShop&&shopView));
+  if(atShop&&shopView){document.getElementById('map').innerHTML=shopScene();if(cr0)cr0.style.display='none';if(fx)fx.style.display='';return}
+  if(cr0)cr0.style.display='';if(fx){fx.style.display='none';fx.innerHTML=''}
+  const left=DAY_LEN-S.t;
+  let h=`<svg class="mapsvg" viewBox="0 0 12 12" xmlns="http://www.w3.org/2000/svg"><defs><pattern id="sq" width="1" height="1" patternUnits="userSpaceOnUse"><rect x=".05" y=".05" width=".9" height=".9" rx=".14" fill="var(--alley2)"/></pattern><pattern id="rf" width=".24" height=".24" patternUnits="userSpaceOnUse"><path d="M0 .23 h.24 M.12 0 v.12" stroke="#000" stroke-width=".018" opacity=".13"/></pattern><pattern id="aw" width=".36" height="1" patternUnits="userSpaceOnUse"><rect width=".18" height="1" fill="#fff" opacity=".8"/></pattern></defs>`;
+  h+=`<rect width="12" height="12" fill="var(--alley)"/><rect width="12" height="12" fill="url(#sq)"/>`;
+  if(preview&&preview.path)preview.path.forEach(([x,y],i)=>h+=`<circle cx="${x+.5}" cy="${y+.5}" r="${i===preview.path.length-1?.2:.11}" fill="var(--saffron)"/>`);
+  Object.entries(FILL).forEach(([k,b])=>h+=drawFill(k,b));
+  Object.keys(BLK).forEach(id=>{if(id==='rival'&&!rivalOn()){h+=drawFill('h',BLK.rival);return}const far=!PL[id]&&S.at!==id&&walkCost(id)>left;h+=drawPlace(id,far)});
+  h+='<g pointer-events="none">'+((S.dist||'bazaar')==='bazaar'?drawEvents():'')+drawLanterns()+'</g>';
+  h+=heroSvg();
+  h+=`<rect width="12" height="12" fill="var(--night)" opacity="${(Math.max(0,(S.t-480)/240)*.5).toFixed(3)}" pointer-events="none"/></svg>`;
+  document.getElementById('map').innerHTML=h;
+  const cr=document.getElementById('crowd');if(cr){if(!cr.childNodes.length)initCrowd();cr.style.opacity=String(Math.max(0,1-Math.max(0,(S.t-480)/240)*1.4))}
+}
+function render(){renderHud();renderMap()}
+
+function setNav(v){document.querySelectorAll('.bbtn[data-v]').forEach(b=>b.classList.toggle('active',b.dataset.v===v))}
+let lastSheet='';
+function setSheet(h){const sh=document.getElementById('sheet'),k=(h.match(/<h2>(.*?)<\/h2>/)||[0,''])[1],y=sh.scrollTop;sh.innerHTML=h;sh.scrollTop=k&&k===lastSheet?y:0;lastSheet=k;document.getElementById('wrap').classList.add('open');setNav('')}
+const HINT=`<h2>The bazaar</h2><p class="small">Tap a stall on the map to see the route and how long it takes. Tap it again, or press Walk, to go there.</p><p class="small">Tap the well for today's news. Stalls, news, notes and your bag all open here.</p>`;
+function closeSheet(){document.getElementById('wrap').classList.remove('open');document.getElementById('sheet').innerHTML=HINT;setNav(S&&S.at?'':'here')}
+function updateHere(){{const rb=document.getElementById('restBtn');if(rb)rb.innerHTML=S.mode==='sea'?'<span>⏳</span>Wait a day':'<span>🌙</span>Sleep'}
+  if(S.mode==='sea'){const b=document.getElementById('hereBtn');if(b)b.innerHTML=`<span>⚓</span>${S.sea&&S.sea.sailing?'At sea':'Port'}`;return}const b=document.getElementById('hereBtn');if(!b||!S)return;if(S.at){const p=T[S.at]||PL[S.at],icon=T[S.at]?T[S.at].i:S.at==='stand'?'🪧':(S.store?'📦':'🏚️');b.innerHTML=`<span>${icon}</span>${S.at==='stand'?'Shop':p.short}`}else b.innerHTML='<span>🗺️</span>Map'}
+function hereTap(){clearPreview();if(S.mode==='sea'){if(!sailing)portSheet();return}if(S.at==='stand'&&!shopView){shopView=true;renderMap();openAt('stand');return}const b=document.getElementById('hereBtn'),open=document.getElementById('wrap').classList.contains('open');if(S.at&&!(open&&b.classList.contains('active')))openAt(S.at);else closeSheet()}
+let toastT;
+let MUTE=false;
+function toast(m){if(MUTE)return;const e=document.getElementById('toast');e.textContent=m;e.classList.add('on');clearTimeout(toastT);toastT=setTimeout(()=>e.classList.remove('on'),2300)}
+
+/* ---------- movement ---------- */
+let preview=null,walking=false,travelArmed=null;
+function goTo(t){tapPlace(t)}
+function tapPlace(id){
+  if(walking)return;
+  const tv=id==='gate'?'bazaar':(id==='harbour'&&harbourOpen()?'harbour':null);
+  if(tv&&travelArmed===id&&document.getElementById('wrap').classList.contains('open')){travelArmed=null;travel(tv);return}
+  travelArmed=tv?id:null;
+  if(PL[id]&&!(id==='store'&&S.store)&&!(id==='stand'&&S.ch>=2)){clearPreview();showPlace(id);return}
+  if(S.at===id){clearPreview();if(id==='stand'&&!shopView){shopView=true;renderMap()}openAt(id);return}
+  if(preview&&preview.id===id){go();return}
+  const path=pathTo(id),m=minPerTile(),c=path.length*m;
+  preview={id,path,m,c};renderMap();
+  const name=id==='stand'&&S.ch>=2?'Your shop':(T[id]||PL[id]).n,ok=S.t+c<=DAY_LEN;
+  const pill=document.getElementById('pill');
+  pill.innerHTML=`<div class="info"><b>${name}</b><div class="small">${path.length} squares × ${m} min = ${c} min. ${ok?'Arrive '+clockAt(S.t+c):'You won\u2019t make it before sunset.'}</div></div>${ok?'<button class="sbtn fill" onclick="go()">Walk</button>':''}<button class="x" onclick="clearPreview()" aria-label="Cancel">✕</button>`;
+  pill.classList.add('on');
+}
+function clearPreview(){preview=null;document.getElementById('pill').classList.remove('on');if(!walking)renderMap()}
+function go(){
+  if(!preview)return;const {id,path,m}=preview;
+  if(S.t+path.length*m>DAY_LEN){toast('The stalls will be closed by then. Time to sleep 🌙');return}
+  preview=null;document.getElementById('pill').classList.remove('on');closeSheet();
+  walking=true;S.at=null;renderMap();
+  let i=0;const hero=()=>document.getElementById('hero');
+  const step=()=>{
+    if(i>=path.length){walking=false;arrive(id);return}
+    const [x,y]=path[i++];S.px=x;S.py=y;S.t+=m;timePass(m);
+    const el=hero();if(el)el.style.transform=`translate(${x+.5}px,${y+.5}px)`;
+    renderHud();setTimeout(step,115);
+  };
+  setTimeout(step,30);
+}
+function arrive(id){S.at=id;if(id==='stand')shopView=true;S.visit={t:id,haggled:false,tried:false,line:T[id]?greet(id):''};if(T[id])note(id);save();renderMap();openAt(id)}
+function moodFace(m){return m<=-1.5?'😠':m<-.3?'😒':m<1?'🙂':m<2?'😊':'🥰'}
+function greet(t){const tr=T[t],m=S.mood[t];return pick(m>=1.5?tr.happy:m<=-1?tr.sad:tr.hi)}
+
+/* ---------- stall ---------- */
+function renderStall(t){
+  const tr=T[t],mk=MARKS[S.marks[t]||0];
+  let h=`<div class="sh-head"><div class="big">${portrait(t)}</div><div style="flex:1"><h2>${tr.n}</h2><div class="sub"><span>${tr.role}</span><span>Mood ${moodFace(S.mood[t])}</span>${hag(t)?'<span class="good">Haggled: better prices this visit</span>':''}</div></div><button class="x" onclick="closeSheet()" aria-label="Close">✕</button></div>`;
+  h+=`<div class="bubble">“${S.visit.line||greet(t)}”</div>`;
+  const sells=Object.keys(tr.sells).filter(unlocked),buys=Object.keys(tr.buys);
+  if(sells.length){h+=`<h3>For sale</h3>`;sells.forEach(g=>{const p=ask(t,g);
+    h+=`<div class="row"><div class="gi">${gi(g)}</div><div class="info"><b>${G[g].n}</b> <span class="price">${fmt(p)}</span><div class="small">Weight ${G[g].w}${G[g].s?`, spoils after ${G[g].s} night${G[g].s>1?'s':''}`:''}. You have ${count(g)}.</div></div><button class="sbtn" onclick="trade('buy','${t}','${g}',1)">Buy</button><button class="sbtn" onclick="trade('buy','${t}','${g}',5)">Buy 5</button></div>`})}
+  if(buys.length){h+=`<h3>Wants to buy</h3>`;buys.forEach(g=>{const p=bid(t,g),c=count(g);
+    h+=`<div class="row"><div class="gi">${gi(g)}</div><div class="info"><b>${G[g].n}</b> <span class="price">${fmt(p)}</span><div class="small">You have ${c}.</div></div><button class="sbtn" ${c?'':'disabled'} onclick="trade('sell','${t}','${g}',1)">Sell</button><button class="sbtn fill" ${c?'':'disabled'} onclick="trade('sell','${t}','${g}',${c||1})">Sell all</button></div>`})}
+  h+=`<div class="acts">`;
+  h+=`<button class="sbtn" ${S.visit.tried?'disabled':''} onclick="haggle('${t}')">🤝 Haggle (15 min)</button>`;
+  if(t==='tavern'||t==='kettle'){h+=`<button class="sbtn" onclick="rumor()">${t==='kettle'?'🫖 Order tea and listen':'🍺 Buy a drink and listen'} ($1, 20 min)</button>`;
+    const bk=t==='kettle'?'boysH':'boys',b=S[bk]||0;
+    if((S.ms||0)>=2&&b<3)h+=`<button class="sbtn" onclick="hire(1)">🧒 Hire an errand boy ($${WAGE.toFixed(2)} a day)</button>`;
+    if(b>0)h+=`<button class="sbtn" onclick="hire(-1)">Let one boy go (${b} working)</button>`;
+}
+  if(t==='caravan'){
+    if(!S.donkey)h+=`<button class="sbtn" onclick="upgrade('donkey')">🫏 Buy a donkey ($60, bag 50)</button>`;
+    else if(!S.cart)h+=`<button class="sbtn" onclick="upgrade('cart')">🛞 Buy a cart ($220, bag 110)</button>`;
+    if((S.ms||0)>=4){
+      if(S.contract){const c=S.contract,have=count(c.g),left=c.until-S.day+1;h+=`<button class="sbtn fill" ${have>=c.q?'':'disabled'} onclick="deliver()">📜 Deliver all ${c.q} ${G[c.g].i} for ${fmt(c.pay)} (you carry ${have}, ${left} day${left>1?'s':''} left)</button><button class="sbtn" onclick="backOut()">Back out</button>`}
+      else if(S.offer)h+=`<button class="sbtn fill" onclick="accept()">📜 Accept: ${S.offer.q} ${G[S.offer.g].i} within 5 days for ${fmt(S.offer.pay)}</button><button class="sbtn" onclick="S.offer=null;save();renderStall('caravan')">No thanks</button>`;
+      else h+=`<button class="sbtn" onclick="askContract()">📜 Ask about a contract</button>`;
+    }
+  }
+  if(t==='idris'&&S.ch>=3)h+=`<button class="sbtn fill" onclick="boardShip()">⛵ Board your ship</button>`;
+  h+=`<button class="sbtn" onclick="mark('${t}')">📍 Map mark ${mk||'(none)'}</button></div>`;
+  setSheet(h);
+}
+function trade(kind,t,g,n){
+  let done=0,total=0,msg='';
+  for(let i=0;i<n;i++){
+    if(kind==='buy'){
+      const p=ask(t,g);
+      if(S.cash<p){msg='Not enough coins';break}
+      if(weight()+G[g].w>S.cap){msg='Your bag is full';break}
+      S.cash-=p;addLot(g);bump(t,g,IMPACT);
+    }else{
+      if(!count(g))break;
+      const p=bid(t,g);S.cash+=p;removeOne(g);bump(t,g,1/IMPACT);
+    }
+    done++;S.trades++;S.mood[t]=Math.min(3,S.mood[t]+T[t].mg*.15);
+  }
+  if(done){
+    toast(`${kind==='buy'?'Bought':'Sold'} ${done} ${G[g].i}${msg?'. '+msg+'.':''}`);
+    if(Math.random()<.3)S.visit.line=pick(T[t].thx);
+  }else if(msg)toast(msg+'.');
+  note(t);save();renderHud();renderMap();renderStall(t);
+  checkMs();
+}
+function haggle(t){
+  if(S.visit.tried)return;
+  if(S.t+15>DAY_LEN){toast('No time left to haggle today.');return}
+  S.t+=15;timePass(15);S.visit.tried=true;
+  if(Math.random()<T[t].haggle+.08*S.mood[t]){S.visit.haggled=true;S.visit.line=pick(T[t].hagOk)}
+  else{S.mood[t]=Math.max(-3,S.mood[t]-1);S.visit.line=pick(T[t].hagNo)}
+  note(t);save();renderHud();renderMap();renderStall(t);
+}
+function rumor(){
+  if(S.cash<1){toast('You need $1 for a drink.');return}
+  if(S.t+20>DAY_LEN){toast('It’s late. Everyone is heading home.');return}
+  S.cash-=1;S.t+=20;timePass(20);
+  const up=[];for(let d=S.day+1;d<=S.day+3;d++)if(S.schedule[d])up.push(S.schedule[d]);
+  let txt;
+  if(up.length&&Math.random()<.75)txt=pick(up).rumor;
+  else if(Math.random()<.5)txt=EV[pick(Object.keys(EV))]().rumor;
+  else txt="The barman shrugs. Quiet times, friend.";
+  S.rumors.unshift({day:S.day,txt});S.rumors=S.rumors.slice(0,8);
+  S.visit.line=txt;save();renderHud();renderMap();renderStall(S.at||'tavern');
+}
+function upgrade(k){
+  const c=k==='donkey'?60:220;
+  if(S.cash<c){toast(`You need ${fmt(c)}.`);return}
+  S.cash-=c;
+  if(k==='donkey'){S.donkey=true;S.cap=50;S.visit.line='Her name is Pomegranate. She bites, but only merchants she dislikes.'}
+  else{S.cart=true;S.cap=110;S.visit.line='A fine cart. The wheels are almost round.'}
+  save();renderHud();renderStall('caravan');checkMs();
+}
+function hire(n){const bk=S.at==='kettle'?'boysH':'boys';S[bk]=Math.max(0,Math.min(3,(S[bk]||0)+n));S.visit.line=n>0?'A barefoot boy grins at you. Every morning he will run around the bazaar and bring you fresh prices from three stalls.':'The boy shrugs and runs off to find other work.';save();renderStall(S.at||'tavern');checkMs()}
+function askContract(){const g=pick(['cloth','pottery']),q=g==='cloth'?20:12;S.offer={g,q,pay:Math.round(q*Math.max(G[g].b*1.6,G[g].b*S.gw[g]*Math.sqrt(effM(g,'bid')*effM(g,'ask'))*1.35))};S.visit.line=`I need ${q} ${G[g].n.toLowerCase()} for the coast within five days. Deliver all ${q} at once and I pay ${fmt(S.offer.pay)}. Fail me and I'll remember.`;save();renderStall('caravan')}
+function backOut(){S.contract=null;S.mood.caravan=Math.max(-3,S.mood.caravan-1.5);S.visit.line='Hmph. A merchant\'s word is worth what it is worth. I will remember this.';save();renderStall('caravan')}
+function accept(){S.contract={...S.offer,until:S.day+4};S.offer=null;S.visit.line='Good. We shake on it. Five days, not one more.';save();renderStall('caravan')}
+function deliver(){const c=S.contract;if(!c||count(c.g)<c.q)return;for(let i=0;i<c.q;i++)removeOne(c.g);S.cash+=c.pay;S.contract=null;S.contractsDone=(S.contractsDone||0)+1;S.mood.caravan=Math.min(3,S.mood.caravan+1.5);S.visit.line='Exactly as promised. I like doing business with you.';save();renderHud();renderStall('caravan');checkMs()}
+function rent(){if((S.ms||0)<3)return;if(S.cash<100){toast('You need $100.');return}S.cash-=100;S.store=true;S.storeInv=S.storeInv||[];save();render();showPlace('store');checkMs()}
+const scount=g=>(S.storeInv||[]).filter(l=>l.g===g).reduce((a,l)=>a+l.q,0);
+function moveGoods(g,n,toStore){S.storeInv=S.storeInv||[];const from=toStore?S.inv:S.storeInv,to=toStore?S.storeInv:S.inv;let k=0;
+  while(k<n){const lots=from.filter(l=>l.g===g).sort((a,b)=>a.d-b.d);if(!lots.length)break;if(!toStore&&weight()+G[g].w>S.cap)break;
+    const l=lots[0];l.q--;if(!l.q)from.splice(from.indexOf(l),1);const x=to.find(y=>y.g===g&&y.d===l.d);if(x)x.q++;else to.push({g,q:1,d:l.d});k++}
+  return k}
+function mv(g,n,toStore){const k=moveGoods(g,n,toStore);if(!k&&!toStore)toast('Your bag is full.');save();renderHud();showPlace('store')}
+function showPlace(t){
+  const head=(i,n,sub)=>`<div class="sh-head"><div class="big">${i}</div><div style="flex:1"><h2>${n}</h2><div class="sub"><span>${sub}</span></div></div><button class="x" onclick="closeSheet()" aria-label="Close">✕</button></div>`;
+  let h='';
+  if(t==='gate')h=travelSheet('bazaar',head);
+  else if(t==='harbour'&&harbourOpen())h=travelSheet('harbour',head);
+  else if(t==='harbour')h=head('⛵','The harbour','Ships to faraway markets')+`<div class="bubble">The harbour master laughs. “${S.ch===2?((S.ms2||0)>=4?'Passage for a merchant and a camel: one thousand coins. Save it and the sea is yours.':'You own a stand now, I hear. Make a name with it first.'):'Ships are for merchants with a name. Come back when you own a stand.'}”</div><p class="small">${S.ch===2?'Opens at the end of chapter two.':'Opens in chapter two.'}</p>`;
+  else if(t==='rival'){const R=(S.rival&&S.rival.g)||{},ks=Object.keys(R);h=head(portrait('hassan'),"Hassan's second stall",'Right across the alley from yours')+`<div class="bubble">${ks.length?pick(['Competition is healthy, my friend. For me.','Your customers have excellent taste. They come to me now.','Lower your prices? Go ahead. I have more spice than patience.']):'Fine, fine. You win this round. I will find something else to sell.'}</div>`+(ks.length?ks.map(g=>`<div class="row"><div class="gi">${gi(g)}</div><div class="info"><b>${G[g].n}</b> <span class="price">${fmt(street(g)*R[g])}</span><div class="small">${Math.round(R[g]*100)}% of street</div></div></div>`).join(''):'<p class="small">Hassan is not competing with you on anything right now.</p>')+`<p class="small">Each morning he copies your two best sellers and undercuts your price by 4%, but he never sells below the street price. Cheaper than him, you get his customers. Equal, you split them. More expensive, most go to him.</p>`}
+  else if(t==='stand'&&S.ch>=2)h=standSheet(head);
+  else if(t==='stand')h=head('🪧','A boarded-up stall','Your future, maybe')+`<div class="bubble">A faded sign: “For rent to a respected merchant. ${fmt(GOAL)} a season.”</div><p class="small">${S.won?'You could rent it now.':'Become a respected merchant and save '+fmt(GOAL)+' to claim it.'}</p>`;
+  else if(!S.store){const ok=(S.ms||0)>=3;h=head('🏚️','An empty storeroom','Near the caravan gate')+`<div class="bubble">${ok?'The landlord rubs his hands. “A hundred coins and it’s yours for good. Dry, safe, and the rats are mostly polite.”':'The landlord looks you up and down. “I rent to merchants, not newcomers. Come back when you have a crew.”'}</div>`+(ok?`<button class="sbtn fill wide" onclick="rent()">Rent it for $100</button>`:'');}
+  else{
+    h=head('📦','Your storeroom','No weight limit, but food still spoils')+`<div class="bubble">Cool and dry. Pomegranate refuses to go inside.</div>`;
+    const bag=GK.filter(g=>count(g)),st=GK.filter(g=>scount(g));
+    h+=`<h3>In your bag</h3>`+(bag.length?bag.map(g=>`<div class="row"><div class="gi">${gi(g)}</div><div class="info"><b>${count(g)} ${G[g].n}</b></div><button class="sbtn" onclick="mv('${g}',1,true)">Store 1</button><button class="sbtn fill" onclick="mv('${g}',999,true)">Store all</button></div>`).join(''):'<p class="small">Nothing to store.</p>');
+    h+=`<h3>In the storeroom</h3>`+(st.length?st.map(g=>`<div class="row"><div class="gi">${gi(g)}</div><div class="info"><b>${scount(g)} ${G[g].n}</b></div><button class="sbtn" onclick="mv('${g}',1,false)">Take 1</button><button class="sbtn fill" onclick="mv('${g}',999,false)">Take all</button></div>`).join(''):'<p class="small">Empty. Stock up when prices are low.</p>');
+  }
+  setSheet(h);
+}
+function mark(t){S.marks[t]=((S.marks[t]||0)+1)%MARKS.length;save();renderMap();renderStall(t)}
+
+/* ---------- day cycle ---------- */
+function rest(sea){
+  if(!sea)closeSheet();
+  const log=[];
+  if(S.ch>=2&&S.shop)standNight(log);
+  if(sea){}
+  else if(S.cash>=.5){S.cash-=.5;log.push('Soup and a mat at the inn cost you $0.50.')}
+  else log.push('No coins for the inn. You slept under the stars.');
+  S.day++;
+  const sp={};
+  const rot=l=>{const s=G[l.g].s;if(s&&S.day-l.d>=s){sp[l.g]=(sp[l.g]||0)+l.q;return false}return true};
+  S.inv=S.inv.filter(rot);if(S.storeInv)S.storeInv=S.storeInv.filter(rot);
+  Object.entries(sp).forEach(([g,q])=>log.push(`${q} ${G[g].n.toLowerCase()} ${G[g].i} went bad overnight.`));
+  TK.forEach(t=>Object.keys(S.p[t]).forEach(g=>{S.p[t][g]=(1+(S.p[t][g]-1)*.4)*Math.exp(gauss()*.06)}));
+  GK.forEach(g=>{S.gw[g]=Math.exp(Math.log(S.gw[g])*.85+gauss()*.05)});
+  TK.forEach(t=>S.mood[t]*=.92);timePass(0,.15);
+  if(S.contract&&S.day>S.contract.until){log.push(`Your contract for ${S.contract.q} ${G[S.contract.g].n.toLowerCase()} expired. The Caravan Master is not pleased.`);S.mood.caravan=Math.max(-3,S.mood.caravan-2);S.contract=null}
+  S.effects=S.effects.filter(e=>e.until>=S.day);
+  const ev=S.schedule[S.day];delete S.schedule[S.day];
+  S.news=[];
+  if(ev&&S.contract&&ev.goods.includes(S.contract.g)&&ev.ask>1.05){S.contract.until+=3;log.push('The Caravan Master sends word: “Even I can’t argue with this news. Take three more days for the contract.”')}
+  if(ev){S.effects.push({...ev,until:S.day+ev.dur-1});S.news.push(ev.news)}else S.news.push(pick(QUIET));
+  for(let d=S.day+1;d<=S.day+6;d++)if(!(d in S.schedule))S.schedule[d]=maybeEvent();
+  S.t=0;S.at=null;{const s0=DIST[S.dist||'bazaar'].start;S.px=s0[0];S.py=s0[1]}S.visit={t:null,haggled:false,tried:false,line:''};
+  for(const [bk,dn,where] of [['boys','bazaar','bazaar'],['boysH','harbour','harbour']]){
+  let boys=S[bk]||0;
+  if(boys){const pay=Math.min(boys,Math.floor(Math.max(0,S.cash)/WAGE));S.cash-=pay*WAGE;
+    if(pay<boys){log.push(`You couldn't pay ${boys-pay} ${where} errand boy${boys-pay>1?'s':''}, so ${boys-pay>1?'they':'he'} quit.`);S[bk]=boys=pay}
+    if(boys){log.push(`Your ${where} errand boys cost you ${fmt(boys*WAGE)}.`);
+      const ts=Object.keys(DIST[dn].BLK).filter(t=>T[t]);
+      const pool=ts.sort(()=>Math.random()-.5).slice(0,Math.min(ts.length,boys*3));pool.forEach(t=>note(t));
+      log.push(`They brought fresh prices from ${pool.map(t=>T[t].short).join(', ')}. Check your notebook.`)}}
+  }
+  if(S.ch===3&&S.sea)seaWorldDay(log);
+  if(sea){save();return log}
+  save();render();
+  setSheet(`<h2>☀️ Day ${S.day}</h2>${log.map(l=>`<p>${l}</p>`).join('')}<h3>The crier at the well</h3>${S.news.map(n=>`<div class="bubble">${n}</div>`).join('')}<button class="sbtn fill wide" onclick="closeSheet()">Go to the bazaar</button>`);
+  if(S.ch>=2)checkMs();
+}
+function effText(e){
+  const parts=[];
+  if(e.bid>1.05)parts.push('traders pay more');else if(e.bid<.95)parts.push('traders pay less');
+  if(e.ask<.95)parts.push('cheaper to buy');else if(e.ask>1.05)parts.push('pricier to buy');
+  const left=e.until-S.day+1;
+  return `${e.goods.map(g=>G[g].i).join(' ')} ${parts.join(', ')}. ${left} day${left>1?'s':''} left.`;
+}
+function showNews(){
+  let h=`<div class="sh-head"><div class="big">⛲</div><div style="flex:1"><h2>News at the well</h2><div class="sub"><span>Day ${S.day}</span></div></div><button class="x" onclick="closeSheet()" aria-label="Close">✕</button></div>`;
+  h+=S.news.map(n=>`<div class="bubble">${n}</div>`).join('');
+  h+=`<h3>What's moving prices</h3>`;
+  h+=S.effects.length?S.effects.map(e=>`<div class="news">${effText(e)}</div>`).join(''):`<p class="small">Nothing unusual. Prices drift on their own.</p>`;
+  h+=`<h3>Rumours you've heard</h3>`;
+  h+=S.rumors.length?S.rumors.map(r=>`<div class="news"><span class="small">Day ${r.day}</span><br>${r.txt}</div>`).join(''):`<p class="small">Buy a drink at the tavern to hear what people whisper. Not every rumour is true.</p>`;
+  if(S.won2&&S.ch===2)h+=`<button class="sbtn fill wide" onclick="startCh3()">Begin chapter three</button>`;
+  if(S.won&&(S.ch||1)<2)h+=`<button class="sbtn fill wide" onclick="startCh2()">Begin chapter two</button>`;
+  h+=`<h3>Have a chapter code?</h3><p class="small">Finishing a chapter shows a code that lets you, or a friend, start the next chapter right away.</p><input id="codeIn" class="sel" placeholder="Enter a code" autocomplete="off" autocapitalize="characters"><button class="sbtn wide" onclick="useCode()">Use code</button>`;
+  h+=`<button class="sbtn wide" onclick="confirmNew()">Start a new game</button>`;
+  setSheet(h);
+}
+function ago(d,tm){const a=S.day-d;return a===0?(tm!=null?'today '+clockAt(tm):'today'):a===1?'yesterday':`${a} days ago`}
+function showNotebook(){if(S.mode==='sea')return seaNotebook();
+  let h=`<div class="sh-head"><div class="big">📒</div><div style="flex:1"><h2>Your notebook</h2><div class="sub"><span>Prices you've seen with your own eyes</span></div></div><button class="x" onclick="closeSheet()" aria-label="Close">✕</button></div>`;
+  let any=false;
+  GK.forEach(g=>{
+    const A=[],B=[];
+    TK.forEach(t=>{const n=S.nb[t];if(n&&n.q[g]){(n.q[g].k==='a'?A:B).push({t,v:n.q[g].v,d:n.day,tm:n.tm})}});
+    if(!A.length&&!B.length)return;any=true;
+    A.sort((a,b)=>a.v-b.v);B.sort((a,b)=>b.v-a.v);
+    h+=`<div class="nbg"><b class="gname">${gi(g)} ${G[g].n}</b>`;
+    if(A.length)h+=`<div><span class="small">Buy from </span>${A.map((q,i)=>`<span class="q${i===0?' best':''}">${T[q.t].short} ${fmt(q.v)} <span class="small">${ago(q.d,q.tm)}</span></span>`).join('')}</div>`;
+    if(B.length)h+=`<div><span class="small">Sell to </span>${B.map((q,i)=>`<span class="q${i===0?' best':''}">${T[q.t].short} ${fmt(q.v)} <span class="small">${ago(q.d,q.tm)}</span></span>`).join('')}</div>`;
+    if(A.length&&B.length){const m=(B[0].v/A[0].v-1)*100;h+=`<div class="small">Best known margin: <span class="${m>0?'good':'bad'}">${m>0?'+':''}${m.toFixed(0)}%</span> per unit, before your own trades move the price.</div>`}
+    h+=`</div>`;
+  });
+  if(!any)h+=`<p class="small">Empty for now. Visit stalls and every price you see gets written here.</p>`;
+  setSheet(h);
+}
+function showBag(){if(S.mode==='sea')return shipSheet();
+  const w=weight();
+  let h=`<div class="sh-head"><div class="big">🎒</div><div style="flex:1"><h2>Your bag</h2><div class="sub"><span>${w} of ${S.cap} weight used</span><span>${fmt(S.cash)}</span></div></div><button class="x" onclick="closeSheet()" aria-label="Close">✕</button></div>`;
+  if(!S.inv.length)h+=`<p class="small">Empty. Find something cheap and someone who wants it.</p>`;
+  [...S.inv].sort((a,b)=>a.g.localeCompare(b.g)||a.d-b.d).forEach(l=>{
+    const s=G[l.g].s;let life='keeps forever';
+    if(s){const left=l.d+s-S.day;life=left<=1?'<span class="bad">goes bad tonight</span>':`${left} nights left`}
+    h+=`<div class="row"><div class="gi">${gi(l.g)}</div><div class="info"><b>${l.q} ${G[l.g].n}</b><div class="small">Bought ${ago(l.d)}, ${life}</div></div></div>`;
+  });
+  h+=`<h3>Animals and carts</h3><p class="small">${S.cart?'Donkey and cart. 🫏🛞':S.donkey?'One donkey, Pomegranate. 🫏 A cart would carry more.':'Just your own back. The Caravan Master sells donkeys.'}</p>`;
+  h+=`<h3>Walking speed</h3><p class="small">${minPerTile()} min per square right now. On foot: 5, or 7 with a bag over half full. Donkey: 4. Cart: 5.</p>`;
+  h+=`<h3>Helpers</h3><p class="small">${S.boys?`${S.boys} errand boy${S.boys>1?'s':''} scouting prices every morning.`:'No helpers yet. Hire errand boys at the tavern.'}</p>`;
+  setSheet(h);
+}
+function intro(){
+  setSheet(`<h2>Five Coins Bazaar</h2>
+  <div class="bubble">You arrive at the great bazaar with five coins and one apple. Save ${fmt(GOAL)} and you can rent a stand of your own.</div>
+  <p>The line at the top shows your next goal. Reach it and new things open up.</p>
+  <p>Walk between stalls by tapping them. Tap once to see the route and its time, tap again (or Walk) to go. Each day runs from 06:00 to 18:00. Every square takes 5 minutes on foot, 7 if your bag is over half full, 4 with a donkey, 5 with a cart.</p>
+  <p>Everyone buys and sells different things. Your notebook remembers every price you've seen, but prices move, so old notes can lie.</p>
+  <p>Buying pushes a trader's price up and selling pushes it down. Fish spoils overnight, apples in a few days. Check the news at the well each morning, and buy a drink at the tavern to hear rumours or hire errand boys who scout prices every morning.</p>
+  <button class="sbtn fill wide" onclick="closeSheet()">Start trading</button>`);
+}
+function showEnding(){
+  setSheet(`<h2>End of chapter one</h2>
+  <div class="bubble">You count your coins. ${fmt(S.cash)}. Enough to rent a stand of your own. Tomorrow you become a merchant.</div>
+  <p>Just then a breathless messenger pushes through the crowd with a sealed letter. Your uncle, the one you barely remember, has died. He left you everything: three palaces, a fleet of ships, and a camel named Destiny.</p>
+  <p class="small">It took you ${S.day} days and ${S.trades} trades.</p><p class="small">Code to skip straight to chapter two next time: <b>DESTINY</b></p>
+  <button class="sbtn fill wide" onclick="startCh2()">Begin chapter two</button>
+  <button class="sbtn wide" onclick="closeSheet()">Keep trading anyway</button>
+  <button class="sbtn wide" onclick="newGame()">Start over with five coins</button>`);
+}
+/* ================= CHAPTER TWO: THE SHOP ================= */
+const street=g=>G[g].b*S.gw[g]*Math.sqrt(effM(g,'bid')*effM(g,'ask'));
+function rivalOn(){return false}
+function harbourOpen(){return S.ch>=3||(S.ch===2&&(S.ms2||0)>=4)}
+const SH={cap:l=>10+5*l,speed:()=>1+.5*S.shop.lv.seller,mark:()=>1.3+.1*S.shop.lv.sign};
+const SUP={
+  shelves:{n:'Another shelf',d:()=>'Room for one more good',max:()=>4,cost:l=>Math.round(100*Math.pow(2,l))},
+  cap:{n:'Bigger shelves',d:()=>`Each shelf holds ${SH.cap(S.shop.lv.cap)} now, +5 per level`,max:()=>5,cost:l=>Math.round(80*Math.pow(1.9,l))},
+  seller:{n:'Sellers',d:()=>`Each shelf sells ${SH.speed()} an hour now, +0.5 per seller`,max:()=>4,cost:l=>Math.round(200*Math.pow(2.2,l))},
+  sign:{n:'Better sign',d:()=>`Customers pay ${Math.round(SH.mark()*100)}% of street price now, +10% per level`,max:()=>4,cost:l=>Math.round(150*Math.pow(2,l))},
+  runners:{n:'Runners',d:()=>'Each runner refills one shelf every dawn, buying at street price +10%. Wage $3 a day each',max:()=>S.shop.shelves.length,cost:l=>Math.round(60*Math.pow(1.8,l))}
+};
+const shelfPrice=g=>street(g)*SH.mark();
+function shopRate(){if(!S.shop||!S.shop.open)return 0;return S.shop.shelves.reduce((a,x)=>a+(x.g&&x.q>0?SH.speed()*shelfPrice(x.g):0),0)}
+function newShop(){return {v:3,open:false,shelves:[{g:null,q:0,acc:0},{g:null,q:0,acc:0}],lv:{shelves:0,cap:0,seller:0,sign:0,runners:0},today:0,earned:0,sold:0,best:0}}
+function sellTick(dt){
+  if(!(S.ch>=2&&S.shop&&S.shop.open)||dt<=0)return;
+  const sp=SH.speed()*dt/60;
+  S.shop.shelves.forEach(x=>{if(!x.g||x.q<=0)return;x.acc=(x.acc||0)+sp;let u=Math.floor(x.acc);if(u<=0)return;x.acc-=u;u=Math.min(u,x.q);x.q-=u;
+    const rev=u*shelfPrice(x.g);S.cash+=rev;if(shopActive())spawnCustomer({r:'buy',g:x.g,v:rev});S.shop.today+=rev;S.shop.earned+=rev;S.shop.sold+=u;if(PREM.includes(x.g))S.shop.soldPrem=true;if(x.q===0){x.acc=0;if(x.refillAt==null&&runnerShelves().includes(x))x.refillAt=S.t+120}});
+}
+function runnerShelves(){return S.shop.shelves.filter(x=>x.g).slice(0,S.shop.lv.runners||0)}
+function refill(x){const cap=SH.cap(S.shop.lv.cap),unit=street(x.g)*1.1,k=Math.max(0,Math.min(cap-x.q,Math.floor(Math.max(0,S.cash)/unit)));x.q+=k;S.cash-=k*unit;return [k,k*unit]}
+function clerkTick(dt){
+  if(S.t<=DAY_LEN)sellTick(dt);
+  if(!(S.ch>=2&&S.shop&&S.shop.open))return;
+  const rs=runnerShelves();
+  rs.forEach(x=>{if(x.q===0&&x.refillAt==null)x.refillAt=S.t+120});
+  S.shop.shelves.forEach(x=>{if(x.refillAt==null||S.t<x.refillAt)return;x.refillAt=null;if(!x.g||!rs.includes(x))return;
+    if(stormOn()&&PREM.includes(x.g)){toast('⛈️ The storm cut off the harbour. Your runner couldn’t get more '+G[x.g].n.toLowerCase()+'.');return}
+    const [k,c]=refill(x);toast(k?`🏃 Your runner restocked ${k} ${G[x.g].i} for ${fmt(c)}.`:'🏃 Your runner came back empty-handed: not enough coins.');if(shopActive())renderMap()});
+}
+function standNight(log){
+  if(!S.shop.open)return;
+  log.push(`Your shop sold ${fmt(S.shop.today)} worth of goods today.`);
+  S.shop.best=Math.max(S.shop.best||0,S.shop.today);
+  const n=S.shop.lv.runners;
+  if(false){}
+  else if(n){const wage=3*n,cap=SH.cap(S.shop.lv.cap);S.cash-=wage;let spent=0,filled=0,stuck=0;
+    runnerShelves().forEach(x=>{x.refillAt=null;if(stormOn()&&PREM.includes(x.g)){stuck++;return}const [k,c]=refill(x);spent+=c;filled+=k});
+    log.push(`Your runners restocked ${filled} items for ${fmt(spent)} and earned ${fmt(wage)} in wages.`);if(stuck)log.push(`The storm cut off the harbour, so ${stuck} shelf${stuck>1?'s':''} of tea, perfume or silk couldn't be restocked.`)}
+  S.shop.today=0;
+}
+function openShop(){if(S.cash<400){toast('You need $400.');return}S.cash-=400;S.shop.open=true;toast('The shop is yours! Now fill the shelves.');save();renderHud();renderMap();showPlace('stand');checkMs()}
+function buyShop(k){const L=S.shop.lv,u=SUP[k],lv=L[k];if(lv>=u.max())return;const c=u.cost(lv);if(S.cash<c){toast(`You need ${fmt(c)}.`);return}
+  S.cash-=c;L[k]=lv+1;if(k==='shelves')S.shop.shelves.push({g:null,q:0,acc:0});
+  toast(`${u.n}: done.`);save();renderHud();renderMap();showPlace('stand');checkMs()}
+function stock(g){
+  const sh=S.shop.shelves,cap=SH.cap(S.shop.lv.cap);
+  const t=sh.find(x=>x.g===g&&x.q<cap)||sh.find(x=>!x.g)||sh.find(x=>x.q===0);
+  if(!t){toast('No free shelf. Buy another shelf or wait for one to empty.');return}
+  if(t.g!==g){t.g=g;t.q=0;t.acc=0}
+  let k=0;while(t.q<cap&&count(g)>0){removeOne(g);t.q++;k++}
+  toast(`Put ${k} ${G[g].i} on the shelf.`);save();renderHud();renderMap();showPlace('stand');checkMs();
+}
+function unshelf(i){const x=S.shop.shelves[i];let k=0;while(x.q>0&&weight()+G[x.g].w<=S.cap){x.q--;addLot(x.g);k++}if(x.q===0){x.g=null;x.acc=0}
+  toast(k?`Took ${k} back into your bag.`:'Your bag is full.');save();renderHud();renderMap();showPlace('stand')}
+function standSheet(head){
+  const sp=S.shop;
+  if(!sp.open)return head('🏚️','An empty shop','Right in the middle of the bazaar')+`<div class="bubble">The landlord jingles the keys. “Four hundred coins and it's yours. Shelves included. Goods not included.”</div><p>Once it's open, you stock the shelves with goods from your bag. Each stocked shelf sells steadily from 06:00 to 18:00 at a markup over the street price, even while you're away. Empty shelves earn nothing.</p><button class="sbtn fill wide" ${S.cash<400?'disabled':''} onclick="openShop()">Open the shop for $400</button>`;
+  const here=S.at==='stand',cap=SH.cap(sp.lv.cap),r=shopRate(),runners=sp.lv.runners;
+  let h=head('🏪','Your shop','Sells from 06:00 to 18:00. While you stand here, time flows on its own');
+  h+=`<div class="stat"><div class="chip">Selling now<b>${fmt(r)}</b>an hour</div><div class="chip">Today<b>${fmt(sp.today)}</b></div><div class="chip">Best day<b>${fmt(Math.max(sp.best||0,sp.today))}</b></div></div>`;
+  h+=`<h3>Shelves</h3>`;
+  let ri=0;
+  sp.shelves.forEach((x,i)=>{const hasR=x.g&&ri<runners;if(x.g)ri++;
+    if(!x.g){h+=`<div class="row"><div class="gi">·</div><div class="info"><b>Empty shelf</b><div class="small">Earns nothing. ${here?'Put something on it from your bag below.':'Come to the shop to stock it.'}</div></div></div>`;return}
+    const p=shelfPrice(x.g),hrs=x.q/SH.speed();
+    h+=`<div class="row"><div class="gi">${gi(x.g)}</div><div class="info"><b>${G[x.g].n}</b> <span class="price">${x.q}/${cap}</span>${hasR?' <span class="best">RUNNER</span>':''}<div class="small">${x.q?`Sells ${SH.speed()} an hour at ${fmt(p)} each, ${fmt(SH.speed()*p)} an hour. Empty in ${hrs.toFixed(1)} hours.`:'Sold out. '+(hasR?(x.refillAt!=null?`Your runner is on the way, back around ${clockAt(x.refillAt)}.`:'Your runner will fetch more.'):'Restock it from your bag.')}</div></div>${here&&x.q>0?`<button class="sbtn" onclick="unshelf(${i})">Take back</button>`:''}</div>`});
+  if(here){const bag=GK.filter(g=>count(g));
+    h+=`<h3>Stock from your bag</h3>`+(bag.length?bag.map(g=>`<div class="row"><div class="gi">${gi(g)}</div><div class="info"><b>${count(g)} ${G[g].n}</b><div class="small">Sells here at ${fmt(shelfPrice(g))} each (street ${fmt(street(g))})</div></div><button class="sbtn fill" onclick="stock('${g}')">Put on shelf</button></div>`).join(''):'<p class="small">Your bag is empty. Buy goods around the bazaar and bring them here.</p>');}
+  h+=`<h3>Upgrades</h3>`;
+  Object.entries(SUP).forEach(([k,u])=>{const lv=sp.lv[k],max=lv>=u.max(),c=max?null:u.cost(lv);
+    h+=`<div class="uprow"><div class="info"><b>${u.n}</b> <span class="lv">Lv ${lv}</span><div class="small">${u.d()}</div></div>${max?'<span class="small">Max</span>':`<button class="sbtn${S.cash>=c?' fill':''}" onclick="buyShop('${k}')">${fmt(c)}</button>`}</div>`});
+  return h;
+}
+function travelSheet(to,head){const isH=to==='harbour';
+  return head(isH?'⛵':'🏛️',isH?'The Harbour Quarter':'The road to the bazaar',isH?'Ships, gulls and new traders':'Back to the Old Bazaar')+
+  `<div class="bubble">${isH?'Tea from the east, perfume from the south, silk from everywhere. And captains who pay well for bazaar goods.':'Back past the fish carts to the Old Bazaar.'}</div>${stormOn()?'<div class="bubble">⛈️ A storm is raging over the harbour. No carts and no boats are moving today. Try again tomorrow.</div>':`<p class="small">The trip takes 1 hour and costs $3. Your shop keeps selling while you travel.</p><button class="sbtn fill wide" onclick="travel('${to}')">Go to the ${isH?'Harbour Quarter':'Old Bazaar'} ($3)</button>`}`}
+function stormOn(){return S.effects.some(e=>e.k==='storm'||(!e.k&&e.goods&&e.goods.length===1&&e.goods[0]==='fish'&&e.bid>1.5))}
+function travel(d){
+  if(stormOn()){toast('A storm is raging. Nobody is travelling today.');return}
+  if(S.cash<3){toast('The trip costs $3.');return}
+  if(S.t+60>DAY_LEN){toast('Too late to travel today. Sleep first 🌙');return}
+  S.cash-=3;
+  S.t+=60;timePass(60);S.dist=d;setDistrict(d);S.at=null;const s0=DIST[d].start;S.px=s0[0];S.py=s0[1];
+  if(d==='harbour')S.visitedHarbour=true;
+  closeSheet();save();render();checkMs();
+  toast(d==='harbour'?'The Harbour Quarter: gulls, tar and money.':'Back in the Old Bazaar.');
+}
+function startCh2(){
+  S.ch=2;S.ms2=0;S.won2=false;S.camel=true;S.donkey=true;S.cap=Math.max(S.cap,150);S.store=true;S.storeInv=S.storeInv||[];S.won=true;S.dist=S.dist||'bazaar';
+  S.shop=newShop();
+  save();render();
+  setSheet(`<h2>Chapter two: The Shop</h2><div class="bubble">The lawyer clears his throat and reads the will again, slower this time.</div>
+  <p>The palaces were mortgaged. The fleet sank eleven years ago. Your uncle's only real possession was a camel named Destiny. She carries 150 and walks like a queen.</p>
+  <p>You still have your coins and your storeroom. And the boarded-up stall in the middle of the bazaar is finally for rent: $400. Open it, fill its shelves with goods you buy around the bazaar, and it sells them for you all day.</p>
+  <button class="sbtn fill wide" onclick="closeSheet()">Let's do it</button>`);
+}
+function showEnding2(){setSheet(`<h2>End of chapter two</h2>
+  <div class="bubble">Captain Idris counts your coins twice, then hands you a heavy iron key. “She's yours. Treat her better than your uncle treated his fleet.”</div>
+  <p>At dawn your ship leaves the bay. The bazaar shrinks behind you: Miriam waving an apple, Hassan pretending not to care, your runners already carrying crates to the shop.</p>
+  <p>Destiny is seasick. You are not.</p>
+  <p class="small">Chapter three: the sea. It took you ${S.day} days.</p><p class="small">Code to skip straight to chapter three next time: <b>POMEGRANATE</b></p>
+  <button class="sbtn fill wide" onclick="startCh3()">Begin chapter three</button><button class="sbtn wide" onclick="closeSheet()">Keep trading</button>`)}
+/* ================= CHAPTER THREE: THE SEA ================= */
+const SG={pepper:{n:'Pepper',i:'⚫',b:30},silk:{n:'Silk',i:'🧣',b:45},sugar:{n:'Sugar',i:'🍬',b:14},wine:{n:'Wine',i:'🍷',b:10},oil:{n:'Olive oil',i:'🫒',b:9},grain:{n:'Grain',i:'🌾',b:4},glass:{n:'Glass',i:'🥂',b:20},wool:{n:'Wool cloth',i:'🧶',b:16}};
+const SGK=Object.keys(SG);
+const PORTS={
+  beirut:{n:'Beirut',xy:[10.85,7.25],sub:'Your home port',yard:'yard',info:'Home. Syrian silk and spices arrive here by caravan from Damascus and Aleppo, and every year Venetian galleys come to buy them.',f:{silk:.8,pepper:.85,sugar:.9,wool:1.35,glass:1.3,grain:1.15}},
+  famagusta:{n:'Famagusta',xy:[10.05,6.45],sub:'Cyprus, Venetian since 1489',info:'Queen Caterina Cornaro handed Cyprus to Venice in 1489. Sugar from the island\u2019s plantations and sweet Commandaria wine.',f:{sugar:.6,wine:.8,grain:1.3,wool:1.25,glass:1.15}},
+  alexandria:{n:'Alexandria',xy:[7.9,9.55],sub:'Egypt, under the Mamluk sultans',info:'Indian pepper reaches Alexandria through the Red Sea, cheaper than anywhere else. Egypt also exports grain and sugar, and buys European cloth.',f:{pepper:.6,sugar:.8,grain:.7,wool:1.5,glass:1.35,oil:1.3}},
+  candia:{n:'Candia',xy:[5.9,7.3],sub:'Crete, a Venetian colony',info:'Crete sends malmsey wine and olive oil all over Europe, but cannot grow enough grain to feed itself.',f:{wine:.6,oil:.65,grain:1.4,pepper:1.2,glass:1.1}},
+  constantinople:{n:'Constantinople',xy:[8.65,2.25],sub:'Ottoman capital since 1453',info:'The Ottoman capital, a huge and hungry city. Silk from nearby Bursa is cheap; spices, sugar and grain sell well.',f:{silk:.75,pepper:1.35,sugar:1.4,wine:1.25,grain:1.35,glass:1.2}},
+  venice:{n:'Venice',xy:[2.55,1.45],sub:'The Most Serene Republic',yard:'arsenal',info:'Murano glass and wool cloth from the north, and the richest buyers of pepper and silk in Europe. Home of the Arsenal, the greatest shipyard in the world.',f:{glass:.6,wool:.7,pepper:1.7,silk:1.5,sugar:1.45,oil:1.2,wine:1.2}}
+};
+const PK=Object.keys(PORTS);
+const LANES=[
+  ['beirut','famagusta',1,[]],
+  ['beirut','alexandria',3,[[10.1,8.7]]],
+  ['famagusta','alexandria',3,[[9.3,8.2]]],
+  ['famagusta','candia',4,[[9.5,7.05],[7.2,7.35]]],
+  ['alexandria','candia',4,[[7.2,7.75]]],
+  ['candia','constantinople',4,[[6.55,5.3],[6.7,3.95],[7.7,2.8]]],
+  ['famagusta','constantinople',5,[[9.3,5.95],[7.6,5.75],[6.7,4.6],[6.7,3.95],[7.7,2.8]]],
+  ['candia','venice',7,[[5.0,6.95],[4.4,5.6],[3.95,4.3],[3.2,2.7]]],
+  ['constantinople','venice',8,[[7.7,2.8],[6.7,3.95],[6.55,5.3],[5.4,6.75],[4.4,5.6],[3.95,4.3],[3.2,2.7]]],
+  ['alexandria','venice',8,[[5.2,8.8],[3.5,7.7],[4.3,5.9],[3.95,4.3],[3.2,2.7]],'corsair']
+];
+const SHIPS=[{n:'Cog',hold:60,speed:1,cost:0},{n:'Caravel',hold:100,speed:1.5,cost:4000},{n:'Carrack',hold:220,speed:1.25,cost:12000}];
+const CAPTAINS=['Captain Marco','Captain Elena','Captain Yusuf al-Bahri','Captain Nikos','Captain Giacomo','Captain Hasan','Captain Rachel','Captain Andrea'];
+const SIMP=1.006;
+let sailing=false,RT=null;
+const sh_head=(i,n,sub)=>`<div class="sh-head"><div class="big">${i}</div><div style="flex:1"><h2>${n}</h2><div class="sub"><span>${sub}</span></div></div><button class="x" onclick="closeSheet()" aria-label="Close">✕</button></div>`;
+const laneOf=(a,b)=>LANES.find(L=>(L[0]===a&&L[1]===b)||(L[0]===b&&L[1]===a));
+function lanePts(L,from){const p=[PORTS[L[0]].xy,...L[3],PORTS[L[1]].xy];return from===L[1]?p.reverse():p}
+function polyAt(p,t){let tot=0;const seg=[];for(let i=1;i<p.length;i++){const d=Math.hypot(p[i][0]-p[i-1][0],p[i][1]-p[i-1][1]);seg.push(d);tot+=d}
+  let r=t*tot;for(let i=0;i<seg.length;i++){if(r<=seg[i]||i===seg.length-1){const f=seg[i]?Math.min(1,r/seg[i]):0;return [p[i][0]+(p[i+1][0]-p[i][0])*f,p[i][1]+(p[i+1][1]-p[i][1])*f]}r-=seg[i]}return p[p.length-1]}
+const travelDays=(L,sp)=>Math.max(1,Math.ceil(L[2]/sp));
+const holdCap=()=>Math.round(SHIPS[S.sea.ship.cls].hold*(1+.15*S.sea.ship.hold));
+const shipSpeed=()=>SHIPS[S.sea.ship.cls].speed*(1+.12*S.sea.ship.sails);
+const cargoN=()=>Object.values(S.sea.cargo).reduce((a,b)=>a+b,0);
+const seaMid=(p,g)=>SG[g].b*(PORTS[p].f[g]||1)*S.sea.imp[p][g]*S.sea.drift[p][g];
+const seaAsk=(p,g)=>seaMid(p,g)*1.08, seaBid=(p,g)=>seaMid(p,g)*.92;
+function stormDay(d){if(d===S.day)return stormOn();const e=S.schedule[d];return !!(e&&e.k==='storm')||S.effects.some(x=>x.k==='storm'&&x.until>=d)}
+function newSea(){const imp={},drift={};PK.forEach(p=>{imp[p]={};drift[p]={};SGK.forEach(g=>{imp[p][g]=1;drift[p][g]=Math.exp(gauss()*.05)})});
+  return {port:'beirut',sailing:null,pos:null,ship:{cls:0,hold:0,sails:0,cannons:false},cargo:{},basis:{},imp,drift,hist:[],known:{},fleet:[],stats:{foreignSales:0,bestVisit:0,voyages:0},visitProfit:0,fleetProfit:0,year:1490}}
+function snapshot(){const q={};PK.forEach(p=>{q[p]={};SGK.forEach(g=>q[p][g]=+seaMid(p,g).toFixed(3))});S.sea.hist.push({day:S.day,q});if(S.sea.hist.length>20)S.sea.hist.shift()}
+function learn(p,age){let m;
+  if(!age){m={};SGK.forEach(g=>m[g]=seaMid(p,g))}
+  else{const h=[...S.sea.hist].reverse().find(x=>x.day<=S.day-age)||S.sea.hist[0];if(!h)return;m=h.q[p]}
+  const day=age?Math.min(S.day-age,(S.sea.hist.find(x=>x.q===m)||{day:S.day-age}).day):S.day;
+  const k=S.sea.known[p];if(k&&k.day>=day)return;S.sea.known[p]={day,mid:{...m}}}
+function fixSea(){if(S.ch===3&&S.sea&&S.sea.sailing){S.sea.port=S.sea.sailing.to;S.sea.sailing=null;S.sea.pos=null}}
+function sleepBtn(){if(S.mode==='sea')waitDay();else rest()}
+function seaHud(){const sea=S.sea,where=PORTS[sea.sailing?sea.sailing.to:sea.port].n;
+  return `<div class="chip">Coins<b>${fmt(S.cash)}</b></div><div class="chip">Day<b>${S.day}</b></div><div class="chip">${sea.sailing?'Sailing to':'In port'}<b class="sm">${where}</b></div><div class="chip">Hold<b>${cargoN()}/${holdCap()}</b></div>`}
+function seaMap(){
+  const sea=S.sea;
+  let h=`<svg class="mapsvg" viewBox="0 0 12 12" xmlns="http://www.w3.org/2000/svg"><rect width="12" height="12" fill="var(--alley2)"/><rect width="12" height="12" fill="var(--water)" opacity=".5"/>`;
+  const land=["0,0 2.75,0 2.6,1.3 2.4,1.6 2.9,2.8 3.6,4.2 4.1,5.1 3.8,5.3 3.5,5.8 3.1,6.4 2.8,6.1 2.0,5.0 0.8,4.1 0,3.5","2.15,6.65 3.3,6.7 2.75,7.5","2.75,0 8.1,0 8.1,1.3 8.45,2.0 8.55,2.15 7.9,2.55 7.0,3.1 6.45,3.7 6.3,4.6 5.75,5.0 5.9,5.6 5.25,6.25 4.85,5.65 4.6,4.6 4.2,3.8 3.4,2.6 2.8,1.6 2.6,1.3","8.85,2.05 9.8,1.75 12,1.6 12,5.55 11.25,5.7 10.4,5.45 9.6,5.3 8.6,5.25 7.6,5.05 6.95,4.3 7.05,3.45 7.85,2.95 8.7,2.45","12,5.55 11.25,5.75 11.0,6.6 10.9,7.6 10.6,8.6 10.2,9.35 12,9.5","0,10.1 3,9.7 5,9.5 6.6,9.5 7.6,9.75 8.3,9.55 8.8,9.35 9.4,9.5 10.2,9.35 12,9.5 12,12 0,12","9.0,6.55 9.4,6.25 10.1,6.2 10.55,5.95 10.25,6.35 9.95,6.75 9.3,6.8"];
+  land.forEach(p=>h+=`<polygon points="${p}" fill="var(--sand1)" stroke="var(--path)" stroke-width=".035" stroke-linejoin="round"/>`);
+  h+=`<ellipse cx="5.85" cy="7.6" rx="1.15" ry=".27" fill="var(--sand1)" stroke="var(--path)" stroke-width=".035"/><circle cx="7.55" cy="6.1" r=".12" fill="var(--sand1)" stroke="var(--path)" stroke-width=".03"/>`;
+  h+=`<text x=".35" y="11.55" font-size=".34" fill="var(--muted)" font-family="Marcellus,Georgia,serif">Anno ${[1490,1490,1491,1492,1497,1497,1498][Math.min(6,S.ms3||0)]}</text>`;
+  const pv=preview&&preview.sea?preview.sea:null;
+  LANES.forEach(L=>{const pts=lanePts(L,L[0]),cor=L[4]==='corsair',hot=pv&&laneOf(sea.port,pv)===L;
+    h+=`<polyline points="${pts.map(p=>p.join(',')).join(' ')}" fill="none" stroke="${hot?'var(--saffron)':cor?'var(--pom)':'var(--lapis)'}" stroke-width="${hot?.09:.05}" stroke-dasharray="${hot?'none':'.16 .12'}" stroke-linejoin="round" opacity="${hot?1:.55}"/>`;
+    const m=polyAt(pts,.5),d=travelDays(L,shipSpeed());
+    h+=`<circle cx="${m[0]}" cy="${m[1]}" r=".2" fill="var(--surface)" stroke="${cor?'var(--pom)':'var(--lapis)'}" stroke-width=".03"/>`+svgTxt(m[0],m[1]+.01,cor&&!sea.ship.cannons?'☠':d+'d','.17',cor?'var(--pom)':'var(--lapis)',800)});
+  PK.forEach(p=>{const P=PORTS[p],[x,y]=P.xy,here=!sea.sailing&&sea.port===p,lx=x+(p==='venice'?.25:0),anchor=p==='venice'?'start':'middle',ly=(p==='alexandria'||p==='beirut')?y+.62:y-.38;
+    h+=`<g class="hit" onclick="tapPort('${p}')"><circle cx="${x}" cy="${y}" r=".42" fill="transparent"/><circle cx="${x}" cy="${y}" r="${here?.24:.18}" fill="${here?'var(--saffron)':'var(--surface)'}" stroke="var(--lapis)" stroke-width=".06"/>`+
+      `<text x="${lx}" y="${ly}" font-size=".3" font-weight="800" fill="var(--text)" text-anchor="${anchor}" font-family="system-ui,sans-serif" stroke="var(--surface)" stroke-width=".08" paint-order="stroke">${P.n}${p==='beirut'?' ★':''}</text></g>`});
+  sea.fleet.forEach((f,i)=>{let xy;if(f.at)xy=[PORTS[f.at].xy[0]+.28+i*.12,PORTS[f.at].xy[1]+.25];else if(f.from&&f.dest){const L=laneOf(f.from,f.dest);xy=L?polyAt(lanePts(L,f.from),1-f.left/(f.total||1)):null}
+    if(xy)h+=`<g transform="translate(${xy[0]} ${xy[1]}) scale(.5) translate(-.5 -.5)" opacity=".85">${drawIcon('boat',.5,.5)}</g>`});
+  const pos=sea.sailing&&sea.pos?sea.pos:[PORTS[sea.port].xy[0]+(sea.port==='venice'?.45:-.5),PORTS[sea.port].xy[1]+.08];
+  h+=`<g id="seaShip" style="transform:translate(${pos[0]}px,${pos[1]}px);transition:transform .6s ease"><g transform="scale(.8) translate(-.5 -.6)">${drawIcon('boat',.5,.5)}</g></g>`;
+  const st=[0,1,2,3].filter(i=>stormDay(S.day+i));
+  if(st.length)h+=`<g><rect x="7.6" y="10.55" width="4.15" height=".75" rx=".37" fill="var(--surface)" opacity=".92"/>`+svgTxt(9.67,10.93,st[0]===0?'⛈️ Storm today: ships stay in port':`⛈️ Storm expected in ${st[0]} day${st[0]>1?'s':''}`,'.22','var(--text)',700)+`</g>`;
+  return h+`</svg>`;
+}
+function tapPort(p){
+  if(sailing)return;const sea=S.sea;
+  if(p===sea.port){clearPreview();portSheet();return}
+  if(preview&&preview.sea===p){setSail(p);return}
+  const L=laneOf(sea.port,p),P=PORTS[p],pill=document.getElementById('pill');let body,ok=false;
+  if(!L)body=`No direct route from ${PORTS[sea.port].n}. Sail to a port next to it first.`;
+  else if(L[4]==='corsair'&&!sea.ship.cannons)body='Corsairs hunt these waters. You need cannons, from a shipyard, to take this route.';
+  else{const d=travelDays(L,shipSpeed());let storms=0;for(let i=0;i<d;i++)if(stormDay(S.day+i))storms++;const k=sea.known[p];
+    body=`${d} day${d>1?'s':''} at sea${storms?`, plus about ${storms} for storms`:''}. Arrive around day ${S.day+d+storms}. ${k?`Your latest prices from there are ${S.day-k.day} day${S.day-k.day===1?'':'s'} old.`:'You know nothing about prices there yet.'}`;ok=true}
+  preview={sea:p};renderMap();
+  pill.innerHTML=`<div class="info"><b>${P.n}</b><div class="small">${body}</div></div>${ok?'<button class="sbtn fill" onclick="setSail(preview.sea)">Set sail</button>':''}<button class="x" onclick="clearPreview()" aria-label="Cancel">✕</button>`;
+  pill.classList.add('on');
+}
+function setSail(p){
+  const sea=S.sea,L=laneOf(sea.port,p);if(!L||sailing)return;
+  if(L[4]==='corsair'&&!sea.ship.cannons){toast('You need cannons for corsair waters.');return}
+  if(stormOn()){toast('A storm is raging. No ship leaves port today.');return}
+  preview=null;document.getElementById('pill').classList.remove('on');closeSheet();
+  const pts=lanePts(L,sea.port),need=travelDays(L,shipSpeed());let done=0,days=0;const log=[];
+  sea.voy={earned0:S.shop?S.shop.earned:0,fleet0:sea.fleetProfit||0};
+  sea.sailing={from:sea.port,to:p};sea.pos=polyAt(pts,0);sailing=true;render();
+  const step=()=>{
+    seaDayRoll(log);days++;if(!stormOn()||done>0)done++;
+    sea.pos=polyAt(pts,Math.min(1,done/need));
+    const el=document.getElementById('seaShip');if(el)el.style.transform=`translate(${sea.pos[0]}px,${sea.pos[1]}px)`;
+    renderHud();
+    if(done>=need){sailing=false;sea.sailing=null;sea.pos=null;arrivePort(p,days);return}
+    setTimeout(step,700);
+  };
+  setTimeout(step,350);
+}
+function seaDayRoll(log){
+  MUTE=true;
+  try{
+    if(S.ch>=2&&S.shop&&S.shop.open){for(let m=S.t;m<DAY_LEN;m+=30){const dt=Math.min(30,DAY_LEN-m);S.t=m+dt;timePass(dt)}}
+    const l=rest(true);if(l)log.push(...l);
+  }finally{MUTE=false}
+}
+function seaWorldDay(log){
+  const sea=S.sea;if(!sea)return;
+  PK.forEach(p=>SGK.forEach(g=>{sea.imp[p][g]=1+(sea.imp[p][g]-1)*.7;sea.drift[p][g]=Math.exp(Math.log(sea.drift[p][g])*.85+gauss()*.03)}));
+  fleetDay(log);snapshot();
+}
+function arrivePort(p,days){
+  const sea=S.sea;sea.port=p;sea.visitProfit=0;sea.stats.voyages++;learn(p,0);
+  const letters=[];LANES.filter(L=>L[0]===p||L[1]===p).forEach(L=>{const q=L[0]===p?L[1]:L[0];learn(q,L[2]);letters.push(`${PORTS[q].n} (${L[2]} day${L[2]>1?'s':''} old)`)});
+  const shopE=(S.shop?S.shop.earned:0)-(sea.voy?sea.voy.earned0:0),fl=(sea.fleetProfit||0)-(sea.voy?sea.voy.fleet0:0);
+  save();render();
+  portSheet({days,letters,shopE,fl});
+  setTimeout(()=>checkMs(),300);
+}
+function waitDay(){if(sailing)return;const log=[];seaDayRoll(log);learn(S.sea.port,0);render();
+  setSheet(`<h2>☀️ Day ${S.day} in ${PORTS[S.sea.port].n}</h2>${log.map(l=>`<p>${l}</p>`).join('')}<h3>News</h3>${S.news.map(n=>`<div class="bubble">${n}</div>`).join('')}<button class="sbtn fill wide" onclick="portSheet()">To the market</button>`);checkMs()}
+function portSheet(arr){
+  const sea=S.sea,p=sea.port,P=PORTS[p],cap=holdCap(),n=cargoN();
+  let h=sh_head('⚓',P.n,P.sub);
+  if(arr)h+=`<div class="bubble">${arr.days} day${arr.days>1?'s':''} at sea.${arr.shopE>0?` Back home, your shop sold ${fmt(arr.shopE)}.`:''}${arr.fl?` Your captains made ${arr.fl>=0?'':'−'}${fmt(Math.abs(arr.fl))}.`:''}</div>${arr.letters.length?`<p class="small">Letters in the harbour bring prices from ${arr.letters.join(', ')}. They're in your ledger.</p>`:''}`;
+  h+=`<p class="small">${P.info}</p>`;
+  h+=`<div class="stat"><div class="chip">Hold<b>${n}/${cap}</b></div><div class="chip">Profit here<b>${fmt(sea.visitProfit)}</b></div><div class="chip">Ship<b>${SHIPS[sea.ship.cls].n}</b></div></div>`;
+  h+=`<h3>Market</h3>`;
+  SGK.forEach(g=>{const a=seaAsk(p,g),b=seaBid(p,g),c=sea.cargo[g]||0,avg=c?sea.basis[g]/c:0,f=P.f[g]||1;
+    const tag=c?`In hold: ${c}, paid ${fmt(avg)} each. ${b>avg?`<span class="good">Sells here for ${fmt(b-avg)} more</span>`:`<span class="bad">Sells here at a loss</span>`}`:(f<1?'Made here: cheap':f>1?'<span class="good">In demand here</span>':'');
+    h+=`<div class="mrow"><div class="mtop"><div class="gi">${gi(g)}</div><div class="info"><b>${SG[g].n}</b> <span class="small">buy</span> <span class="price">${fmt(a)}</span> <span class="small">sell</span> <span class="price">${fmt(b)}</span><div class="small">${tag}</div></div></div><div class="btns"><button class="sbtn" onclick="seaBuy('${g}',10)">Buy 10</button><button class="sbtn" onclick="seaBuy('${g}',999)">Buy max</button>${c?`<button class="sbtn fill" onclick="seaSell('${g}',999)">Sell all</button>`:''}</div></div>`});
+  h+=`<div class="acts">`;
+  if(p==='beirut')h+=`<button class="sbtn fill" onclick="goAshore()">🏙️ Go ashore</button>`;
+  if(P.yard)h+=`<button class="sbtn" onclick="shipSheet()">🛠️ ${P.yard==='arsenal'?'The Arsenal':'Shipyard'}</button>`;
+  h+=`</div>`;
+  setSheet(h);
+}
+function seaBuy(g,n){const sea=S.sea,p=sea.port;let k=0;
+  while(k<n&&cargoN()<holdCap()){const a=seaAsk(p,g);if(S.cash<a)break;S.cash-=a;sea.cargo[g]=(sea.cargo[g]||0)+1;sea.basis[g]=(sea.basis[g]||0)+a;sea.imp[p][g]*=SIMP;k++}
+  toast(k?`Loaded ${k} ${SG[g].n.toLowerCase()}.`:(cargoN()>=holdCap()?'Your hold is full.':'Not enough coins.'));learn(p,0);save();renderHud();portSheet()}
+function seaSell(g,n){const sea=S.sea,p=sea.port;let k=0,rev=0,prof=0;
+  while(k<n&&(sea.cargo[g]||0)>0){const b=seaBid(p,g),avg=sea.basis[g]/sea.cargo[g];S.cash+=b;rev+=b;prof+=b-avg;sea.basis[g]-=avg;sea.cargo[g]--;sea.imp[p][g]/=SIMP;k++}
+  if(!sea.cargo[g]){delete sea.cargo[g];delete sea.basis[g]}
+  sea.visitProfit+=prof;sea.stats.bestVisit=Math.max(sea.stats.bestVisit,sea.visitProfit);if(p!=='beirut'&&k)sea.stats.foreignSales+=k;
+  toast(`Sold ${k} for ${fmt(rev)}, ${prof>=0?'profit':'loss'} ${fmt(Math.abs(prof))}.`);learn(p,0);save();renderHud();portSheet();checkMs()}
+function upCost(k){const sh=S.sea.ship,c=sh.cls+1;return k==='hold'?500*Math.pow(2,sh.hold)*c:k==='sails'?700*Math.pow(2,sh.sails)*c:1500}
+function shipUp(k){const sh=S.sea.ship;if(k!=='cannons'&&sh[k]>=3)return;if(k==='cannons'&&sh.cannons)return;const c=upCost(k);if(S.cash<c){toast(`You need ${fmt(c)}.`);return}
+  S.cash-=c;if(k==='cannons')sh.cannons=true;else sh[k]++;toast('The shipwrights get to work. Done!');save();render();shipSheet();checkMs()}
+function newClass(c){const sh=S.sea.ship,price=SHIPS[c].cost-Math.round(SHIPS[sh.cls].cost*.4);if(S.cash<price){toast(`You need ${fmt(price)}.`);return}
+  if(cargoN()>Math.round(SHIPS[c].hold*(1+.15*sh.hold))){toast('Unload some cargo first.');return}
+  S.cash-=price;sh.cls=c;toast(`Your new ${SHIPS[c].n} is ready!`);save();render();shipSheet();checkMs()}
+function buyFleet(cls){const c=[3000,6000][cls];if(S.cash<c){toast(`You need ${fmt(c)}.`);return}
+  const p=S.sea.port,L=LANES.find(L=>(L[0]===p||L[1]===p)&&L[4]!=='corsair');S.cash-=c;
+  const used=S.sea.fleet.map(f=>f.name),name=CAPTAINS.find(n=>!used.includes(n))||'Captain '+(S.sea.fleet.length+1);
+  S.sea.fleet.push({name,cls,route:[L[0],L[1]],gAB:null,gBA:null,at:p,from:null,dest:null,left:0,total:0,cargo:{g:null,q:0,cost:0},profit:0,trips:0});
+  save();render();checkMs();RT=null;routeSheet(S.sea.fleet.length-1)}
+function fleetDay(log){
+  const sea=S.sea;if(!sea.fleet.length)return;const wage=15*sea.fleet.length;S.cash-=wage;const lines=[];
+  sea.fleet.forEach(f=>{
+    if(f.left>0){if(stormOn())return;f.left--;if(f.left>0)return;f.at=f.dest;f.dest=null}
+    if(!f.at)return;
+    if(f.cargo.q>0){let rev=0;for(let i=0;i<f.cargo.q;i++){rev+=seaBid(f.at,f.cargo.g);sea.imp[f.at][f.cargo.g]/=SIMP}
+      const pr=rev-f.cargo.cost;S.cash+=rev;f.profit+=pr;sea.fleetProfit=(sea.fleetProfit||0)+pr;f.trips++;
+      lines.push(`${f.name} sold ${f.cargo.q} ${SG[f.cargo.g].n.toLowerCase()} in ${PORTS[f.at].n}: ${pr>=0?'+':'−'}${fmt(Math.abs(pr))}.`);f.cargo={g:null,q:0,cost:0}}
+    if(stormOn())return;
+    const [A,B]=f.route;
+    if(f.at!==A&&f.at!==B){f.from=f.at;f.dest=A;f.left=f.total=2;f.at=null;return}
+    const next=f.at===A?B:A,g=f.at===A?f.gAB:f.gBA,cap=SHIPS[f.cls].hold;
+    if(g){let q=0,cost=0;while(q<cap){const a=seaAsk(f.at,g);if(a>=seaBid(next,g)*.95||S.cash-a<300)break;S.cash-=a;cost+=a;sea.imp[f.at][g]*=SIMP;q++}if(q)f.cargo={g,q,cost}}
+    f.from=f.at;f.dest=next;f.left=f.total=travelDays(laneOf(f.at,next),SHIPS[f.cls].speed);f.at=null;
+  });
+  log.push(`Your captains took ${fmt(wage)} in wages.`);lines.forEach(l=>log.push(l));
+}
+function routeSheet(i){
+  const f=S.sea.fleet[i];
+  if(!RT||RT.i!==i)RT={i,lane:Math.max(0,LANES.findIndex(L=>(L[0]===f.route[0]&&L[1]===f.route[1]))),gAB:f.gAB||'',gBA:f.gBA||''};
+  const L=LANES[RT.lane],A=L[0],B=L[1],kn=S.sea.known;
+  const opt=(sel,from,to)=>`<option value="">Nothing</option>`+SGK.map(g=>{let m='';if(kn[from]&&kn[to]){const r=(kn[to].mid[g]*.92)/(kn[from].mid[g]*1.08)-1;m=` (${r>=0?'+':''}${Math.round(r*100)}%)`}return `<option value="${g}" ${g===sel?'selected':''}>${SG[g].n}${m}</option>`}).join('');
+  let h=sh_head('🧭',f.name,`${SHIPS[f.cls].n}, hold ${SHIPS[f.cls].hold}`);
+  h+=`<p class="small">Choose two neighbouring ports and what to carry each way. Your captain buys at one end and sells at the other, but only while the trade still pays.</p>`;
+  h+=`<div class="small">Route</div><select class="sel" onchange="RT.lane=+this.value;routeSheet(${i})">${LANES.map((X,j)=>(X[4]==='corsair'&&!S.sea.ship.cannons)?'':`<option value="${j}" ${j===RT.lane?'selected':''}>${PORTS[X[0]].n} ⇄ ${PORTS[X[1]].n} (${X[2]} days)</option>`).join('')}</select>`;
+  h+=`<div class="small">From ${PORTS[A].n} to ${PORTS[B].n}, carry</div><select class="sel" onchange="RT.gAB=this.value">${opt(RT.gAB,A,B)}</select>`;
+  h+=`<div class="small">From ${PORTS[B].n} to ${PORTS[A].n}, carry</div><select class="sel" onchange="RT.gBA=this.value">${opt(RT.gBA,B,A)}</select>`;
+  h+=`<p class="small">Percentages compare the last prices you know at both ends, so they may be out of date.</p><button class="sbtn fill wide" onclick="saveRoute()">Give these orders</button><button class="sbtn wide" onclick="RT=null;shipSheet()">Back</button>`;
+  setSheet(h);
+}
+function saveRoute(){const f=S.sea.fleet[RT.i],L=LANES[RT.lane];f.route=[L[0],L[1]];f.gAB=RT.gAB||null;f.gBA=RT.gBA||null;RT=null;save();toast(`${f.name} has new orders.`);shipSheet()}
+function shipSheet(){
+  const sea=S.sea,sh=sea.ship,P=PORTS[sea.port],docked=!sea.sailing;
+  let h=sh_head('⛵',`Your ${SHIPS[sh.cls].n}`,`Hold ${holdCap()}, speed ×${shipSpeed().toFixed(2)}${sh.cannons?', armed':''}`);
+  h+=`<h3>Cargo</h3>`;
+  const cs=SGK.filter(g=>sea.cargo[g]);
+  h+=cs.length?cs.map(g=>`<div class="row"><div class="gi">${gi(g)}</div><div class="info"><b>${sea.cargo[g]} ${SG[g].n}</b><div class="small">Paid ${fmt(sea.basis[g]/sea.cargo[g])} each</div></div></div>`).join(''):'<p class="small">The hold is empty.</p>';
+  h+=`<h3>${docked&&P.yard?(P.yard==='arsenal'?'The Arsenal of Venice':'Beirut shipyard'):'Shipyards'}</h3>`;
+  if(docked&&P.yard){
+    const row=(k,n,d,lv,max)=>{const c=upCost(k),mx=k==='cannons'?sh.cannons:lv>=max;return `<div class="uprow"><div class="info"><b>${n}</b>${k!=='cannons'?` <span class="lv">Lv ${lv}</span>`:''}<div class="small">${d}</div></div>${mx?'<span class="small">Done</span>':`<button class="sbtn${S.cash>=c?' fill':''}" onclick="shipUp('${k}')">${fmt(c)}</button>`}</div>`};
+    h+=row('hold','Bigger hold','+15% cargo space per level',sh.hold,3)+row('sails','Better sails','+12% speed per level',sh.sails,3)+row('cannons','Cannons','Lets you take the short route through corsair waters',0,1);
+    if(P.yard==='arsenal')SHIPS.forEach((X,c)=>{if(c<=sh.cls)return;const price=X.cost-Math.round(SHIPS[sh.cls].cost*.4);h+=`<div class="uprow"><div class="info"><b>New ship: ${X.n}</b><div class="small">Hold ${X.hold}, speed ×${X.speed}. Your old ship goes in part exchange; upgrades carry over.</div></div><button class="sbtn${S.cash>=price?' fill':''}" onclick="newClass(${c})">${fmt(price)}</button></div>`});
+    else h+=`<p class="small">New ships are built only at the Arsenal in Venice.</p>`;
+  }else h+=`<p class="small">Upgrades at the shipyard in Beirut. New ships at the Arsenal in Venice.</p>`;
+  if((S.ms3||0)>=4||sea.fleet.length){
+    h+=`<h3>Your fleet</h3>`;
+    h+=sea.fleet.length?sea.fleet.map((f,i)=>{const st=f.at?`In ${PORTS[f.at].n}`:`Sailing to ${PORTS[f.dest].n}, ${f.left} day${f.left>1?'s':''} left`;
+      return `<div class="uprow"><div class="info"><b>${f.name}</b> <span class="lv">${SHIPS[f.cls].n}</span><div class="small">${PORTS[f.route[0]].n} ⇄ ${PORTS[f.route[1]].n}. Carries ${f.gAB?SG[f.gAB].n.toLowerCase():'nothing'} one way, ${f.gBA?SG[f.gBA].n.toLowerCase():'nothing'} back.<br>${st}. Profit so far ${f.profit>=0?'':'−'}${fmt(Math.abs(f.profit))} over ${f.trips} sale${f.trips===1?'':'s'}.</div></div><button class="sbtn" onclick="RT=null;routeSheet(${i})">Orders</button></div>`}).join(''):'<p class="small">No other ships yet.</p>';
+    if(docked&&P.yard)h+=`<div class="acts"><button class="sbtn${S.cash>=3000?' fill':''}" onclick="buyFleet(0)">Hire a captain with a cog ($3,000)</button><button class="sbtn${S.cash>=6000?' fill':''}" onclick="buyFleet(1)">Hire a captain with a caravel ($6,000)</button></div><p class="small">Each captain takes $15 a day.</p>`;
+  }
+  setSheet(h);
+}
+function seaNotebook(){
+  const k=S.sea.known;let h=sh_head('📒','Sea ledger','What you know about prices, and how old it is');
+  SGK.forEach(g=>{const A=[],B=[];PK.forEach(p=>{if(k[p]){A.push({p,v:k[p].mid[g]*1.08,d:k[p].day});B.push({p,v:k[p].mid[g]*.92,d:k[p].day})}});if(!A.length)return;
+    A.sort((a,b)=>a.v-b.v);B.sort((a,b)=>b.v-a.v);
+    const q=(x,i)=>`<span class="q${i===0?' best':''}">${PORTS[x.p].n} ${fmt(x.v)} <span class="small">${ago(x.d)}</span></span>`;
+    h+=`<div class="nbg"><b class="gname">${gi(g)} ${SG[g].n}</b><div><span class="small">Cheapest </span>${A.slice(0,3).map(q).join('')}</div><div><span class="small">Pays most </span>${B.slice(0,3).map(q).join('')}</div></div>`});
+  h+=`<p class="small">You learn a port's prices when you're there. Letters in each harbour bring prices from neighbouring ports, a few days old.</p>`;
+  setSheet(h);
+}
+function goAshore(){preview=null;document.getElementById('pill').classList.remove('on');S.mode='land';S.dist='harbour';setDistrict('harbour');S.at=null;const s0=DIST.harbour.start;S.px=s0[0];S.py=s0[1];closeSheet();save();render();toast('Back on dry land. Your ship waits at Captain Idris\u2019s old dock.')}
+function boardShip(){preview=null;document.getElementById('pill').classList.remove('on');S.mode='sea';S.sea.port='beirut';closeSheet();save();render();portSheet()}
+const MS3=[
+ {txt:'Sell cargo in a port other than Beirut',title:'a sea trader',ok:()=>S.sea.stats.foreignSales>0,prog:()=>0,msg:'Your first deal abroad. Every port pays differently, and the letters you get in harbour are always a few days old.'},
+ {txt:'Make $1,000 profit in a single port visit',title:'a captain',ok:()=>S.sea.stats.bestVisit>=1000,prog:()=>S.sea.stats.bestVisit/1000,msg:'Harbour masters greet you by name now. The shipyards in Beirut and Venice can make your cog roomier and faster.'},
+ {txt:'Upgrade your ship at a shipyard',title:'a seasoned captain',ok:()=>{const s=S.sea.ship;return s.hold+s.sails>0||s.cannons||s.cls>0},prog:()=>0,msg:'The famous Arsenal of Venice builds caravels: the fast, nimble ships the Portuguese use to explore the coast of Africa.'},
+ {txt:'Buy a caravel at the Arsenal in Venice',title:'a shipowner',ok:()=>S.sea.ship.cls>=1,prog:()=>0,msg:'1492. News from Spain: a Genoese captain called Christopher Columbus has sailed west for the Spanish crown and claims to have reached the Indies. Nobody in Venice believes a word. You can now hire captains with ships of their own at any shipyard.'},
+ {txt:'Hire a captain with a second ship',title:'a fleet owner',ok:()=>S.sea.fleet.length>=1,prog:()=>0,msg:'1497. Four Portuguese ships under Vasco da Gama have left Lisbon, sailing south around Africa. The Venetians laugh. Your captain now sails his route on his own; check on him in your ship screen.'},
+ {txt:'Own three ships and save $25,000',title:'a merchant of the sea',ok:()=>S.sea.fleet.length>=2&&S.cash>=25000,prog:()=>Math.min(S.sea.fleet.length/2,1)*.5+Math.min(S.cash/25000,1)*.5,msg:''}
+];
+function startCh3(){
+  S.ch=3;S.ms3=0;S.won3=false;S.mode='sea';S.sea=newSea();snapshot();learn('beirut',0);
+  save();closeSheet();render();
+  setSheet(`<h2>Chapter three: The Sea</h2><div class="bubble">Anno 1490. Captain Idris hands you the key to a sturdy little cog. You name her the Pomegranate, after the donkey.</div>
+  <p>Venice rules the sea trade. It has held Cyprus since 1489 and Crete for centuries. The Ottomans have ruled Constantinople since 1453, and the Mamluk sultans of Egypt control the pepper that comes from India through the Red Sea.</p>
+  <p><b>How it works.</b> Tap a port to see the route and how many days it takes, then tap again to sail. Buy cheap where goods are made, sell where they're wanted, but every crate you sell pushes the price down, so spread big cargoes across ports. Prices you know get older every day you're at sea.</p>
+  <p>Back home, your shop and runners keep working. To go ashore in Beirut, use the button in the port screen.</p>
+  <button class="sbtn fill wide" onclick="portSheet()">To the market</button>`);
+}
+function showEnding3(){setSheet(`<h2>End of chapter three</h2>
+  <div class="bubble">1498. A breathless messenger from the harbour: Vasco da Gama has reached Calicut, in India. By sea.</div>
+  <p>For centuries, pepper reached Europe through Alexandria and Beirut, and Venice grew rich selling it on. Now the Portuguese can sail around Africa and buy it at the source. In a few years, Portuguese pepper will be sold in Lisbon, and the old Mediterranean routes will never be the same.</p>
+  <p>You look at your ships, your ledgers, and Destiny chewing a sail rope. The Mediterranean suddenly feels small.</p>
+  <p class="small">A century from now, merchants in London (1600) and Amsterdam (1602) will found the great East India companies. You decide not to wait a century. Chapter four: The Company.</p>
+  <button class="sbtn fill wide" onclick="closeSheet()">Keep trading</button>`)}
+const CODES={DESTINY:2,POMEGRANATE:3};
+function useCode(){const el=document.getElementById('codeIn'),v=(el?el.value:'').trim().toUpperCase(),n=CODES[v];
+  if(!n){toast('That code doesn\u2019t open anything.');return}
+  setSheet(`<h2>Start chapter ${n===2?'two':'three'}?</h2><p>This replaces your current game with a fresh start at the beginning of chapter ${n===2?'two':'three'}.</p><button class="sbtn fill wide" onclick="jumpCh(${n})">Yes, let\u2019s go</button><button class="sbtn wide" onclick="closeSheet()">Keep my game</button>`)}
+function jumpCh(n){
+  S=newState();setDistrict('bazaar');
+  Object.assign(S,{cash:500,donkey:true,cap:50,boys:1,store:true,storeInv:[],contractsDone:1,ms:6,won:true,inv:[]});
+  startCh2();
+  if(n===3){const sp=S.shop;sp.open=true;sp.lv.shelves=2;sp.lv.runners=2;sp.shelves=[{g:'spice',q:10,acc:0},{g:'cloth',q:10,acc:0},{g:'pottery',q:10,acc:0},{g:'olive',q:10,acc:0}];
+    Object.assign(S,{cash:5000,ms2:8,won2:true,visitedHarbour:true});startCh3();}
+  save();
+}
+function confirmNew(){setSheet(`<h2>Start over?</h2><p>Your coins, goods and notebook will be gone.</p><button class="sbtn fill wide" onclick="newGame()">Start a new game</button><button class="sbtn wide" onclick="closeSheet()">Keep playing</button>`)}
+function newGame(){S=newState();setDistrict('bazaar');save();render();intro()}
+
+/* ---------- cloud save (per-person, private) ---------- */
+let cloud=null,cloudT=null;
+function pushCloud(){if(!cloud||!S)return;clearTimeout(cloudT);cloudT=setTimeout(()=>{try{cloud.set({json:JSON.stringify(S),at:S.savedAt||Date.now()}).catch(()=>{})}catch(e){}},3000)}
+function trimShelves(){const sp=S.shop;if(!sp||!sp.shelves||sp.shelves.length<=6)return;
+  const extra=sp.shelves.splice(6);S.storeInv=S.storeInv||[];let back=0;
+  extra.forEach(x=>{if(x.g&&x.q)S.storeInv.push({g:x.g,q:x.q,d:S.day})});
+  for(let l=4;l<sp.lv.shelves;l++)back+=Math.round(60*Math.pow(1.6,l));
+  sp.lv.shelves=Math.min(sp.lv.shelves,4);S.cash+=back;
+  setTimeout(()=>toast(`The shop now has room for 6 shelves. Extra goods went to your storeroom${back?`, and you got ${fmt(back)} back`:''}.`),1500)}
+function afterLoad(){
+  GK.forEach(g=>{if(S.gw[g]==null)S.gw[g]=1});
+  TK.forEach(t=>{S.p[t]=S.p[t]||{};if(S.mood[t]==null)S.mood[t]=0;[...Object.keys(T[t].sells),...Object.keys(T[t].buys)].forEach(g=>{if(S.p[t][g]==null)S.p[t][g]=1})});
+  S.dist=S.dist||'bazaar';setDistrict(S.dist);trimShelves();fixSea();preview=null;walking=false;
+  try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}
+  closeSheet();render();checkMs(true);
+}
+async function initCloud(){
+  try{
+    if(!window.claude||!window.claude.use)return;
+    const [db,user]=await Promise.all([window.claude.use('db'),window.claude.use('user')]);
+    if(!db||!user)return;
+    const id=await user.id();if(!id)return;
+    const ref=db.doc('data/users/'+id+'/save');
+    const snap=await ref.get();
+    cloud=ref;
+    const d=snap.exists?snap.data():null;
+    if(d&&typeof d.json==='string'&&(d.at||0)>((S&&S.savedAt)||0)){
+      try{S=JSON.parse(d.json);afterLoad();toast('Progress restored from your account ☁️')}catch(e){}
+    }else pushCloud();
+  }catch(e){}
+}
+S=load();
+for(const [n,v] of [['showNews','news'],['showNotebook','notebook'],['showBag','bag']]){const f=window[n];window[n]=function(){f();setNav(v)}}
+{const f=window.renderStall;window.renderStall=function(t){f(t);setNav('here')}}
+{const f=window.showPlace;window.showPlace=function(t){f(t);if(S.at===t)setNav('here')}}
+if(!S){S=newState();setDistrict('bazaar');save();render();intro();initCloud()}else{GK.forEach(g=>{if(S.gw[g]==null)S.gw[g]=1});TK.forEach(t=>{S.p[t]=S.p[t]||{};if(S.mood[t]==null)S.mood[t]=0;[...Object.keys(T[t].sells),...Object.keys(T[t].buys)].forEach(g=>{if(S.p[t][g]==null)S.p[t][g]=1})});
+  S.dist=S.dist||'bazaar';setDistrict(S.dist);trimShelves();fixSea();let redo=false;
+  if(S.ch===2&&!(S.shop&&S.shop.v===3)){S.cash=500;S.inv=[];S.storeInv=[];S.dist='bazaar';setDistrict('bazaar');S.at=null;S.t=0;S.px=START[0];S.py=START[1];S.visitedHarbour=false;S.shop=newShop();S.ms2=0;S.won2=false;S.contract=null;S.offer=null;redo=true;save()}
+  closeSheet();if(S.px==null){S.px=START[0];S.py=START[1];S.at=null}render();checkMs(true);initCloud();if(redo)setSheet(`<h2>Back to the start of chapter two</h2><div class="bubble">Fresh morning, $500 in your purse, Destiny at your side.</div><p>The boarded-up stall in the middle of the bazaar is for rent: $400. Open it, fill its shelves with goods you buy around the bazaar, and it sells them for you all day. Later, runners restock it and the Harbour Quarter opens.</p><button class="sbtn fill wide" onclick="closeSheet()">Let's go</button>`)}
+</script>
+</body>
+</html>
