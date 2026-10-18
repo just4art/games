@@ -950,10 +950,17 @@ function sellTick(dt){
   if(!(S.ch>=2&&S.shop&&S.shop.open)||dt<=0)return;
   const sp=SH.speed()*dt/60;
   S.shop.shelves.forEach(x=>{if(!x.g||x.q<=0)return;x.acc=(x.acc||0)+sp;let u=Math.floor(x.acc);if(u<=0)return;x.acc-=u;u=Math.min(u,x.q);x.q-=u;
-    const rev=u*shelfPrice(x.g);S.cash+=rev;if(shopActive())spawnCustomer({r:'buy',g:x.g,v:rev});S.shop.today+=rev;S.shop.earned+=rev;S.shop.sold+=u;if(PREM.includes(x.g))S.shop.soldPrem=true;if(x.q===0){x.acc=0;if(x.refillAt==null&&runnerShelves().includes(x))x.refillAt=S.t+120}});
+    const rev=u*shelfPrice(x.g);shopIn(rev);if(shopActive())spawnCustomer({r:'buy',g:x.g,v:rev});S.shop.today+=rev;S.shop.earned+=rev;S.shop.sold+=u;if(PREM.includes(x.g))S.shop.soldPrem=true;if(x.q===0){x.acc=0;if(x.refillAt==null&&runnerShelves().includes(x))x.refillAt=S.t+120}});
 }
+function shopPurse(){return !(S.ch>=3&&S.mode==='sea'&&S.sea&&(S.sea.sailing||S.sea.port!=='beirut'))}
+const STEWARD=.5;
+function shopIn(v){if(shopPurse())S.cash+=v;else S.shop.awayRev=(S.shop.awayRev||0)+v}
+function fundGet(){return shopPurse()?S.cash:1e12}
+function fundSpend(v){if(shopPurse())S.cash-=v;else S.shop.awayCost=(S.shop.awayCost||0)+v}
+function settleAway(){const sp=S.shop;if(!sp)return 0;const pr=(sp.awayRev||0)-(sp.awayCost||0),mine=Math.max(0,pr)*(1-STEWARD);sp.till=(sp.till||0)+mine;sp.awayRev=0;sp.awayCost=0;return mine}
+function collectTill(){if(S.shop)settleAway();const v=S.shop&&S.shop.till>0?S.shop.till:0;if(v){S.cash+=v;S.shop.till=0}return v}
 function runnerShelves(){return S.shop.shelves.filter(x=>x.g).slice(0,S.shop.lv.runners||0)}
-function refill(x){const cap=SH.cap(S.shop.lv.cap),unit=street(x.g)*1.1,k=Math.max(0,Math.min(cap-x.q,Math.floor(Math.max(0,S.cash)/unit)));x.q+=k;S.cash-=k*unit;return [k,k*unit]}
+function refill(x){const cap=SH.cap(S.shop.lv.cap),unit=street(x.g)*1.1,k=Math.max(0,Math.min(cap-x.q,Math.floor(Math.max(0,fundGet())/unit)));x.q+=k;fundSpend(k*unit);return [k,k*unit]}
 function clerkTick(dt){
   if(S.t<=DAY_LEN)sellTick(dt);
   if(!(S.ch>=2&&S.shop&&S.shop.open))return;
@@ -969,9 +976,10 @@ function standNight(log){
   S.shop.best=Math.max(S.shop.best||0,S.shop.today);
   const n=S.shop.lv.runners;
   if(false){}
-  else if(n){const wage=3*n,cap=SH.cap(S.shop.lv.cap);S.cash-=wage;let spent=0,filled=0,stuck=0;
+  else if(n){const wage=3*n,cap=SH.cap(S.shop.lv.cap);fundSpend(wage);let spent=0,filled=0,stuck=0;
     runnerShelves().forEach(x=>{x.refillAt=null;if(stormOn()&&PREM.includes(x.g)){stuck++;return}const [k,c]=refill(x);spent+=c;filled+=k});
     log.push(`Your runners restocked ${filled} items for ${fmt(spent)} and earned ${fmt(wage)} in wages.`);if(stuck)log.push(`The storm cut off the harbour, so ${stuck} shelf${stuck>1?'s':''} of tea, perfume or silk couldn't be restocked.`)}
+  settleAway();
   S.shop.today=0;
 }
 function openShop(){if(S.cash<400){toast('You need $400.');return}S.cash-=400;S.shop.open=true;toast('The shop is yours! Now fill the shelves.');save();renderHud();renderMap();showPlace('stand');checkMs()}
@@ -1034,17 +1042,17 @@ function showEnding2(){setSheet(`<h2>End of chapter two</h2>
   <div class="bubble">Captain Idris counts your coins twice, then hands you a heavy iron key. “She's yours. Treat her better than your uncle treated his fleet.”</div>
   <p>At dawn your ship leaves the bay. The bazaar shrinks behind you: Miriam waving an apple, Hassan pretending not to care, your runners already carrying crates to the shop.</p>
   <p>Destiny is seasick. You are not.</p>
-  <p class="small">Chapter three: the sea. It took you ${S.day} days.</p><p class="small">Code to skip straight to chapter three next time: <b>POMEGRANATE</b></p>
+  <p class="small">Chapter three: the sea. It took you ${S.day} days.</p><p class="small">Code to skip straight to the ship purchase next time: <b>POMEGRANATE</b></p>
   <button class="sbtn fill wide" onclick="startCh3()">Begin chapter three</button><button class="sbtn wide" onclick="closeSheet()">Keep trading</button>`)}
 /* ================= CHAPTER THREE: THE SEA ================= */
-const SG={pepper:{n:'Pepper',i:'⚫',b:30},silk:{n:'Silk',i:'🧣',b:45},sugar:{n:'Sugar',i:'🍬',b:14},wine:{n:'Wine',i:'🍷',b:10},oil:{n:'Olive oil',i:'🫒',b:9},grain:{n:'Grain',i:'🌾',b:4},glass:{n:'Glass',i:'🥂',b:20},wool:{n:'Wool cloth',i:'🧶',b:16}};
+const SG={pepper:{n:'Pepper',i:'⚫',b:75},silk:{n:'Silk',i:'🧣',b:110},sugar:{n:'Sugar',i:'🍬',b:35},wine:{n:'Wine',i:'🍷',b:25},oil:{n:'Olive oil',i:'🫒',b:22},grain:{n:'Grain',i:'🌾',b:10},glass:{n:'Glass',i:'🥂',b:50},wool:{n:'Wool cloth',i:'🧶',b:40}};
 const SGK=Object.keys(SG);
 const PORTS={
   beirut:{n:'Beirut',xy:[10.85,7.25],sub:'Your home port',yard:'yard',info:'Home. Syrian silk and spices arrive here by caravan from Damascus and Aleppo, and every year Venetian galleys come to buy them.',f:{silk:.8,pepper:.85,sugar:.9,wool:1.35,glass:1.3,grain:1.15}},
   famagusta:{n:'Famagusta',xy:[10.05,6.45],sub:'Cyprus, Venetian since 1489',info:'Queen Caterina Cornaro handed Cyprus to Venice in 1489. Sugar from the island\u2019s plantations and sweet Commandaria wine.',f:{sugar:.6,wine:.8,grain:1.3,wool:1.25,glass:1.15}},
   alexandria:{n:'Alexandria',xy:[7.9,9.55],sub:'Egypt, under the Mamluk sultans',info:'Indian pepper reaches Alexandria through the Red Sea, cheaper than anywhere else. Egypt also exports grain and sugar, and buys European cloth.',f:{pepper:.6,sugar:.8,grain:.7,wool:1.5,glass:1.35,oil:1.3}},
-  candia:{n:'Candia',xy:[5.9,7.3],sub:'Crete, a Venetian colony',info:'Crete sends malmsey wine and olive oil all over Europe, but cannot grow enough grain to feed itself.',f:{wine:.6,oil:.65,grain:1.4,pepper:1.2,glass:1.1}},
-  constantinople:{n:'Constantinople',xy:[8.65,2.25],sub:'Ottoman capital since 1453',info:'The Ottoman capital, a huge and hungry city. Silk from nearby Bursa is cheap; spices, sugar and grain sell well.',f:{silk:.75,pepper:1.35,sugar:1.4,wine:1.25,grain:1.35,glass:1.2}},
+  candia:{n:'Candia',xy:[5.9,7.3],yard:'yard',sub:'Crete, a Venetian colony',info:'Crete sends malmsey wine and olive oil all over Europe, but cannot grow enough grain to feed itself.',f:{wine:.6,oil:.65,grain:1.4,pepper:1.2,glass:1.1}},
+  constantinople:{n:'Constantinople',xy:[8.65,2.25],yard:'yard',sub:'Ottoman capital since 1453',info:'The Ottoman capital, a huge and hungry city. Silk from nearby Bursa is cheap; spices, sugar and grain sell well.',f:{silk:.75,pepper:1.35,sugar:1.4,wine:1.25,grain:1.35,glass:1.2}},
   venice:{n:'Venice',xy:[2.55,1.45],sub:'The Most Serene Republic',yard:'arsenal',info:'Murano glass and wool cloth from the north, and the richest buyers of pepper and silk in Europe. Home of the Arsenal, the greatest shipyard in the world.',f:{glass:.6,wool:.7,pepper:1.7,silk:1.5,sugar:1.45,oil:1.2,wine:1.2}}
 };
 const PK=Object.keys(PORTS);
@@ -1060,9 +1068,9 @@ const LANES=[
   ['constantinople','venice',8,[[7.7,2.8],[6.7,3.95],[6.55,5.3],[5.4,6.75],[4.4,5.6],[3.95,4.3],[3.2,2.7]]],
   ['alexandria','venice',8,[[5.2,8.8],[3.5,7.7],[4.3,5.9],[3.95,4.3],[3.2,2.7]],'corsair']
 ];
-const SHIPS=[{n:'Cog',hold:60,speed:1,cost:0},{n:'Caravel',hold:100,speed:1.5,cost:4000},{n:'Carrack',hold:220,speed:1.25,cost:12000}];
+const SHIPS=[{n:'Cog',hold:500,speed:1,cost:0},{n:'Caravel',hold:800,speed:1.5,cost:40000},{n:'Carrack',hold:2000,speed:1.25,cost:120000}];
 const CAPTAINS=['Captain Marco','Captain Elena','Captain Yusuf al-Bahri','Captain Nikos','Captain Giacomo','Captain Hasan','Captain Rachel','Captain Andrea'];
-const SIMP=1.006;
+const SIMP=1.0006;
 let sailing=false,RT=null;
 const sh_head=(i,n,sub)=>`<div class="sh-head"><div class="big">${i}</div><div style="flex:1"><h2>${n}</h2><div class="sub"><span>${sub}</span></div></div><button class="x" onclick="closeSheet()" aria-label="Close">✕</button></div>`;
 const laneOf=(a,b)=>LANES.find(L=>(L[0]===a&&L[1]===b)||(L[0]===b&&L[1]===a));
@@ -1158,8 +1166,9 @@ function arrivePort(p,days){
   const sea=S.sea;sea.port=p;sea.visitProfit=0;sea.stats.voyages++;learn(p,0);
   const letters=[];LANES.filter(L=>L[0]===p||L[1]===p).forEach(L=>{const q=L[0]===p?L[1]:L[0];learn(q,L[2]);letters.push(`${PORTS[q].n} (${L[2]} day${L[2]>1?'s':''} old)`)});
   const shopE=(S.shop?S.shop.earned:0)-(sea.voy?sea.voy.earned0:0),fl=(sea.fleetProfit||0)-(sea.voy?sea.voy.fleet0:0);
+  const got=p==='beirut'?collectTill():0;
   save();render();
-  portSheet({days,letters,shopE,fl});
+  portSheet({days,letters,shopE,fl,got});
   setTimeout(()=>checkMs(),300);
 }
 function waitDay(){if(sailing)return;const log=[];seaDayRoll(log);learn(S.sea.port,0);render();
@@ -1167,13 +1176,14 @@ function waitDay(){if(sailing)return;const log=[];seaDayRoll(log);learn(S.sea.po
 function portSheet(arr){
   const sea=S.sea,p=sea.port,P=PORTS[p],cap=holdCap(),n=cargoN();
   let h=sh_head('⚓',P.n,P.sub);
-  if(arr)h+=`<div class="bubble">${arr.days} day${arr.days>1?'s':''} at sea.${arr.shopE>0?` Back home, your shop sold ${fmt(arr.shopE)}.`:''}${arr.fl?` Your captains made ${arr.fl>=0?'':'−'}${fmt(Math.abs(arr.fl))}.`:''}</div>${arr.letters.length?`<p class="small">Letters in the harbour bring prices from ${arr.letters.join(', ')}. They're in your ledger.</p>`:''}`;
+  if(arr)h+=`<div class="bubble">${arr.days} day${arr.days>1?'s':''} at sea.${arr.shopE>0?` Back home, your shop sold ${fmt(arr.shopE)}.`:''}${arr.got?` Kerem, your steward, ran the shop and kept half the profit. Your share: ${fmt(arr.got)}.`:''}${arr.fl?` Your captains made ${arr.fl>=0?'':'−'}${fmt(Math.abs(arr.fl))}.`:''}</div>${arr.letters.length?`<p class="small">Letters in the harbour bring prices from ${arr.letters.join(', ')}. They're in your ledger.</p>`:''}`;
   h+=`<p class="small">${P.info}</p>`;
+  if(p!=='beirut'&&S.shop&&S.shop.till>0)h+=`<p class="small">💰 <b>${fmt(S.shop.till)}</b> of your share from the shop is waiting in Beirut. Kerem the steward keeps it safe until you\u2019re back home.</p>`;
   h+=`<div class="stat"><div class="chip">Hold<b>${n}/${cap}</b></div><div class="chip">Profit here<b>${fmt(sea.visitProfit)}</b></div><div class="chip">Ship<b>${SHIPS[sea.ship.cls].n}</b></div></div>`;
   h+=`<h3>Market</h3>`;
   SGK.forEach(g=>{const a=seaAsk(p,g),b=seaBid(p,g),c=sea.cargo[g]||0,avg=c?sea.basis[g]/c:0,f=P.f[g]||1;
     const tag=c?`In hold: ${c}, paid ${fmt(avg)} each. ${b>avg?`<span class="good">Sells here for ${fmt(b-avg)} more</span>`:`<span class="bad">Sells here at a loss</span>`}`:(f<1?'Made here: cheap':f>1?'<span class="good">In demand here</span>':'');
-    h+=`<div class="mrow"><div class="mtop"><div class="gi">${gi(g)}</div><div class="info"><b>${SG[g].n}</b> <span class="small">buy</span> <span class="price">${fmt(a)}</span> <span class="small">sell</span> <span class="price">${fmt(b)}</span><div class="small">${tag}</div></div></div><div class="btns"><button class="sbtn" onclick="seaBuy('${g}',10)">Buy 10</button><button class="sbtn" onclick="seaBuy('${g}',999)">Buy max</button>${c?`<button class="sbtn fill" onclick="seaSell('${g}',999)">Sell all</button>`:''}</div></div>`});
+    h+=`<div class="mrow"><div class="mtop"><div class="gi">${gi(g)}</div><div class="info"><b>${SG[g].n}</b> <span class="small">buy</span> <span class="price">${fmt(a)}</span> <span class="small">sell</span> <span class="price">${fmt(b)}</span><div class="small">${tag}</div></div></div><div class="btns"><button class="sbtn" onclick="seaBuy('${g}',100)">Buy 100</button><button class="sbtn" onclick="seaBuy('${g}',99999)">Buy max</button>${c?`<button class="sbtn" onclick="seaSell('${g}',100)">Sell 100</button><button class="sbtn fill" onclick="seaSell('${g}',99999)">Sell all</button>`:''}</div></div>`});
   h+=`<div class="acts">`;
   if(p==='beirut')h+=`<button class="sbtn fill" onclick="goAshore()">🏙️ Go ashore</button>`;
   if(P.yard)h+=`<button class="sbtn" onclick="shipSheet()">🛠️ ${P.yard==='arsenal'?'The Arsenal':'Shipyard'}</button>`;
@@ -1188,19 +1198,19 @@ function seaSell(g,n){const sea=S.sea,p=sea.port;let k=0,rev=0,prof=0;
   if(!sea.cargo[g]){delete sea.cargo[g];delete sea.basis[g]}
   sea.visitProfit+=prof;sea.stats.bestVisit=Math.max(sea.stats.bestVisit,sea.visitProfit);if(p!=='beirut'&&k)sea.stats.foreignSales+=k;
   toast(`Sold ${k} for ${fmt(rev)}, ${prof>=0?'profit':'loss'} ${fmt(Math.abs(prof))}.`);learn(p,0);save();renderHud();portSheet();checkMs()}
-function upCost(k){const sh=S.sea.ship,c=sh.cls+1;return k==='hold'?500*Math.pow(2,sh.hold)*c:k==='sails'?700*Math.pow(2,sh.sails)*c:1500}
+function upCost(k){const sh=S.sea.ship,c=sh.cls+1;return k==='hold'?4000*Math.pow(2,sh.hold)*c:k==='sails'?5000*Math.pow(2,sh.sails)*c:10000}
 function shipUp(k){const sh=S.sea.ship;if(k!=='cannons'&&sh[k]>=3)return;if(k==='cannons'&&sh.cannons)return;const c=upCost(k);if(S.cash<c){toast(`You need ${fmt(c)}.`);return}
   S.cash-=c;if(k==='cannons')sh.cannons=true;else sh[k]++;toast('The shipwrights get to work. Done!');save();render();shipSheet();checkMs()}
 function newClass(c){const sh=S.sea.ship,price=SHIPS[c].cost-Math.round(SHIPS[sh.cls].cost*.4);if(S.cash<price){toast(`You need ${fmt(price)}.`);return}
   if(cargoN()>Math.round(SHIPS[c].hold*(1+.15*sh.hold))){toast('Unload some cargo first.');return}
   S.cash-=price;sh.cls=c;toast(`Your new ${SHIPS[c].n} is ready!`);save();render();shipSheet();checkMs()}
-function buyFleet(cls){const c=[3000,6000][cls];if(S.cash<c){toast(`You need ${fmt(c)}.`);return}
+function buyFleet(cls){const c=[30000,60000][cls];if(S.cash<c){toast(`You need ${fmt(c)}.`);return}
   const p=S.sea.port,L=LANES.find(L=>(L[0]===p||L[1]===p)&&L[4]!=='corsair');S.cash-=c;
   const used=S.sea.fleet.map(f=>f.name),name=CAPTAINS.find(n=>!used.includes(n))||'Captain '+(S.sea.fleet.length+1);
   S.sea.fleet.push({name,cls,route:[L[0],L[1]],gAB:null,gBA:null,at:p,from:null,dest:null,left:0,total:0,cargo:{g:null,q:0,cost:0},profit:0,trips:0});
   save();render();checkMs();RT=null;routeSheet(S.sea.fleet.length-1)}
 function fleetDay(log){
-  const sea=S.sea;if(!sea.fleet.length)return;const wage=15*sea.fleet.length;S.cash-=wage;const lines=[];
+  const sea=S.sea;if(!sea.fleet.length)return;const wage=200*sea.fleet.length;S.cash-=wage;const lines=[];
   sea.fleet.forEach(f=>{
     if(f.left>0){if(stormOn())return;f.left--;if(f.left>0)return;f.at=f.dest;f.dest=null}
     if(!f.at)return;
@@ -1211,7 +1221,7 @@ function fleetDay(log){
     const [A,B]=f.route;
     if(f.at!==A&&f.at!==B){f.from=f.at;f.dest=A;f.left=f.total=2;f.at=null;return}
     const next=f.at===A?B:A,g=f.at===A?f.gAB:f.gBA,cap=SHIPS[f.cls].hold;
-    if(g){let q=0,cost=0;while(q<cap){const a=seaAsk(f.at,g);if(a>=seaBid(next,g)*.95||S.cash-a<300)break;S.cash-=a;cost+=a;sea.imp[f.at][g]*=SIMP;q++}if(q)f.cargo={g,q,cost}}
+    if(g){let q=0,cost=0;while(q<cap){const a=seaAsk(f.at,g);if(a>=seaBid(next,g)*.95||S.cash-a<2000)break;S.cash-=a;cost+=a;sea.imp[f.at][g]*=SIMP;q++}if(q)f.cargo={g,q,cost}}
     f.from=f.at;f.dest=next;f.left=f.total=travelDays(laneOf(f.at,next),SHIPS[f.cls].speed);f.at=null;
   });
   log.push(`Your captains took ${fmt(wage)} in wages.`);lines.forEach(l=>log.push(l));
@@ -1236,18 +1246,18 @@ function shipSheet(){
   h+=`<h3>Cargo</h3>`;
   const cs=SGK.filter(g=>sea.cargo[g]);
   h+=cs.length?cs.map(g=>`<div class="row"><div class="gi">${gi(g)}</div><div class="info"><b>${sea.cargo[g]} ${SG[g].n}</b><div class="small">Paid ${fmt(sea.basis[g]/sea.cargo[g])} each</div></div></div>`).join(''):'<p class="small">The hold is empty.</p>';
-  h+=`<h3>${docked&&P.yard?(P.yard==='arsenal'?'The Arsenal of Venice':'Beirut shipyard'):'Shipyards'}</h3>`;
+  h+=`<h3>${docked&&P.yard?(P.yard==='arsenal'?'The Arsenal of Venice':P.n+' shipyard'):'Shipyards'}</h3>`;
   if(docked&&P.yard){
     const row=(k,n,d,lv,max)=>{const c=upCost(k),mx=k==='cannons'?sh.cannons:lv>=max;return `<div class="uprow"><div class="info"><b>${n}</b>${k!=='cannons'?` <span class="lv">Lv ${lv}</span>`:''}<div class="small">${d}</div></div>${mx?'<span class="small">Done</span>':`<button class="sbtn${S.cash>=c?' fill':''}" onclick="shipUp('${k}')">${fmt(c)}</button>`}</div>`};
     h+=row('hold','Bigger hold','+15% cargo space per level',sh.hold,3)+row('sails','Better sails','+12% speed per level',sh.sails,3)+row('cannons','Cannons','Lets you take the short route through corsair waters',0,1);
     if(P.yard==='arsenal')SHIPS.forEach((X,c)=>{if(c<=sh.cls)return;const price=X.cost-Math.round(SHIPS[sh.cls].cost*.4);h+=`<div class="uprow"><div class="info"><b>New ship: ${X.n}</b><div class="small">Hold ${X.hold}, speed ×${X.speed}. Your old ship goes in part exchange; upgrades carry over.</div></div><button class="sbtn${S.cash>=price?' fill':''}" onclick="newClass(${c})">${fmt(price)}</button></div>`});
     else h+=`<p class="small">New ships are built only at the Arsenal in Venice.</p>`;
-  }else h+=`<p class="small">Upgrades at the shipyard in Beirut. New ships at the Arsenal in Venice.</p>`;
+  }else h+=`<p class="small">Shipyards in Beirut, Candia and Constantinople do upgrades. New ships are built only at the Arsenal in Venice.</p>`;
   if((S.ms3||0)>=4||sea.fleet.length){
     h+=`<h3>Your fleet</h3>`;
     h+=sea.fleet.length?sea.fleet.map((f,i)=>{const st=f.at?`In ${PORTS[f.at].n}`:`Sailing to ${PORTS[f.dest].n}, ${f.left} day${f.left>1?'s':''} left`;
       return `<div class="uprow"><div class="info"><b>${f.name}</b> <span class="lv">${SHIPS[f.cls].n}</span><div class="small">${PORTS[f.route[0]].n} ⇄ ${PORTS[f.route[1]].n}. Carries ${f.gAB?SG[f.gAB].n.toLowerCase():'nothing'} one way, ${f.gBA?SG[f.gBA].n.toLowerCase():'nothing'} back.<br>${st}. Profit so far ${f.profit>=0?'':'−'}${fmt(Math.abs(f.profit))} over ${f.trips} sale${f.trips===1?'':'s'}.</div></div><button class="sbtn" onclick="RT=null;routeSheet(${i})">Orders</button></div>`}).join(''):'<p class="small">No other ships yet.</p>';
-    if(docked&&P.yard)h+=`<div class="acts"><button class="sbtn${S.cash>=3000?' fill':''}" onclick="buyFleet(0)">Hire a captain with a cog ($3,000)</button><button class="sbtn${S.cash>=6000?' fill':''}" onclick="buyFleet(1)">Hire a captain with a caravel ($6,000)</button></div><p class="small">Each captain takes $15 a day.</p>`;
+    if(docked&&P.yard)h+=`<div class="acts"><button class="sbtn${S.cash>=30000?' fill':''}" onclick="buyFleet(0)">Hire a captain with a cog ($30,000)</button><button class="sbtn${S.cash>=60000?' fill':''}" onclick="buyFleet(1)">Hire a captain with a caravel ($60,000)</button></div><p class="small">Each captain takes $200 a day.</p>`;
   }
   setSheet(h);
 }
@@ -1260,24 +1270,24 @@ function seaNotebook(){
   h+=`<p class="small">You learn a port's prices when you're there. Letters in each harbour bring prices from neighbouring ports, a few days old.</p>`;
   setSheet(h);
 }
-function goAshore(){preview=null;document.getElementById('pill').classList.remove('on');S.mode='land';S.dist='harbour';setDistrict('harbour');S.at=null;const s0=DIST.harbour.start;S.px=s0[0];S.py=s0[1];closeSheet();save();render();toast('Back on dry land. Your ship waits at Captain Idris\u2019s old dock.')}
+function goAshore(){preview=null;document.getElementById('pill').classList.remove('on');S.mode='land';S.dist='harbour';setDistrict('harbour');S.at=null;const s0=DIST.harbour.start;S.px=s0[0];S.py=s0[1];closeSheet();save();render();toast((()=>{const g=collectTill();return g?`Back home. You collect ${fmt(g)} from the shop\u2019s strongbox.`:'Back on dry land. Your ship waits at Captain Idris\u2019s old dock.'})())}
 function boardShip(){preview=null;document.getElementById('pill').classList.remove('on');S.mode='sea';S.sea.port='beirut';closeSheet();save();render();portSheet()}
 const MS3=[
  {txt:'Sell cargo in a port other than Beirut',title:'a sea trader',ok:()=>S.sea.stats.foreignSales>0,prog:()=>0,msg:'Your first deal abroad. Every port pays differently, and the letters you get in harbour are always a few days old.'},
- {txt:'Make $1,000 profit in a single port visit',title:'a captain',ok:()=>S.sea.stats.bestVisit>=1000,prog:()=>S.sea.stats.bestVisit/1000,msg:'Harbour masters greet you by name now. The shipyards in Beirut and Venice can make your cog roomier and faster.'},
+ {txt:'Make $10,000 profit in a single port visit',title:'a captain',ok:()=>S.sea.stats.bestVisit>=10000,prog:()=>S.sea.stats.bestVisit/10000,msg:'Harbour masters greet you by name now. The shipyards in Beirut, Candia, Constantinople and Venice can make your cog roomier and faster.'},
  {txt:'Upgrade your ship at a shipyard',title:'a seasoned captain',ok:()=>{const s=S.sea.ship;return s.hold+s.sails>0||s.cannons||s.cls>0},prog:()=>0,msg:'The famous Arsenal of Venice builds caravels: the fast, nimble ships the Portuguese use to explore the coast of Africa.'},
  {txt:'Buy a caravel at the Arsenal in Venice',title:'a shipowner',ok:()=>S.sea.ship.cls>=1,prog:()=>0,msg:'1492. News from Spain: a Genoese captain called Christopher Columbus has sailed west for the Spanish crown and claims to have reached the Indies. Nobody in Venice believes a word. You can now hire captains with ships of their own at any shipyard.'},
  {txt:'Hire a captain with a second ship',title:'a fleet owner',ok:()=>S.sea.fleet.length>=1,prog:()=>0,msg:'1497. Four Portuguese ships under Vasco da Gama have left Lisbon, sailing south around Africa. The Venetians laugh. Your captain now sails his route on his own; check on him in your ship screen.'},
- {txt:'Own three ships and save $25,000',title:'a merchant of the sea',ok:()=>S.sea.fleet.length>=2&&S.cash>=25000,prog:()=>Math.min(S.sea.fleet.length/2,1)*.5+Math.min(S.cash/25000,1)*.5,msg:''}
+ {txt:'Own three ships and save $150,000',title:'a merchant of the sea',ok:()=>S.sea.fleet.length>=2&&S.cash>=150000,prog:()=>Math.min(S.sea.fleet.length/2,1)*.5+Math.min(S.cash/150000,1)*.5,msg:''}
 ];
 function startCh3(){
   S.ch=3;S.ms3=0;S.won3=false;S.mode='sea';S.sea=newSea();snapshot();learn('beirut',0);
-  S.sea.cargo={oil:40};S.sea.basis={oil:0};
+  S.sea.cargo={oil:200};S.sea.basis={oil:0};
   save();closeSheet();render();
-  setSheet(`<h2>Chapter three: The Sea</h2><div class="bubble">Anno 1490. Captain Idris hands you the key to a sturdy little cog. You name her the Pomegranate, after the donkey. In the hold you find 40 jars of olive oil. “For luck,” says Idris.</div>
+  setSheet(`<h2>Chapter three: The Sea</h2><div class="bubble">Anno 1490. Captain Idris hands you the key to a sturdy little cog. You name her the Pomegranate, after the donkey. In the hold you find 200 jars of olive oil. “For luck,” says Idris.</div>
   <p>Venice rules the sea trade. It has held Cyprus since 1489 and Crete for centuries. The Ottomans have ruled Constantinople since 1453, and the Mamluk sultans of Egypt control the pepper that comes from India through the Red Sea.</p>
   <p><b>How it works.</b> Tap a port to see the route and how many days it takes, then tap again to sail. Buy cheap where goods are made, sell where they're wanted, but every crate you sell pushes the price down, so spread big cargoes across ports. Prices you know get older every day you're at sea.</p>
-  <p>Back home, your shop and runners keep working. To go ashore in Beirut, use the button in the port screen.</p>
+  <p>Back home, Kerem the steward runs your shop while you\u2019re away. He pays the runners and costs from the takings and keeps half the profit; your half waits for you in Beirut. To go ashore there, use the button in the port screen.</p>
   <button class="sbtn fill wide" onclick="portSheet()">To the market</button>`);
 }
 function showEnding3(){setSheet(`<h2>End of chapter three</h2>
@@ -1289,19 +1299,21 @@ function showEnding3(){setSheet(`<h2>End of chapter three</h2>
 const CODES={DESTINY:2,POMEGRANATE:3};
 function useCode(){const el=document.getElementById('codeIn'),v=(el?el.value:'').trim().toUpperCase(),n=CODES[v];
   if(!n){toast('That code doesn\u2019t open anything.');return}
-  setSheet(`<h2>Start chapter ${n===2?'two':'three'}?</h2><p>This replaces your current game with a fresh start at the beginning of chapter ${n===2?'two':'three'}.</p><button class="sbtn fill wide" onclick="jumpCh(${n})">Yes, let\u2019s go</button><button class="sbtn wide" onclick="closeSheet()">Keep my game</button>`)}
+  setSheet(`<h2>${n===2?'Start chapter two?':'Jump to the end of chapter two?'}</h2><p>This replaces your current game with a fresh start ${n===2?'at the beginning of chapter two':'just before buying Captain Idris\u2019s ship, with a built-up shop and $6,000'}.</p><button class="sbtn fill wide" onclick="jumpCh(${n})">Yes, let\u2019s go</button><button class="sbtn wide" onclick="closeSheet()">Keep my game</button>`)}
 function jumpCh(n){
   S=newState();setDistrict('bazaar');
   Object.assign(S,{cash:500,donkey:true,cap:50,boys:1,store:true,storeInv:[],contractsDone:1,ms:6,won:true,inv:[]});
   startCh2();
-  if(n===3){const sp=S.shop;sp.open=true;sp.lv.shelves=2;sp.lv.runners=2;sp.shelves=[{g:'spice',q:10,acc:0},{g:'cloth',q:10,acc:0},{g:'pottery',q:10,acc:0},{g:'olive',q:10,acc:0}];
-    Object.assign(S,{cash:1500,ms2:8,won2:true,visitedHarbour:true,shipBought:true});startCh3();}
+  if(n===3){const sp=S.shop;sp.open=true;Object.assign(sp.lv,{shelves:2,runners:2,cap:1,seller:1,sign:1});sp.shelves=[{g:'spice',q:15,acc:0},{g:'cloth',q:15,acc:0},{g:'pottery',q:15,acc:0},{g:'silk',q:15,acc:0}];sp.best=320;sp.soldPrem=true;
+    Object.assign(S,{cash:6000,ms2:7,visitedHarbour:true,dist:'harbour'});setDistrict('harbour');{const s0=DIST.harbour.start;S.px=s0[0];S.py=s0[1]}S.at=null;
+    save();render();checkMs(true);
+    setSheet(`<h2>Almost the end of chapter two</h2><div class="bubble">Your shop is doing well, you have $6,000, and you\u2019re standing in the Harbour Quarter.</div><p>Captain Idris is ready to sell you his ship. Find him at his stall, marked with an anchor, whenever you feel ready. Until then, manage your shop as long as you like.</p><button class="sbtn fill wide" onclick="closeSheet()">Let\u2019s go</button>`);return}
   save();
 }
 function buyShipAsk(){
   if(S.cash<5000){toast(`You need $5,000. You have ${fmt(S.cash)}.`);return}
   const left=S.cash-5000,day=shopRate()*12;
-  setSheet(`${sh_head(portrait('idris'),'Captain Idris\u2019s ship','A sturdy little cog')}<div class="bubble">\u201cShe\u2019s old but honest, like me. Five thousand coins, and she\u2019s yours.\u201d</div><p>After buying her you\u2019ll have <b>${fmt(left)}</b> left for cargo. Idris will throw in a first cargo of olive oil.</p><p>Your shop keeps selling while you\u2019re at sea: ${day>0?`right now about <b>${fmt(day)}</b> a day`:'but right now its shelves are empty, so it earns nothing until they\u2019re stocked'}${S.shop.lv.runners?`, and your ${S.shop.lv.runners} runner${S.shop.lv.runners>1?'s':''} keep it supplied`:'. With no runners, nobody restocks it while you\u2019re away'}.</p><p class="small">There\u2019s no rush. Upgrading the shop first makes the sea easier.</p><button class="sbtn fill wide" onclick="buyShip()">Buy the ship for $5,000</button><button class="sbtn wide" onclick="closeSheet()">Not yet</button>`)}
+  setSheet(`${sh_head(portrait('idris'),'Captain Idris\u2019s ship','A sturdy little cog')}<div class="bubble">\u201cShe\u2019s old but honest, like me. Five thousand coins, and she\u2019s yours.\u201d</div><p>After buying her you\u2019ll have <b>${fmt(left)}</b> left for cargo. Idris will throw in a first cargo of olive oil.</p><p><b>Kerem</b>, the barman\u2019s nephew, offers to run the shop while you\u2019re at sea. He\u2019ll pay the runners and costs from the takings and keep half the profit; your half waits for you in Beirut.</p><p>Your shop keeps selling while you\u2019re at sea: ${day>0?`right now about <b>${fmt(day)}</b> a day`:'but right now its shelves are empty, so it earns nothing until they\u2019re stocked'}${S.shop.lv.runners?`, and your ${S.shop.lv.runners} runner${S.shop.lv.runners>1?'s':''} keep it supplied`:'. With no runners, nobody restocks it while you\u2019re away'}.</p><p class="small">There\u2019s no rush. Upgrading the shop first makes the sea easier.</p><button class="sbtn fill wide" onclick="buyShip()">Buy the ship for $5,000</button><button class="sbtn wide" onclick="closeSheet()">Not yet</button>`)}
 function buyShip(){if(S.cash<5000)return;S.cash-=5000;S.shipBought=true;save();closeSheet();renderHud();checkMs()}
 function confirmNew(){setSheet(`<h2>Start over?</h2><p>Your coins, goods and notebook will be gone.</p><button class="sbtn fill wide" onclick="newGame()">Start a new game</button><button class="sbtn wide" onclick="closeSheet()">Keep playing</button>`)}
 function newGame(){S=newState();setDistrict('bazaar');save();render();intro()}
