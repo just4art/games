@@ -9,7 +9,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Marcellus&family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>
 :root{
-  --bg:#dcebe8; --surface:#fbf8f1; --surface2:#eef4f2; --text:#1d2340; --muted:#5d6584;
+  --bg:#dcebe8; --surface:#fbf8f1; --surface2:#eef4f2; --text:#1d2340; --muted:#4b5372;
   --saffron:#d9961a; --lapis:#2c4ba0; --pom:#b8323f; --good:#2c7a4b; --line:#c9dbd7;
   --sand1:#ecd39b; --sand2:#dfbd78; --path:#c9a463; --night:#0d1430; --tile:#2c4ba0;
   --alley:#e4dccb; --alley2:#f2ede3; --house:#cbbfab; --house2:#b8ab95; --water:#6fb7d6; --leaf:#5aa469; --plaza:#efe7d6;
@@ -183,15 +183,20 @@ h1{font-size:22px}
 .uprow .lv{font-size:12px;font-weight:700;color:var(--saffron);letter-spacing:0}
 .best{display:inline-block;margin-left:6px;font-size:10.5px;font-weight:800;color:#fff;background:var(--good);border-radius:99px;padding:1px 7px;vertical-align:middle}
 @media (min-width:820px) and (min-aspect-ratio:1/1){.sheet{border-radius:24px;border:none;box-shadow:0 2px 4px rgba(13,20,48,.06),0 18px 40px rgba(13,20,48,.12)}.sheet::before{display:none}.bar{background:none;backdrop-filter:none;box-shadow:none}}
+.gear{background:none;border:none;font-size:20px;cursor:pointer;padding:2px 4px;line-height:1}
+.top{gap:10px}.top .goal{flex:1;text-align:right}
+.price{color:var(--text);font-weight:800}
+.seg{display:flex;gap:6px;margin:6px 0 14px}.seg .sbtn{flex:1}
+.q.best{color:var(--text);font-size:13px;margin-left:0;padding:0 5px;border-radius:6px;vertical-align:baseline;background:color-mix(in srgb,var(--saffron) 22%,var(--surface))}
 </style>
 </head>
 <body>
 <div class="app">
   <main class="stage">
-    <div class="top"><h1>Five Coins Bazaar</h1><div class="goal" id="goalTxt"></div></div>
+    <div class="top"><h1>Five Coins Bazaar</h1><div class="goal" id="goalTxt"></div><button class="gear" onclick="showSettings()" aria-label="Settings">⚙️</button></div>
     <div class="hud" id="hud"></div>
     <div class="next" id="nextTxt"></div><div class="goalbar"><i id="goalBar"></i></div>
-    <div class="frame"><div class="map" id="map"></div><svg id="crowd" viewBox="0 0 12 12" aria-hidden="true"></svg><svg id="shopfx" viewBox="0 0 12 12" aria-hidden="true"></svg><div class="mapctl" id="mapctl"><button id="viewBtn" class="viewbtn" onclick="toggleView()"></button><button id="pauseBtn" class="viewbtn pausebtn" onclick="togglePause()"></button></div><div class="pill" id="pill"></div></div>
+    <div class="frame"><div class="map" id="map"></div><svg id="crowd" viewBox="0 0 12 12" aria-hidden="true"></svg><svg id="shopfx" viewBox="0 0 12 12" aria-hidden="true"></svg><div class="mapctl" id="mapctl"><button id="viewBtn" class="viewbtn" onclick="viewBtnTap()"></button><button id="pauseBtn" class="viewbtn pausebtn" onclick="togglePause()"></button></div><div class="pill" id="pill"></div></div>
   </main>
   <aside class="side">
     <nav class="bar">
@@ -530,6 +535,7 @@ function initCrowd(){
 }
 let shopView=true,EVQ=null;
 function shopActive(){return S.ch>=2&&S.mode!=='sea'&&S.at==='stand'&&shopView}
+function viewBtnTap(){if(S.ch>=3&&S.mode!=='sea'&&!(S.at==='stand'&&shopView&&S.ch>=2)){boardShip();return}toggleView()}
 function toggleView(){shopView=!shopView;clearPreview();renderMap()}
 const UPG={supply:{n:'New suppliers',d:'The Caravan Master starts selling you tea, then perfume, then silk. Pricier goods, bigger margins.',costs:[120,300,600]},shelf:{n:'Shelves',d:'Room for one more good on display.',costs:[60,150,300]},sign:{n:'Sign and awning',d:'Draws 20% more customers per level.',costs:[80,200,400]},decor:{n:'Lanterns and carpet',d:'Customers happily pay a little more.',costs:[100,250]}};
 function slotsN(){const st=S.stand,up=(st&&st.up)||{};return 3+(up.shelf||0)+(st&&st.clerk?1:0)}
@@ -565,7 +571,7 @@ function shopScene(){
 }
 let paused=false;function togglePause(){paused=!paused;renderMap()}
 let rtN=0,rtClosed=false;
-setInterval(()=>{
+function rtTick(){
   if(typeof S==='undefined'||!S||!S.shop||!S.shop.open||!shopActive()||document.hidden||walking||paused)return;
   if(S.t>=DAY_LEN){if(!rtClosed){rtClosed=true;toast('The bazaar is closing. Time to sleep 🌙')}return}
   rtClosed=false;S.t+=1;timePass(1);renderHud();rtN++;
@@ -573,7 +579,8 @@ setInterval(()=>{
   if(rtN%15===0&&lastSheet==='Your shop'&&document.getElementById('wrap').classList.contains('open'))showPlace('stand');
   if(rtN%20===0)save();
   if(rtN%30===0)checkMs();
-},250);
+}
+(function rtLoop(){try{rtTick()}catch(e){}setTimeout(rtLoop,(PREF&&PREF.speed)==='slow'?400:(PREF&&PREF.speed)==='fast'?150:250)})();
 function playEvents(evs){
   const fx=document.getElementById('shopfx');if(!fx)return;fx.innerHTML='';
   const list=evs.slice(-24);
@@ -642,7 +649,8 @@ function renderMap(){
   {const mc=document.getElementById('mapctl');if(mc)mc.style.display=''}
   const vb=document.getElementById('viewBtn'),fx=document.getElementById('shopfx'),cr0=document.getElementById('crowd');
   const atShop=S.ch>=2&&S.at==='stand';
-  if(vb){vb.classList.toggle('on',atShop);vb.textContent=shopView?'← Back to the bazaar':'🏪 Enter your shop'}
+  if(vb&&S.ch>=3&&S.mode!=='sea'&&!(atShop&&shopView)){vb.classList.add('on');vb.textContent='⛵ Board your ship'}
+  else if(vb){vb.classList.toggle('on',atShop);vb.textContent=shopView?'← Back to the bazaar':'🏪 Enter your shop'}
   const pb=document.getElementById('pauseBtn');if(pb){pb.classList.toggle('on',!!(atShop&&shopView&&S.shop&&S.shop.open));pb.textContent=paused?'▶ Resume':'⏸ Pause';pb.classList.toggle('paused',paused)}
   const mc=document.getElementById('mapctl');if(mc)mc.classList.toggle('top',!(atShop&&shopView));
   if(atShop&&shopView){document.getElementById('map').innerHTML=shopScene();if(cr0)cr0.style.display='none';if(fx)fx.style.display='';return}
@@ -877,8 +885,6 @@ function showNews(){
   h+=S.rumors.length?S.rumors.map(r=>`<div class="news"><span class="small">Day ${r.day}</span><br>${r.txt}</div>`).join(''):`<p class="small">Buy a drink at the tavern to hear what people whisper. Not every rumour is true.</p>`;
   if(S.won2&&S.ch===2)h+=`<button class="sbtn fill wide" onclick="startCh3()">Begin chapter three</button>`;
   if(S.won&&(S.ch||1)<2)h+=`<button class="sbtn fill wide" onclick="startCh2()">Begin chapter two</button>`;
-  h+=`<h3>Have a chapter code?</h3><p class="small">Finishing a chapter shows a code that lets you, or a friend, start the next chapter right away.</p><input id="codeIn" class="sel" placeholder="Enter a code" autocomplete="off" autocapitalize="characters"><button class="sbtn wide" onclick="useCode()">Use code</button>`;
-  h+=`<button class="sbtn wide" onclick="confirmNew()">Start a new game</button>`;
   setSheet(h);
 }
 function ago(d,tm){const a=S.day-d;return a===0?(tm!=null?'today '+clockAt(tm):'today'):a===1?'yesterday':`${a} days ago`}
@@ -935,12 +941,12 @@ function showEnding(){
 const street=g=>G[g].b*S.gw[g]*Math.sqrt(effM(g,'bid')*effM(g,'ask'));
 function rivalOn(){return false}
 function harbourOpen(){return S.ch>=3||(S.ch===2&&(S.ms2||0)>=4)}
-const SH={cap:l=>10+5*l,speed:()=>1+.5*S.shop.lv.seller,mark:()=>1.3+.1*S.shop.lv.sign};
+const SH={cap:l=>10+5*l,speed:()=>1+.5*S.shop.lv.seller,mark:()=>1.3+.05*S.shop.lv.sign};
 const SUP={
   shelves:{n:'Another shelf',d:()=>'Room for one more good',max:()=>4,cost:l=>Math.round(100*Math.pow(2,l))},
   cap:{n:'Bigger shelves',d:()=>`Each shelf holds ${SH.cap(S.shop.lv.cap)} now, +5 per level`,max:()=>5,cost:l=>Math.round(80*Math.pow(1.9,l))},
   seller:{n:'Sellers',d:()=>`Each shelf sells ${SH.speed()} an hour now, +0.5 per seller`,max:()=>4,cost:l=>Math.round(200*Math.pow(2.2,l))},
-  sign:{n:'Better sign',d:()=>`Customers pay ${Math.round(SH.mark()*100)}% of street price now, +10% per level`,max:()=>4,cost:l=>Math.round(150*Math.pow(2,l))},
+  sign:{n:'Better sign',d:()=>`Customers pay ${Math.round(SH.mark()*100)}% of street price now, +5% per level`,max:()=>4,cost:l=>Math.round(150*Math.pow(2,l))},
   runners:{n:'Runners',d:()=>'Each runner refills one shelf every dawn, buying at street price +10%. Wage $3 a day each',max:()=>S.shop.shelves.length,cost:l=>Math.round(60*Math.pow(1.8,l))}
 };
 const shelfPrice=g=>street(g)*SH.mark();
@@ -1048,25 +1054,25 @@ function showEnding2(){setSheet(`<h2>End of chapter two</h2>
 const SG={pepper:{n:'Pepper',i:'⚫',b:75},silk:{n:'Silk',i:'🧣',b:110},sugar:{n:'Sugar',i:'🍬',b:35},wine:{n:'Wine',i:'🍷',b:25},oil:{n:'Olive oil',i:'🫒',b:22},grain:{n:'Grain',i:'🌾',b:10},glass:{n:'Glass',i:'🥂',b:50},wool:{n:'Wool cloth',i:'🧶',b:40}};
 const SGK=Object.keys(SG);
 const PORTS={
-  beirut:{n:'Beirut',xy:[10.85,7.25],sub:'Your home port',yard:'yard',info:'Home. Syrian silk and spices arrive here by caravan from Damascus and Aleppo, and every year Venetian galleys come to buy them.',f:{silk:.8,pepper:.85,sugar:.9,wool:1.35,glass:1.3,grain:1.15}},
-  famagusta:{n:'Famagusta',xy:[10.05,6.45],sub:'Cyprus, Venetian since 1489',info:'Queen Caterina Cornaro handed Cyprus to Venice in 1489. Sugar from the island\u2019s plantations and sweet Commandaria wine.',f:{sugar:.6,wine:.8,grain:1.3,wool:1.25,glass:1.15}},
-  alexandria:{n:'Alexandria',xy:[7.9,9.55],sub:'Egypt, under the Mamluk sultans',info:'Indian pepper reaches Alexandria through the Red Sea, cheaper than anywhere else. Egypt also exports grain and sugar, and buys European cloth.',f:{pepper:.6,sugar:.8,grain:.7,wool:1.5,glass:1.35,oil:1.3}},
-  candia:{n:'Candia',xy:[5.9,7.3],yard:'yard',sub:'Crete, a Venetian colony',info:'Crete sends malmsey wine and olive oil all over Europe, but cannot grow enough grain to feed itself.',f:{wine:.6,oil:.65,grain:1.4,pepper:1.2,glass:1.1}},
-  constantinople:{n:'Constantinople',xy:[8.65,2.25],yard:'yard',sub:'Ottoman capital since 1453',info:'The Ottoman capital, a huge and hungry city. Silk from nearby Bursa is cheap; spices, sugar and grain sell well.',f:{silk:.75,pepper:1.35,sugar:1.4,wine:1.25,grain:1.35,glass:1.2}},
-  venice:{n:'Venice',xy:[2.55,1.45],sub:'The Most Serene Republic',yard:'arsenal',info:'Murano glass and wool cloth from the north, and the richest buyers of pepper and silk in Europe. Home of the Arsenal, the greatest shipyard in the world.',f:{glass:.6,wool:.7,pepper:1.7,silk:1.5,sugar:1.45,oil:1.2,wine:1.2}}
+  beirut:{n:'Beirut',xy:[11.76,8.16],sub:'Your home port',yard:'yard',info:'Home. Syrian silk and spices arrive here by caravan from Damascus and Aleppo, and every year Venetian galleys come to buy them.',f:{silk:.8,pepper:.85,sugar:.9,wool:1.35,glass:1.3,grain:1.15}},
+  famagusta:{n:'Famagusta',xy:[11.02,7.43],sub:'Cyprus, Venetian since 1489',info:'Queen Caterina Cornaro handed Cyprus to Venice in 1489. Sugar from the island\u2019s plantations and sweet Commandaria wine.',f:{sugar:.6,wine:.8,grain:1.3,wool:1.25,glass:1.15}},
+  alexandria:{n:'Alexandria',xy:[9.07,9.78],sub:'Egypt, under the Mamluk sultans',info:'Indian pepper reaches Alexandria through the Red Sea, cheaper than anywhere else. Egypt also exports grain and sugar, and buys European cloth.',f:{pepper:.6,sugar:.8,grain:.7,wool:1.5,glass:1.35,oil:1.3}},
+  candia:{n:'Candia',xy:[6.78,7.3],yard:'yard',sub:'Crete, a Venetian colony',info:'Crete sends malmsey wine and olive oil all over Europe, but cannot grow enough grain to feed itself.',f:{wine:.6,oil:.65,grain:1.4,pepper:1.2,glass:1.1}},
+  constantinople:{n:'Constantinople',xy:[8.63,3.89],yard:'yard',sub:'Ottoman capital since 1453',info:'The Ottoman capital, a huge and hungry city. Silk from nearby Bursa is cheap; spices, sugar and grain sell well.',f:{silk:.75,pepper:1.35,sugar:1.4,wine:1.25,grain:1.35,glass:1.2}},
+  venice:{n:'Venice',xy:[0.64,1.24],sub:'The Most Serene Republic',yard:'arsenal',info:'Murano glass and wool cloth from the north, and the richest buyers of pepper and silk in Europe. Home of the Arsenal, the greatest shipyard in the world.',f:{glass:.6,wool:.7,pepper:1.7,silk:1.5,sugar:1.45,oil:1.2,wine:1.2}}
 };
 const PK=Object.keys(PORTS);
 const LANES=[
   ['beirut','famagusta',1,[]],
-  ['beirut','alexandria',3,[[10.1,8.7]]],
-  ['famagusta','alexandria',3,[[9.3,8.2]]],
-  ['famagusta','candia',4,[[9.5,7.05],[7.2,7.35]]],
-  ['alexandria','candia',4,[[7.2,7.75]]],
-  ['candia','constantinople',4,[[6.55,5.3],[6.7,3.95],[7.7,2.8]]],
-  ['famagusta','constantinople',5,[[9.3,5.95],[7.6,5.75],[6.7,4.6],[6.7,3.95],[7.7,2.8]]],
-  ['candia','venice',7,[[5.0,6.95],[4.4,5.6],[3.95,4.3],[3.2,2.7]]],
-  ['constantinople','venice',8,[[7.7,2.8],[6.7,3.95],[6.55,5.3],[5.4,6.75],[4.4,5.6],[3.95,4.3],[3.2,2.7]]],
-  ['alexandria','venice',8,[[5.2,8.8],[3.5,7.7],[4.3,5.9],[3.95,4.3],[3.2,2.7]],'corsair']
+  ['beirut','alexandria',3,[]],
+  ['famagusta','alexandria',3,[[11.11,7.62]]],
+  ['famagusta','candia',4,[[11.11,7.62],[10.37,7.86],[8.16,7.32],[7.39,7.14]]],
+  ['alexandria','candia',4,[[7.78,7.98],[7.49,7.47],[7.42,7.14]]],
+  ['candia','constantinople',4,[[6.86,6.9],[6.96,5.94],[7.01,4.86],[7.3,4.5],[7.49,4.32],[7.97,4.07]]],
+  ['famagusta','constantinople',5,[[11.35,7.17],[10.75,7.05],[9.36,6.96],[8.45,7.05],[7.78,6.6],[7.3,5.94],[7.01,4.86],[7.3,4.5],[7.49,4.32],[7.97,4.07]]],
+  ['candia','venice',7,[[6.24,7.05],[5.42,6.9],[4.8,6.3],[4.22,5.22],[3.84,4.5],[3.12,3.42],[1.92,2.46],[1.01,1.68]]],
+  ['constantinople','venice',8,[[7.97,4.07],[7.49,4.32],[7.3,4.5],[7.01,4.86],[6.62,5.94],[6.05,6.78],[5.42,6.9],[4.8,6.3],[4.22,5.22],[3.84,4.5],[3.12,3.42],[1.92,2.46],[1.01,1.68]]],
+  ['alexandria','venice',8,[[6.72,8.7],[5.04,8.1],[3.84,6.9],[3.65,5.4],[3.84,4.5],[3.12,3.42],[1.92,2.46],[1.01,1.68]],'corsair']
 ];
 const SHIPS=[{n:'Cog',hold:500,speed:1,cost:0},{n:'Caravel',hold:800,speed:1.5,cost:40000},{n:'Carrack',hold:2000,speed:1.25,cost:120000}];
 const CAPTAINS=['Captain Marco','Captain Elena','Captain Yusuf al-Bahri','Captain Nikos','Captain Giacomo','Captain Hasan','Captain Rachel','Captain Andrea'];
@@ -1092,23 +1098,24 @@ function learn(p,age){let m;
   else{const h=[...S.sea.hist].reverse().find(x=>x.day<=S.day-age)||S.sea.hist[0];if(!h)return;m=h.q[p]}
   const day=age?Math.min(S.day-age,(S.sea.hist.find(x=>x.q===m)||{day:S.day-age}).day):S.day;
   const k=S.sea.known[p];if(k&&k.day>=day)return;S.sea.known[p]={day,mid:{...m}}}
-function fixSea(){if(S.ch===3&&S.sea&&S.sea.sailing){S.sea.port=S.sea.sailing.to;S.sea.sailing=null;S.sea.pos=null}}
+function freeLanes(i){return LANES.map((L,j)=>j).filter(j=>LANES[j][4]!=='corsair'&&!S.sea.fleet.some((o,k)=>k!==i&&laneOf(o.route[0],o.route[1])===LANES[j]))}
+function fixSea(){if(S.sea&&S.sea.fleet)S.sea.fleet.forEach((f,i)=>{const L=laneOf(f.route[0],f.route[1]),fr=freeLanes(i);if(!L||!fr.includes(LANES.indexOf(L))){const n=LANES[fr[0]];if(n)f.route=[n[0],n[1]]}});if(S.ch===3&&S.sea&&S.sea.sailing){S.sea.port=S.sea.sailing.to;S.sea.sailing=null;S.sea.pos=null}}
 function sleepBtn(){if(S.mode==='sea')waitDay();else rest()}
 function seaHud(){const sea=S.sea,where=PORTS[sea.sailing?sea.sailing.to:sea.port].n;
   return `<div class="chip">Coins<b>${fmt(S.cash)}</b></div><div class="chip">Day<b>${S.day}</b></div><div class="chip">${sea.sailing?'Sailing to':'In port'}<b class="sm">${where}</b></div><div class="chip">Hold<b>${cargoN()}/${holdCap()}</b></div>`}
 function seaMap(){
   const sea=S.sea;
   let h=`<svg class="mapsvg" viewBox="0 0 12 12" xmlns="http://www.w3.org/2000/svg"><rect width="12" height="12" fill="var(--alley2)"/><rect width="12" height="12" fill="var(--water)" opacity=".5"/>`;
-  const land=["0,0 2.75,0 2.6,1.3 2.4,1.6 2.9,2.8 3.6,4.2 4.1,5.1 3.8,5.3 3.5,5.8 3.1,6.4 2.8,6.1 2.0,5.0 0.8,4.1 0,3.5","2.15,6.65 3.3,6.7 2.75,7.5","2.75,0 8.1,0 8.1,1.3 8.45,2.0 8.55,2.15 7.9,2.55 7.0,3.1 6.45,3.7 6.3,4.6 5.75,5.0 5.9,5.6 5.25,6.25 4.85,5.65 4.6,4.6 4.2,3.8 3.4,2.6 2.8,1.6 2.6,1.3","8.85,2.05 9.8,1.75 12,1.6 12,5.55 11.25,5.7 10.4,5.45 9.6,5.3 8.6,5.25 7.6,5.05 6.95,4.3 7.05,3.45 7.85,2.95 8.7,2.45","12,5.55 11.25,5.75 11.0,6.6 10.9,7.6 10.6,8.6 10.2,9.35 12,9.5","0,10.1 3,9.7 5,9.5 6.6,9.5 7.6,9.75 8.3,9.55 8.8,9.35 9.4,9.5 10.2,9.35 12,9.5 12,12 0,12","9.0,6.55 9.4,6.25 10.1,6.2 10.55,5.95 10.25,6.35 9.95,6.75 9.3,6.8"];
+  const land=["0.0,0.0 12.0,0.0 12.0,0.36 11.7,1.48 11.51,1.59 11.12,1.8 10.81,1.74 10.74,1.38 10.9,0.84 10.37,0.54 9.47,0.61 8.98,1.38 8.47,2.0 8.12,2.58 7.91,3.0 8.15,3.38 8.64,3.75 8.66,3.84 8.63,3.89 8.28,3.86 7.92,3.91 7.73,4.14 7.5,4.23 7.29,4.47 7.24,4.07 7.14,3.99 6.43,3.94 6.17,4.03 6.19,4.53 5.93,4.38 5.73,4.12 5.57,4.34 5.73,4.88 5.86,5.01 5.57,5.19 5.76,5.31 6.05,5.42 6.25,5.61 6.25,5.91 6.06,5.74 5.93,5.71 5.74,5.74 5.83,5.92 5.66,5.96 5.69,6.2 5.79,6.49 5.86,6.64 5.55,6.45 5.51,6.67 5.33,6.29 5.14,6.41 5.12,6.15 4.97,5.9 4.87,5.74 5.15,5.55 5.0,5.48 4.68,5.12 4.45,4.8 4.32,4.57 4.08,4.22 4.06,3.71 4.03,3.39 3.73,3.05 3.4,2.92 2.61,2.4 2.03,2.03 1.65,1.3 1.37,1.58 1.33,1.11 1.15,1.09 0.64,1.24 0.61,1.37 0.58,1.85 0.75,2.06 1.21,2.33 1.54,3.02 1.78,3.23 1.92,3.3 2.49,3.37 2.36,3.52 2.54,3.71 2.82,3.83 3.02,3.93 3.33,4.12 3.6,4.41 3.53,4.62 3.36,4.46 3.0,4.22 2.79,4.28 2.64,4.65 2.94,5.05 2.66,5.29 2.43,5.75 2.23,5.63 2.27,5.55 2.35,5.29 2.47,5.26 2.42,4.88 2.3,4.61 2.22,4.46 2.05,4.48 1.92,4.29 1.81,4.09 1.61,4.14 1.56,4.0 1.49,4.01 1.23,3.77 1.08,3.73 0.98,3.76 0.78,3.63 0.62,3.46 0.38,3.25 0.0,3.0","8.66,3.84 8.93,3.79 9.79,3.73 9.98,3.63 10.27,3.45 10.92,3.31 11.59,3.28 12.0,3.48 12.0,6.39 11.33,6.43 11.02,6.67 10.48,6.89 10.08,6.58 9.46,6.37 9.38,6.54 9.19,6.72 8.95,6.78 8.69,6.53 8.29,6.39 8.02,6.46 7.87,6.28 7.81,6.07 7.8,5.78 7.75,5.45 7.44,5.31 7.53,4.91 7.23,4.81 7.42,4.45 7.56,4.33 8.15,4.29 8.58,4.28 9.08,4.04 8.78,4.01 8.65,3.91","0.0,12.0 0.0,8.34 0.53,8.74 1.06,8.76 1.56,8.91 1.97,9.06 2.69,9.78 3.6,10.26 4.13,10.26 4.34,9.24 4.78,8.88 5.57,8.84 6.22,9.25 6.77,9.45 6.79,9.57 7.78,9.69 8.59,10.0 9.07,9.78 9.15,9.71 9.31,9.62 9.98,9.59 10.22,9.74 10.94,9.82 11.26,9.6 11.4,9.27 11.51,8.81 11.55,8.75 11.62,8.54 11.7,8.36 11.76,8.16 11.83,8.03 11.92,7.84 11.94,7.56 11.89,7.19 12.0,7.02 12.0,12.0","2.18,5.55 2.04,5.58 1.13,5.63 0.72,5.7 0.7,5.82 1.0,6.0 1.56,6.26 1.97,6.49 2.06,6.26 1.96,6.0 2.06,5.79","6.04,7.13 6.24,7.19 6.47,7.28 6.78,7.3 7.07,7.39 7.25,7.37 7.34,7.34 7.3,7.5 7.08,7.5 6.67,7.53 6.6,7.51 6.59,7.55 6.3,7.38 6.09,7.36 6.01,7.32","11.33,7.08 11.18,7.23 10.7,7.29 10.52,7.26 10.54,7.38 10.27,7.47 10.27,7.65 10.56,7.71 10.86,7.56 11.08,7.52 11.02,7.43 11.18,7.23","8.04,6.63 8.28,6.66 8.21,6.9 8.04,6.96 8.02,6.78","5.69,5.1 6.0,5.28 6.29,5.61 6.5,5.7 6.36,5.52 6.05,5.22 5.81,5.07","1.58,6.91 1.71,7.0 1.63,7.01","7.13,5.34 7.27,5.37 7.2,5.58 7.13,5.52","7.13,4.92 7.49,4.89 7.42,5.1 7.2,5.04"];
   land.forEach(p=>h+=`<polygon points="${p}" fill="var(--sand1)" stroke="var(--path)" stroke-width=".035" stroke-linejoin="round"/>`);
-  h+=`<ellipse cx="5.85" cy="7.6" rx="1.15" ry=".27" fill="var(--sand1)" stroke="var(--path)" stroke-width=".035"/><circle cx="7.55" cy="6.1" r=".12" fill="var(--sand1)" stroke="var(--path)" stroke-width=".03"/>`;
+  {}
   h+=`<text x=".35" y="11.55" font-size=".34" fill="var(--muted)" font-family="Marcellus,Georgia,serif">Anno ${[1490,1490,1491,1492,1497,1497,1498][Math.min(6,S.ms3||0)]}</text>`;
   const pv=preview&&preview.sea?preview.sea:null;
   LANES.forEach(L=>{const pts=lanePts(L,L[0]),cor=L[4]==='corsair',hot=pv&&laneOf(sea.port,pv)===L;
     h+=`<polyline points="${pts.map(p=>p.join(',')).join(' ')}" fill="none" stroke="${hot?'var(--saffron)':cor?'var(--pom)':'var(--lapis)'}" stroke-width="${hot?.09:.05}" stroke-dasharray="${hot?'none':'.16 .12'}" stroke-linejoin="round" opacity="${hot?1:.55}"/>`;
     const m=polyAt(pts,.5),d=travelDays(L,shipSpeed());
     h+=`<circle cx="${m[0]}" cy="${m[1]}" r=".2" fill="var(--surface)" stroke="${cor?'var(--pom)':'var(--lapis)'}" stroke-width=".03"/>`+svgTxt(m[0],m[1]+.01,cor&&!sea.ship.cannons?'☠':d+'d','.17',cor?'var(--pom)':'var(--lapis)',800)});
-  PK.forEach(p=>{const P=PORTS[p],[x,y]=P.xy,here=!sea.sailing&&sea.port===p,lx=x+(p==='venice'?.25:0),anchor=p==='venice'?'start':'middle',ly=(p==='alexandria'||p==='beirut')?y+.62:y-.38;
+  PK.forEach(p=>{const P=PORTS[p],[x,y]=P.xy,here=!sea.sailing&&sea.port===p,lx=x+(p==='venice'?.3:p==='beirut'?.15:p==='candia'?-.25:0),anchor=p==='venice'?'start':p==='beirut'||p==='candia'?'end':'middle',ly=p==='venice'?y+.1:(p==='alexandria'||p==='beirut')?y+.6:y-.36;
     h+=`<g class="hit" onclick="tapPort('${p}')"><circle cx="${x}" cy="${y}" r=".42" fill="transparent"/><circle cx="${x}" cy="${y}" r="${here?.24:.18}" fill="${here?'var(--saffron)':'var(--surface)'}" stroke="var(--lapis)" stroke-width=".06"/>`+
       `<text x="${lx}" y="${ly}" font-size=".3" font-weight="800" fill="var(--text)" text-anchor="${anchor}" font-family="system-ui,sans-serif" stroke="var(--surface)" stroke-width=".08" paint-order="stroke">${P.n}${p==='beirut'?' ★':''}</text></g>`});
   sea.fleet.forEach((f,i)=>{let xy;if(f.at)xy=[PORTS[f.at].xy[0]+.28+i*.12,PORTS[f.at].xy[1]+.25];else if(f.from&&f.dest){const L=laneOf(f.from,f.dest);xy=L?polyAt(lanePts(L,f.from),1-f.left/(f.total||1)):null}
@@ -1205,38 +1212,42 @@ function newClass(c){const sh=S.sea.ship,price=SHIPS[c].cost-Math.round(SHIPS[sh
   if(cargoN()>Math.round(SHIPS[c].hold*(1+.15*sh.hold))){toast('Unload some cargo first.');return}
   S.cash-=price;sh.cls=c;toast(`Your new ${SHIPS[c].n} is ready!`);save();render();shipSheet();checkMs()}
 function buyFleet(cls){const c=[30000,60000][cls];if(S.cash<c){toast(`You need ${fmt(c)}.`);return}
-  const p=S.sea.port,L=LANES.find(L=>(L[0]===p||L[1]===p)&&L[4]!=='corsair');S.cash-=c;
+  const fr=freeLanes(-1);if(!fr.length){toast('Every route already has one of your captains.');return}
+  const p=S.sea.port,L=LANES[fr.find(j=>LANES[j][0]===p||LANES[j][1]===p)??fr[0]];S.cash-=c;
   const used=S.sea.fleet.map(f=>f.name),name=CAPTAINS.find(n=>!used.includes(n))||'Captain '+(S.sea.fleet.length+1);
   S.sea.fleet.push({name,cls,route:[L[0],L[1]],gAB:null,gBA:null,at:p,from:null,dest:null,left:0,total:0,cargo:{g:null,q:0,cost:0},profit:0,trips:0});
   save();render();checkMs();RT=null;routeSheet(S.sea.fleet.length-1)}
+function sameRoute(a,b){const r=(x)=>[...x.route].sort().join('|');return r(a)===r(b)&&((a.gAB===b.gAB&&a.route[0]===b.route[0])||(a.route[0]===b.route[1]&&a.gAB===b.gBA))&&!!(a.gAB||a.gBA)}
+function crowd(f){return S.sea.fleet.filter(o=>o!==f&&sameRoute(o,f)).length}
 function fleetDay(log){
   const sea=S.sea;if(!sea.fleet.length)return;const wage=200*sea.fleet.length;S.cash-=wage;const lines=[];
   sea.fleet.forEach(f=>{
     if(f.left>0){if(stormOn())return;f.left--;if(f.left>0)return;f.at=f.dest;f.dest=null}
     if(!f.at)return;
-    if(f.cargo.q>0){let rev=0;for(let i=0;i<f.cargo.q;i++){rev+=seaBid(f.at,f.cargo.g);sea.imp[f.at][f.cargo.g]/=SIMP}
+    if(f.cargo.q>0){const cr0=crowd(f);let rev=0;for(let i=0;i<f.cargo.q;i++){rev+=seaBid(f.at,f.cargo.g)*(1-.15*cr0);sea.imp[f.at][f.cargo.g]/=SIMP}
       const pr=rev-f.cargo.cost;S.cash+=rev;f.profit+=pr;sea.fleetProfit=(sea.fleetProfit||0)+pr;f.trips++;
       lines.push(`${f.name} sold ${f.cargo.q} ${SG[f.cargo.g].n.toLowerCase()} in ${PORTS[f.at].n}: ${pr>=0?'+':'−'}${fmt(Math.abs(pr))}.`);f.cargo={g:null,q:0,cost:0}}
     if(stormOn())return;
     const [A,B]=f.route;
     if(f.at!==A&&f.at!==B){f.from=f.at;f.dest=A;f.left=f.total=2;f.at=null;return}
-    const next=f.at===A?B:A,g=f.at===A?f.gAB:f.gBA,cap=SHIPS[f.cls].hold;
-    if(g){let q=0,cost=0;while(q<cap){const a=seaAsk(f.at,g);if(a>=seaBid(next,g)*.95||S.cash-a<2000)break;S.cash-=a;cost+=a;sea.imp[f.at][g]*=SIMP;q++}if(q)f.cargo={g,q,cost}}
+    const next=f.at===A?B:A,g=f.at===A?f.gAB:f.gBA,cap=SHIPS[f.cls].hold,cr=crowd(f);
+    if(g){let q=0,cost=0;while(q<cap){const a=seaAsk(f.at,g)*(1+.1*cr);if(a>=seaBid(next,g)*(1-.15*cr)*.95||S.cash-a<2000)break;S.cash-=a;cost+=a;sea.imp[f.at][g]*=SIMP;q++}if(q)f.cargo={g,q,cost}}
     f.from=f.at;f.dest=next;f.left=f.total=travelDays(laneOf(f.at,next),SHIPS[f.cls].speed);f.at=null;
   });
   log.push(`Your captains took ${fmt(wage)} in wages.`);lines.forEach(l=>log.push(l));
 }
 function routeSheet(i){
   const f=S.sea.fleet[i];
-  if(!RT||RT.i!==i)RT={i,lane:Math.max(0,LANES.findIndex(L=>(L[0]===f.route[0]&&L[1]===f.route[1]))),gAB:f.gAB||'',gBA:f.gBA||''};
+  if(!RT||RT.i!==i){const fr=freeLanes(i);let ln=LANES.findIndex(L=>(L[0]===f.route[0]&&L[1]===f.route[1]));if(!fr.includes(ln))ln=fr[0];RT={i,lane:ln,gAB:f.gAB||'',gBA:f.gBA||''}}
   const L=LANES[RT.lane],A=L[0],B=L[1],kn=S.sea.known;
   const opt=(sel,from,to)=>`<option value="">Nothing</option>`+SGK.map(g=>{let m='';if(kn[from]&&kn[to]){const r=(kn[to].mid[g]*.92)/(kn[from].mid[g]*1.08)-1;m=` (${r>=0?'+':''}${Math.round(r*100)}%)`}return `<option value="${g}" ${g===sel?'selected':''}>${SG[g].n}${m}</option>`}).join('');
   let h=sh_head('🧭',f.name,`${SHIPS[f.cls].n}, hold ${SHIPS[f.cls].hold}`);
   h+=`<p class="small">Choose two neighbouring ports and what to carry each way. Your captain buys at one end and sells at the other, but only while the trade still pays.</p>`;
-  h+=`<div class="small">Route</div><select class="sel" onchange="RT.lane=+this.value;routeSheet(${i})">${LANES.map((X,j)=>(X[4]==='corsair'&&!S.sea.ship.cannons)?'':`<option value="${j}" ${j===RT.lane?'selected':''}>${PORTS[X[0]].n} ⇄ ${PORTS[X[1]].n} (${X[2]} days)</option>`).join('')}</select>`;
+  h+=`<div class="small">Route</div><select class="sel" onchange="RT.lane=+this.value;routeSheet(${i})">${LANES.map((X,j)=>!freeLanes(i).includes(j)?'':`<option value="${j}" ${j===RT.lane?'selected':''}>${PORTS[X[0]].n} ⇄ ${PORTS[X[1]].n} (${X[2]} days)</option>`).join('')}</select>`;
   h+=`<div class="small">From ${PORTS[A].n} to ${PORTS[B].n}, carry</div><select class="sel" onchange="RT.gAB=this.value">${opt(RT.gAB,A,B)}</select>`;
   h+=`<div class="small">From ${PORTS[B].n} to ${PORTS[A].n}, carry</div><select class="sel" onchange="RT.gBA=this.value">${opt(RT.gBA,B,A)}</select>`;
-  h+=`<p class="small">Percentages compare the last prices you know at both ends, so they may be out of date.</p><button class="sbtn fill wide" onclick="saveRoute()">Give these orders</button><button class="sbtn wide" onclick="RT=null;shipSheet()">Back</button>`;
+  h+=`<p class="small">Each route can have only one of your captains, so routes already taken by others don\u2019t appear here.</p>`;
+  h+=`<p class="small">Hired captains won't sail through corsair waters. Percentages compare the last prices you know at both ends, so they may be out of date.</p><button class="sbtn fill wide" onclick="saveRoute()">Give these orders</button><button class="sbtn wide" onclick="RT=null;shipSheet()">Back</button>`;
   setSheet(h);
 }
 function saveRoute(){const f=S.sea.fleet[RT.i],L=LANES[RT.lane];f.route=[L[0],L[1]];f.gAB=RT.gAB||null;f.gBA=RT.gBA||null;RT=null;save();toast(`${f.name} has new orders.`);shipSheet()}
@@ -1280,11 +1291,11 @@ const MS3=[
  {txt:'Hire a captain with a second ship',title:'a fleet owner',ok:()=>S.sea.fleet.length>=1,prog:()=>0,msg:'1497. Four Portuguese ships under Vasco da Gama have left Lisbon, sailing south around Africa. The Venetians laugh. Your captain now sails his route on his own; check on him in your ship screen.'},
  {txt:'Own three ships and save $150,000',title:'a merchant of the sea',ok:()=>S.sea.fleet.length>=2&&S.cash>=150000,prog:()=>Math.min(S.sea.fleet.length/2,1)*.5+Math.min(S.cash/150000,1)*.5,msg:''}
 ];
-function startCh3(){
+function startCh3(fromBuy){
   S.ch=3;S.ms3=0;S.won3=false;S.mode='sea';S.sea=newSea();snapshot();learn('beirut',0);
   S.sea.cargo={oil:200};S.sea.basis={oil:0};
   save();closeSheet();render();
-  setSheet(`<h2>Chapter three: The Sea</h2><div class="bubble">Anno 1490. Captain Idris hands you the key to a sturdy little cog. You name her the Pomegranate, after the donkey. In the hold you find 200 jars of olive oil. “For luck,” says Idris.</div>
+  setSheet(`${fromBuy?`<h2>End of chapter two</h2><div class="bubble">Captain Idris counts your coins twice, then hands you a heavy iron key. \u201cShe\u2019s yours. Treat her better than your uncle treated his fleet.\u201d</div><p class="small">Chapter two took you ${S.day} day${S.day===1?'':'s'}. Code to skip straight to the ship purchase next time: <b>POMEGRANATE</b></p>`:''}<h2>Chapter three: The Sea</h2><div class="bubble">Anno 1490. Captain Idris hands you the key to a sturdy little cog. You name her the Pomegranate, after the donkey. In the hold you find 200 jars of olive oil. “For luck,” says Idris.</div>
   <p>Venice rules the sea trade. It has held Cyprus since 1489 and Crete for centuries. The Ottomans have ruled Constantinople since 1453, and the Mamluk sultans of Egypt control the pepper that comes from India through the Red Sea.</p>
   <p><b>How it works.</b> Tap a port to see the route and how many days it takes, then tap again to sail. Buy cheap where goods are made, sell where they're wanted, but every crate you sell pushes the price down, so spread big cargoes across ports. Prices you know get older every day you're at sea.</p>
   <p>Back home, Kerem the steward runs your shop while you\u2019re away. He pays the runners and costs from the takings and keeps half the profit; your half waits for you in Beirut. To go ashore there, use the button in the port screen.</p>
@@ -1314,7 +1325,21 @@ function buyShipAsk(){
   if(S.cash<5000){toast(`You need $5,000. You have ${fmt(S.cash)}.`);return}
   const left=S.cash-5000,day=shopRate()*12;
   setSheet(`${sh_head(portrait('idris'),'Captain Idris\u2019s ship','A sturdy little cog')}<div class="bubble">\u201cShe\u2019s old but honest, like me. Five thousand coins, and she\u2019s yours.\u201d</div><p>After buying her you\u2019ll have <b>${fmt(left)}</b> left for cargo. Idris will throw in a first cargo of olive oil.</p><p><b>Kerem</b>, the barman\u2019s nephew, offers to run the shop while you\u2019re at sea. He\u2019ll pay the runners and costs from the takings and keep half the profit; your half waits for you in Beirut.</p><p>Your shop keeps selling while you\u2019re at sea: ${day>0?`right now about <b>${fmt(day)}</b> a day`:'but right now its shelves are empty, so it earns nothing until they\u2019re stocked'}${S.shop.lv.runners?`, and your ${S.shop.lv.runners} runner${S.shop.lv.runners>1?'s':''} keep it supplied`:'. With no runners, nobody restocks it while you\u2019re away'}.</p><p class="small">There\u2019s no rush. Upgrading the shop first makes the sea easier.</p><button class="sbtn fill wide" onclick="buyShip()">Buy the ship for $5,000</button><button class="sbtn wide" onclick="closeSheet()">Not yet</button>`)}
-function buyShip(){if(S.cash<5000)return;S.cash-=5000;S.shipBought=true;save();closeSheet();renderHud();checkMs()}
+function buyShip(){if(S.cash<5000)return;S.cash-=5000;S.shipBought=true;S.ms2=8;S.won2=true;startCh3(true)}
+const PKEY='five-coins-prefs';
+var PREF=(()=>{try{return JSON.parse(localStorage.getItem(PKEY))||{}}catch(e){return {}}})();
+function savePref(){try{localStorage.setItem(PKEY,JSON.stringify(PREF))}catch(e){}}
+function applyTheme(){const t=PREF.theme||'auto';if(t==='auto')document.documentElement.removeAttribute('data-theme');else document.documentElement.setAttribute('data-theme',t)}
+applyTheme();
+function setPref(k,v){PREF[k]=v;savePref();applyTheme();showSettings()}
+function showSettings(){
+  const seg=(k,opts,def)=>`<div class="seg">${opts.map(([v,l])=>`<button class="sbtn${(PREF[k]||def)===v?' fill':''}" onclick="setPref('${k}','${v}')">${l}</button>`).join('')}</div>`;
+  setSheet(`${sh_head('⚙️','Settings','')}<h3>Appearance</h3>${seg('theme',[['auto','Auto'],['light','☀️ Light'],['dark','🌙 Dark']],'auto')}
+  <h3>Shop clock</h3><p class="small">How fast time flows while you stand in your shop.</p>${seg('speed',[['slow','Slow'],['normal','Normal'],['fast','Fast']],'normal')}
+  <h3>Chapter code</h3><input id="codeIn" class="sel" placeholder="Enter a code" autocomplete="off" autocapitalize="characters"><button class="sbtn wide" onclick="useCode()">Use code</button>
+  <h3>Game</h3><button class="sbtn wide" onclick="confirmNew()">Start a new game</button>`);
+  setNav('');
+}
 function confirmNew(){setSheet(`<h2>Start over?</h2><p>Your coins, goods and notebook will be gone.</p><button class="sbtn fill wide" onclick="newGame()">Start a new game</button><button class="sbtn wide" onclick="closeSheet()">Keep playing</button>`)}
 function newGame(){S=newState();setDistrict('bazaar');save();render();intro()}
 
