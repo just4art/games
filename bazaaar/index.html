@@ -354,20 +354,21 @@ const MS2=[
  {txt:'Buy Captain Idris\'s ship ($5,000)',title:'a shipowner',ok:()=>!!S.shipBought,prog:()=>Math.min(S.cash,5000)/5000,msg:''}
 ];
 function checkMs(silent){
-  const L=S.ch===3?MS3:S.ch===2?MS2:MS,k=S.ch===3?'ms3':S.ch===2?'ms2':'ms';
+  const L=[MS,MS,MS2,MS3,MS4][S.ch||1],k=['','ms','ms2','ms3','ms4'][S.ch||1];
   let up=null;
   while((S[k]||0)<L.length&&L[S[k]||0].ok()){S[k]=(S[k]||0)+1;up=L[S[k]-1]}
   renderHud();
   if(!up)return;
   save();renderMap();
   if(S[k]>=L.length){
-    if(S.ch===3){if(!S.won3){S.won3=true;save();if(!silent)setTimeout(showEnding3,500)}}
+    if(S.ch===4){if(!S.won4){S.won4=true;save();if(!silent)setTimeout(showEnding4,500)}}
+    else if(S.ch===3){if(!S.won3){S.won3=true;save();if(!silent)setTimeout(showEnding3,500)}}
     else if(S.ch===2){if(!S.won2){S.won2=true;save();if(!silent)setTimeout(showEnding2,500)}}
     else if(!S.won){S.won=true;save();if(!silent)setTimeout(showEnding,500)}
     return}
   if(silent)return;
   const nx=L[S[k]].txt;
-  setTimeout(()=>setSheet(`<h2>🎉 You are now ${up.title}</h2><div class="bubble">${up.msg}</div><p><b>Next goal:</b> ${nx}</p><button class="sbtn fill wide" onclick="closeSheet();if(S.mode==='sea'&&!sailing)portSheet();else if(S.at)openAt(S.at)">Continue</button>`),450);
+  setTimeout(()=>setSheet(`<h2>🎉 You are now ${up.title}</h2><div class="bubble">${up.msg}</div><p><b>Next goal:</b> ${nx}</p><button class="sbtn fill wide" onclick="closeSheet();if(S.mode==='co')coSheet();else if(S.mode==='sea'&&!sailing)portSheet();else if(S.at)openAt(S.at)">Continue</button>`),450);
 }
 const GW=12,START=[6,6];
 const DIST={
@@ -412,9 +413,10 @@ function renderHud(){
     `<div class="chip">${dur(DAY_LEN-S.t)} left<b>${clock()}</b><div class="sunbar"><i style="width:${Math.min(100,S.t/DAY_LEN*100)}%"></i></div></div>`+
     `<div class="chip">Bag<b>${w}/${S.cap}</b></div>`;
   if(S.mode==='sea')document.getElementById('hud').innerHTML=seaHud();
-  const ch=S.ch||1,L=ch===3?MS3:ch===2?MS2:MS,idx=(ch===3?S.ms3:ch===2?S.ms2:S.ms)||0,done=ch===3?S.won3:ch===2?S.won2:S.won,M=L[Math.min(idx,L.length-1)];
-  document.getElementById('goalTxt').textContent=`You are ${idx?L[idx-1].title:(ch===3?'a shipowner':ch===2?'a stand owner':'a newcomer')}`;
-  document.getElementById('nextTxt').textContent=done?(ch===3?'Chapter three complete':ch===2?'Chapter two complete. Open the news to begin chapter three.':'Chapter one complete. Tap the well to begin chapter two.'):`${ch===3?'Chapter three. ':ch===2?'Chapter two. ':''}Next goal: ${M.txt}`;
+  if(S.mode==='co')document.getElementById('hud').innerHTML=coHud();
+  const ch=S.ch||1,L=[MS,MS,MS2,MS3,MS4][ch],idx=S[['','ms','ms2','ms3','ms4'][ch]]||0,done=S[['','won','won2','won3','won4'][ch]],M=L[Math.min(idx,L.length-1)];
+  document.getElementById('goalTxt').textContent=`You are ${idx?L[idx-1].title:(['','a newcomer','a stand owner','a shipowner','a merchant of the sea'][ch])}`;
+  document.getElementById('nextTxt').textContent=done?(['','Chapter one complete. Tap the well to begin chapter two.','Chapter two complete. Open the news to begin chapter three.','Chapter three complete. Open the news to begin chapter four.','Chapter four complete. The New World awaits.'][ch]):`${['','','Chapter two. ','Chapter three. ','Chapter four. '][ch]}Next goal: ${M.txt}`;
   document.getElementById('goalBar').style.width=(done?100:Math.max(0,Math.min(100,M.prog()*100)))+'%';
 }
 function drawIcon(id,cx,cy){
@@ -436,6 +438,8 @@ function drawIcon(id,cx,cy){
   return `<g transform="translate(${cx-.5},${cy-.5})">${P[id]||P[{fishmkt:'yusuf'}[id]]||GIP[{kettle:'tea',zara:'perfume',anwar:'silk'}[id]]||''}</g>`;
 }
 const GIP={
+  cloves:`<path d="M.3 .82 l.08 -.5 M.5 .86 v-.56 M.7 .82 l-.08 -.5" stroke="#6d3b1f" stroke-width=".07" stroke-linecap="round"/><circle cx=".38" cy=".3" r=".07" fill="#8a4b2a"/><circle cx=".5" cy=".26" r=".07" fill="#8a4b2a"/><circle cx=".62" cy=".3" r=".07" fill="#8a4b2a"/>`,
+  nutmeg:`<ellipse cx=".5" cy=".56" rx=".26" ry=".22" fill="#9c6b43"/><path d="M.3 .44 q.2 -.2 .4 0 M.32 .62 q.18 .12 .36 0" stroke="#d1495b" stroke-width=".05" fill="none"/><path d="M.5 .34 v.44" stroke="#d1495b" stroke-width=".04"/>`,
   pepper:`<path d="M.12 .62 h.76 q-.04 .24 -.38 .24 q-.34 0 -.38 -.24z" fill="#8a5a2b"/><path d="M.18 .62 q.32 -.4 .64 0z" fill="#2b2b2b"/><circle cx=".38" cy=".5" r=".05" fill="#666"/><circle cx=".52" cy=".43" r=".05" fill="#555"/><circle cx=".63" cy=".54" r=".05" fill="#666"/>`,
   sugar:`<path d="M.5 .12 l.22 .62 h-.44z" fill="#f5f3ee" stroke="#cfc8bb" stroke-width=".02"/><path d="M.3 .58 h.4 l.05 .16 h-.5z" fill="#3a86c8"/><rect x=".24" y=".74" width=".52" height=".1" rx=".03" fill="#2c4ba0"/>`,
   wine:`<rect x=".22" y=".18" width=".56" height=".68" rx=".2" fill="#9d5c2f"/><path d="M.22 .34 h.56 M.22 .7 h.56" stroke="#5b3a1a" stroke-width=".05"/><circle cx=".5" cy=".52" r=".07" fill="#7b1e3a"/>`,
@@ -645,6 +649,7 @@ function heroSvg(){
 }
 function renderMap(){
   updateHere();
+  if(S.mode==='co'){document.getElementById('map').innerHTML=worldMap();['crowd','shopfx'].forEach(i=>{const e=document.getElementById(i);if(e)e.style.display='none'});const mc=document.getElementById('mapctl');if(mc)mc.style.display='none';return}
   if(S.mode==='sea'){document.getElementById('map').innerHTML=seaMap();['crowd','shopfx'].forEach(i=>{const e=document.getElementById(i);if(e)e.style.display='none'});const mc=document.getElementById('mapctl');if(mc)mc.style.display='none';return}
   {const mc=document.getElementById('mapctl');if(mc)mc.style.display=''}
   const vb=document.getElementById('viewBtn'),fx=document.getElementById('shopfx'),cr0=document.getElementById('crowd');
@@ -674,9 +679,12 @@ let lastSheet='';
 function setSheet(h){const sh=document.getElementById('sheet'),k=(h.match(/<h2>(.*?)<\/h2>/)||[0,''])[1],y=sh.scrollTop;sh.innerHTML=h;sh.scrollTop=k&&k===lastSheet?y:0;lastSheet=k;document.getElementById('wrap').classList.add('open');setNav('')}
 const HINT=`<h2>The bazaar</h2><p class="small">Tap a stall on the map to see the route and how long it takes. Tap it again, or press Walk, to go there.</p><p class="small">Tap the well for today's news. Stalls, news, notes and your bag all open here.</p>`;
 function closeSheet(){document.getElementById('wrap').classList.remove('open');document.getElementById('sheet').innerHTML=HINT;setNav(S&&S.at?'':'here')}
-function updateHere(){{const rb=document.getElementById('restBtn');if(rb)rb.innerHTML=S.mode==='sea'?'<span>⏳</span>Wait a day':'<span>🌙</span>Sleep'}
+function toMed(){S.mode='sea';if(S.sea){S.sea.port='beirut';S.sea.sailing=null;S.sea.pos=null}closeSheet();save();render();portSheet();toast('Back in Beirut. Your company keeps running: a month passes there every 30 days here.')}
+function toAntwerp(){S.mode='co';preview=null;document.getElementById('pill').classList.remove('on');closeSheet();save();render();coSheet()}
+function updateHere(){{const nb=document.querySelector('.bbtn[data-v="notebook"]'),bg=document.querySelector('.bbtn[data-v="bag"]');if(nb)nb.innerHTML=S.mode==='co'?'<span>📈</span>Exchange':S.mode==='sea'?'<span>📒</span>Ledger':'<span>📒</span>Notes';if(bg)bg.innerHTML=S.mode==='co'?'<span>⚓</span>Fleet':S.mode==='sea'?'<span>⛵</span>Ship':'<span>🎒</span>Bag'}{const rb=document.getElementById('restBtn');if(rb)rb.innerHTML=S.mode==='co'?'<span>📅</span>Next month':S.mode==='sea'?'<span>⏳</span>Wait a day':'<span>🌙</span>Sleep'}
+  if(S.mode==='co'){const b=document.getElementById('hereBtn');if(b)b.innerHTML='<span>🏛️</span>Company';return}
   if(S.mode==='sea'){const b=document.getElementById('hereBtn');if(b)b.innerHTML=`<span>⚓</span>${S.sea&&S.sea.sailing?'At sea':'Port'}`;return}const b=document.getElementById('hereBtn');if(!b||!S)return;if(S.at){const p=T[S.at]||PL[S.at],icon=T[S.at]?T[S.at].i:S.at==='stand'?'🪧':(S.store?'📦':'🏚️');b.innerHTML=`<span>${icon}</span>${S.at==='stand'?'Shop':p.short}`}else b.innerHTML='<span>🗺️</span>Map'}
-function hereTap(){clearPreview();if(S.mode==='sea'){if(!sailing)portSheet();return}if(S.at==='stand'&&!shopView){shopView=true;renderMap();openAt('stand');return}const b=document.getElementById('hereBtn'),open=document.getElementById('wrap').classList.contains('open');if(S.at&&!(open&&b.classList.contains('active')))openAt(S.at);else closeSheet()}
+function hereTap(){clearPreview();if(S.mode==='co'){coSheet();return}if(S.mode==='sea'){if(!sailing)portSheet();return}if(S.at==='stand'&&!shopView){shopView=true;renderMap();openAt('stand');return}const b=document.getElementById('hereBtn'),open=document.getElementById('wrap').classList.contains('open');if(S.at&&!(open&&b.classList.contains('active')))openAt(S.at);else closeSheet()}
 let toastT;
 let MUTE=false;
 function toast(m){if(MUTE)return;const e=document.getElementById('toast');e.textContent=m;e.classList.add('on');clearTimeout(toastT);toastT=setTimeout(()=>e.classList.remove('on'),2300)}
@@ -863,7 +871,8 @@ function rest(sea){
       const pool=ts.sort(()=>Math.random()-.5).slice(0,Math.min(ts.length,boys*3));pool.forEach(t=>note(t));
       log.push(`They brought fresh prices from ${pool.map(t=>T[t].short).join(', ')}. Check your notebook.`)}}
   }
-  if(S.ch===3&&S.sea)seaWorldDay(log);
+  if(S.ch>=3&&S.sea)seaWorldDay(log);
+  if(S.ch>=4&&S.co){S.co.dayAcc=(S.co.dayAcc||0)+1;if(S.co.dayAcc>=30){S.co.dayAcc=0;log.push(`🏛️ News from Antwerp, ${ym(S.co.t+1)}:`);monthStep(log)}}
   if(sea){save();return log}
   save();render();
   setSheet(`<h2>☀️ Day ${S.day}</h2>${log.map(l=>`<p>${l}</p>`).join('')}<h3>The crier at the well</h3>${S.news.map(n=>`<div class="bubble">${n}</div>`).join('')}<button class="sbtn fill wide" onclick="closeSheet()">Go to the bazaar</button>`);
@@ -883,12 +892,13 @@ function showNews(){
   h+=S.effects.length?S.effects.map(e=>`<div class="news">${effText(e)}</div>`).join(''):`<p class="small">Nothing unusual. Prices drift on their own.</p>`;
   h+=`<h3>Rumours you've heard</h3>`;
   h+=S.rumors.length?S.rumors.map(r=>`<div class="news"><span class="small">Day ${r.day}</span><br>${r.txt}</div>`).join(''):`<p class="small">Buy a drink at the tavern to hear what people whisper. Not every rumour is true.</p>`;
+  if(S.won3&&S.ch===3)h+=`<button class="sbtn fill wide" onclick="startCh4()">Begin chapter four</button>`;
   if(S.won2&&S.ch===2)h+=`<button class="sbtn fill wide" onclick="startCh3()">Begin chapter three</button>`;
   if(S.won&&(S.ch||1)<2)h+=`<button class="sbtn fill wide" onclick="startCh2()">Begin chapter two</button>`;
   setSheet(h);
 }
 function ago(d,tm){const a=S.day-d;return a===0?(tm!=null?'today '+clockAt(tm):'today'):a===1?'yesterday':`${a} days ago`}
-function showNotebook(){if(S.mode==='sea')return seaNotebook();
+function showNotebook(){if(S.mode==='co')return exchSheet();if(S.mode==='sea')return seaNotebook();
   let h=`<div class="sh-head"><div class="big">📒</div><div style="flex:1"><h2>Your notebook</h2><div class="sub"><span>Prices you've seen with your own eyes</span></div></div><button class="x" onclick="closeSheet()" aria-label="Close">✕</button></div>`;
   let any=false;
   GK.forEach(g=>{
@@ -905,7 +915,7 @@ function showNotebook(){if(S.mode==='sea')return seaNotebook();
   if(!any)h+=`<p class="small">Empty for now. Visit stalls and every price you see gets written here.</p>`;
   setSheet(h);
 }
-function showBag(){if(S.mode==='sea')return shipSheet();
+function showBag(){if(S.mode==='co')return fleetSheet4();if(S.mode==='sea')return shipSheet();
   const w=weight();
   let h=`<div class="sh-head"><div class="big">🎒</div><div style="flex:1"><h2>Your bag</h2><div class="sub"><span>${w} of ${S.cap} weight used</span><span>${fmt(S.cash)}</span></div></div><button class="x" onclick="closeSheet()" aria-label="Close">✕</button></div>`;
   if(!S.inv.length)h+=`<p class="small">Empty. Find something cheap and someone who wants it.</p>`;
@@ -914,6 +924,7 @@ function showBag(){if(S.mode==='sea')return shipSheet();
     if(s){const left=l.d+s-S.day;life=left<=1?'<span class="bad">goes bad tonight</span>':`${left} nights left`}
     h+=`<div class="row"><div class="gi">${gi(l.g)}</div><div class="info"><b>${l.q} ${G[l.g].n}</b><div class="small">Bought ${ago(l.d)}, ${life}</div></div></div>`;
   });
+  if(S.store){const st=S.storeInv||[];h+=`<h3>In your storeroom</h3>`+(st.length?[...st].sort((a,b)=>a.g.localeCompare(b.g)||a.d-b.d).map(l=>{const s=G[l.g].s;let life='keeps forever';if(s){const left=l.d+s-S.day;life=left<=1?'<span class="bad">goes bad tonight</span>':`${left} nights left`}return `<div class="row"><div class="gi">${gi(l.g)}</div><div class="info"><b>${l.q} ${G[l.g].n}</b><div class="small">Stored ${ago(l.d)}, ${life}</div></div></div>`}).join(''):'<p class="small">Empty.</p>')}
   h+=`<h3>Animals and carts</h3><p class="small">${S.cart?'Donkey and cart. 🫏🛞':S.donkey?'One donkey, Pomegranate. 🫏 A cart would carry more.':'Just your own back. The Caravan Master sells donkeys.'}</p>`;
   h+=`<h3>Walking speed</h3><p class="small">${minPerTile()} min per square right now. On foot: 5, or 7 with a bag over half full. Donkey: 4. Cart: 5.</p>`;
   h+=`<h3>Helpers</h3><p class="small">${S.boys?`${S.boys} errand boy${S.boys>1?'s':''} scouting prices every morning.`:'No helpers yet. Hire errand boys at the tavern.'}</p>`;
@@ -1078,7 +1089,7 @@ const SHIPS=[{n:'Cog',hold:500,speed:1,cost:0},{n:'Caravel',hold:800,speed:1.5,c
 const CAPTAINS=['Captain Marco','Captain Elena','Captain Yusuf al-Bahri','Captain Nikos','Captain Giacomo','Captain Hasan','Captain Rachel','Captain Andrea'];
 const SIMP=1.0006;
 let sailing=false,RT=null;
-const sh_head=(i,n,sub)=>`<div class="sh-head"><div class="big">${i}</div><div style="flex:1"><h2>${n}</h2><div class="sub"><span>${sub}</span></div></div><button class="x" onclick="closeSheet()" aria-label="Close">✕</button></div>`;
+const sh_head=(i,n,sub,back)=>`<div class="sh-head">${back?`<button class="x" onclick="${back}()" aria-label="Back">←</button>`:''}<div class="big">${i}</div><div style="flex:1"><h2>${n}</h2><div class="sub"><span>${sub}</span></div></div><button class="x" onclick="closeSheet()" aria-label="Close">✕</button></div>`;
 const laneOf=(a,b)=>LANES.find(L=>(L[0]===a&&L[1]===b)||(L[0]===b&&L[1]===a));
 function lanePts(L,from){const p=[PORTS[L[0]].xy,...L[3],PORTS[L[1]].xy];return from===L[1]?p.reverse():p}
 function polyAt(p,t){let tot=0;const seg=[];for(let i=1;i<p.length;i++){const d=Math.hypot(p[i][0]-p[i-1][0],p[i][1]-p[i-1][1]);seg.push(d);tot+=d}
@@ -1099,8 +1110,9 @@ function learn(p,age){let m;
   const day=age?Math.min(S.day-age,(S.sea.hist.find(x=>x.q===m)||{day:S.day-age}).day):S.day;
   const k=S.sea.known[p];if(k&&k.day>=day)return;S.sea.known[p]={day,mid:{...m}}}
 function freeLanes(i){return LANES.map((L,j)=>j).filter(j=>LANES[j][4]!=='corsair'&&!S.sea.fleet.some((o,k)=>k!==i&&laneOf(o.route[0],o.route[1])===LANES[j]))}
-function fixSea(){if(S.sea&&S.sea.fleet)S.sea.fleet.forEach((f,i)=>{const L=laneOf(f.route[0],f.route[1]),fr=freeLanes(i);if(!L||!fr.includes(LANES.indexOf(L))){const n=LANES[fr[0]];if(n)f.route=[n[0],n[1]]}});if(S.ch===3&&S.sea&&S.sea.sailing){S.sea.port=S.sea.sailing.to;S.sea.sailing=null;S.sea.pos=null}}
-function sleepBtn(){if(S.mode==='sea')waitDay();else rest()}
+function bestGood(a,b){let best=null,r=1.05;SGK.forEach(g=>{const x=seaBid(b,g)/seaAsk(a,g);if(x>r){r=x;best=g}});return best}
+function fixSea(){if(S.sea&&S.sea.fleet)S.sea.fleet.forEach(f=>{if(!f.gAB&&!f.gBA){f.gAB=bestGood(f.route[0],f.route[1]);f.gBA=bestGood(f.route[1],f.route[0])}});if(S.sea&&S.sea.fleet)S.sea.fleet.forEach((f,i)=>{const L=laneOf(f.route[0],f.route[1]),fr=freeLanes(i);if(!L||!fr.includes(LANES.indexOf(L))){const n=LANES[fr[0]];if(n)f.route=[n[0],n[1]]}});if(S.ch>=3&&S.sea&&S.sea.sailing){S.sea.port=S.sea.sailing.to;S.sea.sailing=null;S.sea.pos=null}}
+function sleepBtn(){if(S.mode==='co')nextMonth();else if(S.mode==='sea')waitDay();else rest()}
 function seaHud(){const sea=S.sea,where=PORTS[sea.sailing?sea.sailing.to:sea.port].n;
   return `<div class="chip">Coins<b>${fmt(S.cash)}</b></div><div class="chip">Day<b>${S.day}</b></div><div class="chip">${sea.sailing?'Sailing to':'In port'}<b class="sm">${where}</b></div><div class="chip">Hold<b>${cargoN()}/${holdCap()}</b></div>`}
 function seaMap(){
@@ -1192,6 +1204,7 @@ function portSheet(arr){
     const tag=c?`In hold: ${c}, paid ${fmt(avg)} each. ${b>avg?`<span class="good">Sells here for ${fmt(b-avg)} more</span>`:`<span class="bad">Sells here at a loss</span>`}`:(f<1?'Made here: cheap':f>1?'<span class="good">In demand here</span>':'');
     h+=`<div class="mrow"><div class="mtop"><div class="gi">${gi(g)}</div><div class="info"><b>${SG[g].n}</b> <span class="small">buy</span> <span class="price">${fmt(a)}</span> <span class="small">sell</span> <span class="price">${fmt(b)}</span><div class="small">${tag}</div></div></div><div class="btns"><button class="sbtn" onclick="seaBuy('${g}',100)">Buy 100</button><button class="sbtn" onclick="seaBuy('${g}',99999)">Buy max</button>${c?`<button class="sbtn" onclick="seaSell('${g}',100)">Sell 100</button><button class="sbtn fill" onclick="seaSell('${g}',99999)">Sell all</button>`:''}</div></div>`});
   h+=`<div class="acts">`;
+  if(p==='beirut'&&S.ch>=4&&S.co)h+=`<button class="sbtn fill" onclick="toAntwerp()">🏛️ Back to Antwerp</button>`;
   if(p==='beirut')h+=`<button class="sbtn fill" onclick="goAshore()">🏙️ Go ashore</button>`;
   if(P.yard)h+=`<button class="sbtn" onclick="shipSheet()">🛠️ ${P.yard==='arsenal'?'The Arsenal':'Shipyard'}</button>`;
   h+=`</div>`;
@@ -1220,8 +1233,9 @@ function buyFleet(cls){const c=[30000,60000][cls];if(S.cash<c){toast(`You need $
 function sameRoute(a,b){const r=(x)=>[...x.route].sort().join('|');return r(a)===r(b)&&((a.gAB===b.gAB&&a.route[0]===b.route[0])||(a.route[0]===b.route[1]&&a.gAB===b.gBA))&&!!(a.gAB||a.gBA)}
 function crowd(f){return S.sea.fleet.filter(o=>o!==f&&sameRoute(o,f)).length}
 function fleetDay(log){
-  const sea=S.sea;if(!sea.fleet.length)return;const wage=200*sea.fleet.length;S.cash-=wage;const lines=[];
+  const sea=S.sea;if(!sea.fleet.length)return;const wage=100*sea.fleet.length;S.cash-=wage;const lines=[];
   sea.fleet.forEach(f=>{
+    f.days=(f.days||0)+1;
     if(f.left>0){if(stormOn())return;f.left--;if(f.left>0)return;f.at=f.dest;f.dest=null}
     if(!f.at)return;
     if(f.cargo.q>0){const cr0=crowd(f);let rev=0;for(let i=0;i<f.cargo.q;i++){rev+=seaBid(f.at,f.cargo.g)*(1-.15*cr0);sea.imp[f.at][f.cargo.g]/=SIMP}
@@ -1268,7 +1282,7 @@ function shipSheet(){
     h+=`<h3>Your fleet</h3>`;
     h+=sea.fleet.length?sea.fleet.map((f,i)=>{const st=f.at?`In ${PORTS[f.at].n}`:`Sailing to ${PORTS[f.dest].n}, ${f.left} day${f.left>1?'s':''} left`;
       return `<div class="uprow"><div class="info"><b>${f.name}</b> <span class="lv">${SHIPS[f.cls].n}</span><div class="small">${PORTS[f.route[0]].n} ⇄ ${PORTS[f.route[1]].n}. Carries ${f.gAB?SG[f.gAB].n.toLowerCase():'nothing'} one way, ${f.gBA?SG[f.gBA].n.toLowerCase():'nothing'} back.<br>${st}. Profit so far ${f.profit>=0?'':'−'}${fmt(Math.abs(f.profit))} over ${f.trips} sale${f.trips===1?'':'s'}.</div></div><button class="sbtn" onclick="RT=null;routeSheet(${i})">Orders</button></div>`}).join(''):'<p class="small">No other ships yet.</p>';
-    if(docked&&P.yard)h+=`<div class="acts"><button class="sbtn${S.cash>=30000?' fill':''}" onclick="buyFleet(0)">Hire a captain with a cog ($30,000)</button><button class="sbtn${S.cash>=60000?' fill':''}" onclick="buyFleet(1)">Hire a captain with a caravel ($60,000)</button></div><p class="small">Each captain takes $200 a day.</p>`;
+    if(docked&&P.yard)h+=`<div class="acts"><button class="sbtn${S.cash>=30000?' fill':''}" onclick="buyFleet(0)">Hire a captain with a cog ($30,000)</button><button class="sbtn${S.cash>=60000?' fill':''}" onclick="buyFleet(1)">Hire a captain with a caravel ($60,000)</button></div><p class="small">Each captain takes $100 a day.</p>`;
   }
   setSheet(h);
 }
@@ -1306,16 +1320,19 @@ function showEnding3(){setSheet(`<h2>End of chapter three</h2>
   <p>For centuries, pepper reached Europe through Alexandria and Beirut, and Venice grew rich selling it on. Now the Portuguese can sail around Africa and buy it at the source. In a few years, Portuguese pepper will be sold in Lisbon, and the old Mediterranean routes will never be the same.</p>
   <p>You look at your ships, your ledgers, and Destiny chewing a sail rope. The Mediterranean suddenly feels small.</p>
   <p class="small">A century from now, merchants in London (1600) and Amsterdam (1602) will found the great East India companies. You decide not to wait a century. Chapter four: The Company.</p>
-  <button class="sbtn fill wide" onclick="closeSheet()">Keep trading</button>`)}
-const CODES={DESTINY:2,POMEGRANATE:3};
+  <p class="small">Code to skip straight to chapter four next time: <b>ANTWERP</b></p>
+  <button class="sbtn fill wide" onclick="startCh4()">Begin chapter four</button><button class="sbtn wide" onclick="closeSheet()">Keep trading</button>`)}
+const CODES={DESTINY:2,POMEGRANATE:3,ANTWERP:4};
 function useCode(){const el=document.getElementById('codeIn'),v=(el?el.value:'').trim().toUpperCase(),n=CODES[v];
+  if(v==='BAKSHEESH'){S.cash+=100000;if(S.co)S.co.treasury+=500000;save();render();closeSheet();toast(S.co?'Baksheesh! +$100,000 for you, +$500,000 for the company.':'Baksheesh! +$100,000.');return}
   if(!n){toast('That code doesn\u2019t open anything.');return}
-  setSheet(`<h2>${n===2?'Start chapter two?':'Jump to the end of chapter two?'}</h2><p>This replaces your current game with a fresh start ${n===2?'at the beginning of chapter two':'just before buying Captain Idris\u2019s ship, with a built-up shop and $6,000'}.</p><button class="sbtn fill wide" onclick="jumpCh(${n})">Yes, let\u2019s go</button><button class="sbtn wide" onclick="closeSheet()">Keep my game</button>`)}
+  setSheet(`<h2>${n===2?'Start chapter two?':n===4?'Start chapter four?':'Jump to the end of chapter two?'}</h2><p>This replaces your current game with a fresh start ${n===2?'at the beginning of chapter two':n===4?'at the beginning of chapter four, with $200,000 and three ships in the Mediterranean':'just before buying Captain Idris\u2019s ship, with a built-up shop and $6,000'}.</p><button class="sbtn fill wide" onclick="jumpCh(${n})">Yes, let\u2019s go</button><button class="sbtn wide" onclick="closeSheet()">Keep my game</button>`)}
 function jumpCh(n){
   S=newState();setDistrict('bazaar');
   Object.assign(S,{cash:500,donkey:true,cap:50,boys:1,store:true,storeInv:[],contractsDone:1,ms:6,won:true,inv:[]});
   startCh2();
-  if(n===3){const sp=S.shop;sp.open=true;Object.assign(sp.lv,{shelves:2,runners:2,cap:1,seller:1,sign:1});sp.shelves=[{g:'spice',q:15,acc:0},{g:'cloth',q:15,acc:0},{g:'pottery',q:15,acc:0},{g:'silk',q:15,acc:0}];sp.best=320;sp.soldPrem=true;
+  if(n>=3){const sp=S.shop;sp.open=true;Object.assign(sp.lv,{shelves:2,runners:2,cap:1,seller:1,sign:1});sp.shelves=[{g:'spice',q:15,acc:0},{g:'cloth',q:15,acc:0},{g:'pottery',q:15,acc:0},{g:'silk',q:15,acc:0}];sp.best=320;sp.soldPrem=true;
+    if(n===4){Object.assign(S,{cash:6000,ms2:7});buyShip();Object.assign(S,{cash:200000,ms3:6,won3:true});S.sea.fleet=[{name:'Captain Marco',cls:0,route:['beirut','famagusta'],gAB:'silk',gBA:'sugar',at:'beirut',from:null,dest:null,left:0,total:0,cargo:{g:null,q:0,cost:0},profit:0,trips:0},{name:'Captain Elena',cls:1,route:['famagusta','constantinople'],gAB:'sugar',gBA:'silk',at:'famagusta',from:null,dest:null,left:0,total:0,cargo:{g:null,q:0,cost:0},profit:0,trips:0}];PK.forEach(p=>learn(p,0));startCh4();save();return}
     Object.assign(S,{cash:6000,ms2:7,visitedHarbour:true,dist:'harbour'});setDistrict('harbour');{const s0=DIST.harbour.start;S.px=s0[0];S.py=s0[1]}S.at=null;
     save();render();checkMs(true);
     setSheet(`<h2>Almost the end of chapter two</h2><div class="bubble">Your shop is doing well, you have $6,000, and you\u2019re standing in the Harbour Quarter.</div><p>Captain Idris is ready to sell you his ship. Find him at his stall, marked with an anchor, whenever you feel ready. Until then, manage your shop as long as you like.</p><button class="sbtn fill wide" onclick="closeSheet()">Let\u2019s go</button>`);return}
@@ -1340,6 +1357,195 @@ function showSettings(){
   <h3>Game</h3><button class="sbtn wide" onclick="confirmNew()">Start a new game</button>`);
   setNav('');
 }
+/* ================= CHAPTER FOUR: THE COMPANY ================= */
+const MON=['January','February','March','April','May','June','July','August','September','October','November','December'];
+const W=(lon,lat)=>[+((lon+15)*12/145).toFixed(2),+((55-lat)*12/95).toFixed(2)];
+const CG={pepper:{n:'Pepper',base:40,buy:4},cloves:{n:'Cloves',base:90,buy:9},nutmeg:{n:'Nutmeg',base:120,buy:6}};
+const CGK=Object.keys(CG);
+const DEST={
+  malabar:{n:'Malabar coast',sub:'Calicut and Cochin, India',g:'pepper',months:18,from:0,postFrom:39,post:150000,xy:W(75.8,10.5),
+    path:[[4.4,51.2],[-3,49.5],[-10.5,43],[-10.5,38.5],[-14,30],[-14,14],[-9,3],[2,-8],[9,-25],[18.5,-37.5],[30,-34.5],[38,-27],[41.5,-17],[44,-8],[52,1],[63,8],[75.8,10.5]]},
+  malacca:{n:'Malacca',sub:'Market of the Spice Islands',g:'cloves',months:22,from:139,postFrom:139,post:250000,xy:W(102.25,2.2),
+    path:[[4.4,51.2],[-3,49.5],[-10.5,43],[-10.5,38.5],[-14,30],[-14,14],[-9,3],[2,-8],[9,-25],[18.5,-37.5],[30,-34.5],[38,-27],[41.5,-17],[44,-8],[52,1],[63,8],[76.5,6.5],[82,4.8],[92,5],[97.5,5.6],[100.5,3.6],[102.25,2.2]]},
+  banda:{n:'Banda Islands',sub:'The only place nutmeg grows',g:'nutmeg',months:26,from:145,postFrom:145,post:300000,xy:W(129.9,-4.5),
+    path:[[4.4,51.2],[-3,49.5],[-10.5,43],[-10.5,38.5],[-14,30],[-14,14],[-9,3],[2,-8],[9,-25],[18.5,-37.5],[30,-34.5],[38,-27],[41.5,-17],[44,-8],[52,1],[63,8],[76.5,6.5],[82,4.8],[92,5],[97.5,5.6],[100.5,3.6],[102.25,2.2],[104.8,0.8],[107.5,-3.5],[113,-6.2],[120,-6.6],[125,-6],[129.9,-4.5]]}
+};
+const DK=Object.keys(DEST);
+const HIST4={3:'April 1500. Pedro Álvares Cabral\u2019s fleet, sailing for India, has sighted an unknown land far to the west and claimed it for Portugal. They call it Brazil.',
+  19:'August 1501. The first Portuguese pepper from India is sold in Lisbon. In Venice, the merchants are worried.',
+  39:'April 1503. The Portuguese build a fortified trading post at Cochin. Companies can now keep a factor there: build a trading post on the Malabar coast.',
+  69:'October 1505. Francisco de Almeida becomes the first viceroy of Portuguese India.',
+  109:'February 1509. At the Battle of Diu, the Portuguese destroy a Mamluk and Gujarati fleet. The Indian Ocean now belongs to Lisbon.',
+  130:'November 1510. Afonso de Albuquerque takes Goa.',
+  139:'August 1511. Albuquerque takes Malacca, the great market for cloves from the Spice Islands. Your ships can now buy cloves there.',
+  145:'February 1512. Portuguese ships reach the Banda Islands, the only place in the world where nutmeg grows. A long, rich route opens.',
+  204:'January 1517. The Ottomans conquer Mamluk Egypt. Alexandria and its old spice trade now belong to the Sultan.',
+  236:'September 1519. Ferdinand Magellan sails west for Spain, hoping to reach the Spice Islands the other way around the world.',
+  272:'September 1522. Only one of Magellan\u2019s five ships, the Victoria, comes home, under Juan Sebastián Elcano. Its cloves alone pay for the whole voyage.',
+  372:'January 1531. Antwerp opens a new exchange building, made just for merchants to trade.'};
+const SHIPCOST=40000,UNITS=3000,OUTFIT=25000;
+const ym=t=>`${MON[t%12]} ${1500+Math.floor(t/12)}`;
+const inWindow=t=>{const m=t%12;return m>=1&&m<=3};
+function coPrice(g){return CG[g].base*S.co.imp[g]}
+function hasPost(d){return !!S.co.posts[d]}
+function expPlan(d,n,t){const D=DEST[d],win=inWindow(t),post=hasPost(d);const units=Math.round(n*UNITS*(post?1.4:1)),buy=CG[D.g].buy*(D.g==='pepper'&&t<39?1.5:1),loss=win?.08:.25,months=D.months+(win?0:6);
+  const silver=Math.round(units*buy),outfit=n*OUTFIT,arrive=Math.round(units*(1-loss)),expRev=Math.round(arrive*coPrice(D.g)*Math.pow(.97,arrive/2000));
+  return {units,silver,outfit,cost:silver+outfit,loss,months,ret:t+months,expRev,profit:expRev-silver-outfit}}
+function cargoPV(e,t){const left=Math.max(0,e.ret-t),tot=Math.max(1,e.ret-e.dep),remLoss=e.loss*left/tot;
+  return e.units*(1-e.loss)*coPrice(e.g)*.9*(1-remLoss)/Math.pow(1.04,left)}
+function coValue(){const c=S.co;let v=c.treasury+(c.ships+c.exps.reduce((a,e)=>a+e.ships,0))*30000;
+  c.exps.forEach(e=>v+=cargoPV(e,c.t));DK.forEach(d=>{if(c.posts[d])v+=DEST[d].post*.7});return v}
+function sharePrice(){const c=S.co;return Math.max(1,coValue()/c.N*c.sent)}
+function myStake(){return S.co.m/S.co.N}
+function fixCo(){if(S.co&&!S.co.hist)S.co.hist=[]}
+function coHud(){const c=S.co;if(!c)return '';return `<div class="chip">Your coins<b>${fmt0(S.cash)}</b></div><div class="chip">Date<b class="sm">${MON[c.t%12].slice(0,3)} ${1500+Math.floor(c.t/12)}</b></div><div class="chip">Share<b>${fmt(sharePrice())}</b></div><div class="chip">Your stake<b>${Math.round(myStake()*100)}%</b></div>`}
+const fmt0=v=>(v<0?'−':'')+'$'+Math.round(Math.abs(v)).toLocaleString('en-US');
+function startCh4(){
+  S.ch=4;S.ms4=0;S.won4=false;S.mode='co';S.co=null;closeSheet();save();render();
+  setSheet(`<h2>Chapter four: The Company</h2><div class="bubble">January 1500. Antwerp: the busiest port in Europe, and soon its spice market.</div>
+  <p>Portuguese ships now sail around Africa to India. The voyages take a year and a half, and each one costs more than any single merchant can pay. So merchants pool their money: they buy shares in a voyage, and split the profit.</p>
+  <p>You\u2019re going further. You\u2019ll found a <b>company</b> with shares that trade on the Antwerp exchange, send expeditions east, and run it from here. Your Mediterranean captains keep trading and send you money every month.</p>
+  <p class="small">A century from now, the Dutch East India Company will be the first company whose shares trade on a stock exchange. You\u2019re just a little early.</p>
+  <button class="sbtn fill wide" onclick="foundSheet()">Found the company</button>`);
+}
+function foundSheet(){
+  const opts=[[2000,'20%'],[3500,'35%'],[5100,'51%'],[7000,'70%']];
+  let h=sh_head('🏛️','Found the company','10,000 shares at $50 each');
+  h+=`<p>The company starts with <b>$500,000</b>: 10,000 shares at $50. You buy as many as you want; investors buy the rest.</p><p>More shares means more control and more of every dividend, but leaves you less cash. Below 50%, you no longer control the company.</p>`;
+  opts.forEach(([k,l])=>{const c=k*50;h+=`<div class="uprow"><div class="info"><b>Buy ${k.toLocaleString('en-US')} shares (${l})</b><div class="small">Costs you ${fmt0(c)}${S.cash<c?'. You don\u2019t have enough.':''}</div></div><button class="sbtn${S.cash>=c?' fill':''}" ${S.cash<c?'disabled':''} onclick="foundCo(${k})">Found</button></div>`});
+  setSheet(h);
+}
+function foundCo(k){if(S.cash<k*50)return;S.cash-=k*50;
+  S.co={t:0,N:10000,m:k,treasury:500000,ships:0,exps:[],posts:{},imp:{pepper:1,cloves:1,nutmeg:1},sent:1,lastDiv:-1,divs:0,returns:0,hist:[],log:[]};
+  S.co.hist.push(sharePrice());save();render();checkMs();
+  setTimeout(()=>{if(!document.getElementById('wrap').classList.contains('open')||lastSheet==='Found the company')coSheet()},600)}
+function coSheet(){
+  const c=S.co;if(!c)return foundSheet();
+  let h=sh_head('🏛️','Your company',`${ym(c.t)}. Headquarters in Antwerp`);
+  h+=`<div class="stat"><div class="chip">Treasury<b>${fmt0(c.treasury)}</b></div><div class="chip">Company value<b>${fmt0(coValue())}</b></div><div class="chip">Share price<b>${fmt(sharePrice())}</b></div></div>`;
+  h+=`<p class="small">You own ${c.m.toLocaleString('en-US')} of ${c.N.toLocaleString('en-US')} shares (${Math.round(myStake()*100)}%), worth ${fmt0(c.m*sharePrice())}. ${myStake()>.5?'You control the company.':'<span class="bad">You don\u2019t control the company.</span>'}</p>`;
+  h+=`<h3>Ships at sea</h3>`+(c.exps.length?c.exps.map(e=>{const D=DEST[e.d],lft=e.ret-c.t;return `<div class="row"><div class="gi">${gi(e.g)}</div><div class="info"><b>${e.ships} ship${e.ships>1?'s':''} to ${D.n}</b><div class="small">Back in ${ym(e.ret)} (${lft} month${lft===1?'':'s'}) with about ${Math.round(e.units*(1-e.loss)).toLocaleString('en-US')} ${CG[e.g].n.toLowerCase()}.</div></div></div>`}).join(''):'<p class="small">No expeditions at sea.</p>');
+  h+=`<div class="acts"><button class="sbtn fill" onclick="planSheet()">🧭 Plan an expedition</button><button class="sbtn" onclick="exchSheet()">📈 Exchange and shares</button><button class="sbtn" onclick="fleetSheet4()">⚓ Ships and trading posts</button><button class="sbtn" onclick="toMed()">⛵ Sail to the Mediterranean</button></div>`;
+  h+=`<p class="small" style="margin-top:12px">Time passes one month at a time with the Next month button.</p>`;
+  setSheet(h);
+}
+let PL4={d:'malabar',n:1};
+function planSheet(){
+  const c=S.co;if(!DEST[PL4.d]||DEST[PL4.d].from>c.t)PL4.d='malabar';PL4.n=Math.max(1,Math.min(PL4.n,Math.max(1,c.ships)));
+  const D=DEST[PL4.d],p=expPlan(PL4.d,PL4.n,c.t),win=inWindow(c.t),retAug=p.ret%12===7&&D.g==='pepper';
+  let h=sh_head('🧭','Plan an expedition',`${ym(c.t)}. ${c.ships} ship${c.ships===1?'':'s'} in harbour`,'coSheet');
+  h+=`<div class="seg">${DK.map(d=>{const X=DEST[d],open=X.from<=c.t;return `<button class="sbtn${PL4.d===d?' fill':''}" ${open?'':'disabled'} onclick="PL4.d='${d}';planSheet()">${X.n}${open?'':` 🔒 ${1500+Math.floor(X.from/12)}`}</button>`}).join('')}</div>`;
+  h+=`<p class="small">${D.sub}. Buys ${CG[D.g].n.toLowerCase()}.${hasPost(PL4.d)?' Your trading post there has 40% more cargo ready for your ships.':''}</p>`;
+  h+=`<div class="uprow"><div class="info"><b>Ships</b><div class="small">Each carries ${UNITS} loads.</div></div><button class="mini" onclick="PL4.n--;planSheet()">−</button><b style="min-width:28px;text-align:center">${PL4.n}</b><button class="mini" onclick="PL4.n++;planSheet()">+</button></div>`;
+  h+=`<div class="bubble">${win?'Good timing: ships leaving between February and April catch the monsoon winds in the Indian Ocean.':'<span class="bad">Out of season.</span> Ships leaving now miss the monsoon: 6 months longer and much riskier. The best months to leave are February to April.'}</div>`;
+  {const locked=DK.filter(d=>DEST[d].from>c.t);if(locked.length)h+=`<p class="small">${locked.map(d=>`${DEST[d].n} opens in ${ym(DEST[d].from)}`).join('; ')}, as the Portuguese push further east. Use Next month or skip ahead to get there.</p>`}
+  h+=`<div class="row"><div class="info"><b>Silver for buying spices</b><div class="small">${fmt(CG[D.g].buy*(D.g==='pepper'&&c.t<39?1.5:1))} a quintal (about 100 kg)${D.g==='pepper'&&c.t<39?'. From 1503 the Portuguese fix the Malabar price lower':''}</div></div><span class="price">${fmt0(p.silver)}</span></div>`;
+  h+=`<div class="row"><div class="info"><b>Crew, food and fitting out</b><div class="small">${fmt0(OUTFIT)} a ship</div></div><span class="price">${fmt0(p.outfit)}</span></div>`;
+  h+=`<div class="row"><div class="info"><b>Back home</b><div class="small">${p.months} months at sea${retAug?'. <span class="bad">Arrives in August, together with the Portuguese crown\u2019s pepper fleet.</span>':''}</div></div><span class="price">${ym(p.ret)}</span></div>`;
+  h+=`<div class="row"><div class="info"><b>Expected losses</b><div class="small">Storms, scurvy and shipwreck, about ${Math.round(p.loss*100)}% of cargo${PL4.n*p.loss>=.5?`, likely ${Math.round(PL4.n*p.loss)} ship${Math.round(PL4.n*p.loss)>1?'s':''}`:''}</div></div><span class="price">${Math.round(p.loss*100)}%</span></div>`;
+  h+=`<div class="row"><div class="info"><b>Expected sale in Antwerp</b><div class="small">At today\u2019s ${CG[D.g].n.toLowerCase()} price of ${fmt(coPrice(D.g))}, minus the dip your own cargo causes</div></div><span class="price">${fmt0(p.expRev)}</span></div>`;
+  h+=`<div class="row"><div class="info"><b>Expected profit</b><div class="small">Sale minus silver and fitting out. Ships come home and can sail again.</div></div><span class="price ${p.profit>=0?'good':'bad'}">${fmt0(p.profit)}</span></div>`;
+  const ok=c.ships>=PL4.n&&c.treasury>=p.cost;
+  h+=`<button class="sbtn fill wide" ${ok?'':'disabled'} onclick="sendExp()">${c.ships<PL4.n?'Not enough ships in harbour':c.treasury<p.cost?'Not enough money in the treasury':'Send the expedition'}</button><button class="sbtn wide" onclick="coSheet()">Back</button>`;
+  setSheet(h);
+}
+function sendExp(){const c=S.co,D=DEST[PL4.d],p=expPlan(PL4.d,PL4.n,c.t);if(c.ships<PL4.n||c.treasury<p.cost)return;
+  c.ships-=PL4.n;c.treasury-=p.cost;c.exps.push({d:PL4.d,g:D.g,ships:PL4.n,units:p.units,loss:p.loss,dep:c.t,ret:p.ret,cost:p.cost});
+  toast(`${PL4.n} ship${PL4.n>1?'s':''} set sail for ${D.n}.`);save();render();checkMs();coSheet()}
+function fleetSheet4(){
+  const c=S.co;if(!c)return foundSheet();
+  let h=sh_head('⚓','Ships and trading posts',`${c.ships} ship${c.ships===1?'':'s'} in harbour, ${c.exps.reduce((a,e)=>a+e.ships,0)} at sea`,'coSheet');
+  h+=`<div class="uprow"><div class="info"><b>Commission a ship</b><div class="small">A big ocean-going nau, built in Antwerp. Paid from the treasury.</div></div><button class="sbtn${c.treasury>=SHIPCOST?' fill':''}" onclick="buyNau()">${fmt0(SHIPCOST)}</button></div>`;
+  h+=`<h3>Trading posts</h3><p class="small">A factor living there buys ahead of your ships, so each expedition brings home 40% more cargo.</p>`;
+  DK.forEach(d=>{const D=DEST[d],open=D.postFrom<=c.t,has=c.posts[d];
+    h+=`<div class="uprow"><div class="info"><b>${D.n}</b><div class="small">${has?'Your post is open.':open?D.sub+'.':`Possible from ${ym(D.postFrom)}.`}</div></div>${has?'<span class="small">Built</span>':`<button class="sbtn${open&&c.treasury>=D.post?' fill':''}" ${open?'':'disabled'} onclick="buildPost('${d}')">${fmt0(D.post)}</button>`}</div>`});
+  h+=`<p class="small">Your Mediterranean captains send ${fmt0(medIncome())} a month to your own purse.</p>`;
+  setSheet(h);
+}
+function medIncome(){const fl=(S.sea&&S.sea.fleet)||[];return 2000+fl.reduce((a,f)=>a+((f.days||0)>20?Math.max(0,Math.round((f.profit/f.days-100)*30)):3000),0)}
+function buyNau(){const c=S.co;if(c.treasury<SHIPCOST){toast('Not enough in the treasury.');return}c.treasury-=SHIPCOST;c.ships++;toast('A new nau is launched.');save();render();fleetSheet4()}
+function buildPost(d){const c=S.co,D=DEST[d];if(c.posts[d]||D.postFrom>c.t)return;if(c.treasury<D.post){toast('Not enough in the treasury.');return}c.treasury-=D.post;c.posts[d]=true;toast(`Your trading post at ${D.n} is open.`);save();render();checkMs();fleetSheet4()}
+function spark(arr){if(arr.length<2)return '';const mn=Math.min(...arr),mx=Math.max(...arr),r=mx-mn||1;const pts=arr.map((v,i)=>`${(i/(arr.length-1)*100).toFixed(1)},${(38-(v-mn)/r*34).toFixed(1)}`).join(' ');
+  return `<svg viewBox="0 0 100 40" preserveAspectRatio="none" style="width:100%;height:70px;display:block;margin:6px 0"><polyline points="${pts}" fill="none" stroke="var(--lapis)" stroke-width="1.6" vector-effect="non-scaling-stroke"/></svg><div class="small" style="display:flex;justify-content:space-between"><span>${fmt(mn)}</span><span>last ${arr.length} months</span><span>${fmt(mx)}</span></div>`}
+function exchSheet(){
+  const c=S.co;if(!c)return foundSheet();const p=sharePrice();
+  let h=sh_head('📈','The Antwerp exchange',ym(c.t),'coSheet');
+  h+=`<h3>Your company\u2019s shares</h3><div class="stat"><div class="chip">Price<b>${fmt(p)}</b></div><div class="chip">You own<b>${Math.round(myStake()*100)}%</b></div><div class="chip">Investor mood<b>${c.sent>=1.1?'😊':c.sent>=.95?'🙂':'😒'}</b></div></div>`+spark(c.hist);
+  h+=`<p class="small">The price follows what the company owns, the cargo on its way home, and investor mood. Dividends and profitable voyages cheer investors up; long silences make them restless.</p>`;
+  const bq=k=>Math.round(k*p*(1.01+.5*k/c.N)),dv=[1,2,5];
+  h+=`<div class="uprow"><div class="info"><b>Buy shares</b><div class="small">From investors, with your own coins</div></div><button class="sbtn" onclick="tradeSh(100)">100: ${fmt0(bq(100))}</button><button class="sbtn" onclick="tradeSh(500)">500: ${fmt0(bq(500))}</button></div>`;
+  h+=`<div class="uprow"><div class="info"><b>Sell shares</b><div class="small">For coins in your own purse</div></div><button class="sbtn" onclick="tradeSh(-100)">100: ${fmt0(100*p*(.99-50/c.N))}</button><button class="sbtn" onclick="tradeSh(-500)">500: ${fmt0(500*p*(.99-250/c.N))}</button></div>`;
+  h+=`<div class="uprow"><div class="info"><b>Raise money</b><div class="small">At most once a year, at a 10% discount.${c.lastIssue!=null&&c.t-c.lastIssue<12?` Next possible in ${ym(c.lastIssue+12)}.`:''}</div><div class="small">The company sells new shares to investors. More money for ships, but your stake shrinks.</div></div><button class="sbtn" onclick="issueSh(1000)">1,000 new: +${fmt0(1000*p*.9)}</button></div>`;
+  h+=`<div class="uprow"><div class="info"><b>Pay a dividend</b><div class="small">Money moves from the treasury to every shareholder, you included, so the share price drops by about the dividend. Investors who get paid stay patient; without a dividend for two years they grow restless.</div></div>${dv.map(d=>`<button class="sbtn" onclick="payDiv(${d})">$${d}/share</button>`).join('')}</div>`;
+  h+=`<h3>Spices in Antwerp</h3>`+CGK.map(g=>`<div class="row"><div class="gi">${gi(g)}</div><div class="info"><b>${CG[g].n}</b><div class="small">${c.imp[g]<.95?'Prices are down after recent arrivals; they recover month by month.':'Near its usual price.'}</div></div><span class="price">${fmt(coPrice(g))}</span></div>`).join('');
+  h+=`<p class="small">Every August from 1501, the Portuguese crown fleet unloads its pepper and the price of pepper drops.</p><p class="small"><b>About these prices.</b> From 1503 the Portuguese fixed the price of Malabar pepper at about 2.5 cruzados a quintal (roughly 100 kg), while in Lisbon it sold for 20 to 40. That tenfold markup is why a single voyage could pay for itself many times over. Here, prices are in dollars, but the ratios follow history.</p>`;
+  setSheet(h);
+}
+function tradeSh(k){const c=S.co,p=sharePrice();
+  if(k>0){const cost=Math.round(k*p*(1.01+.5*k/c.N));if(S.cash<cost){toast('Not enough coins.');return}if(c.m+k>c.N){toast('There aren\u2019t that many shares for sale.');return}S.cash-=cost;c.m+=k}
+  else{k=-k;if(c.m<k){toast('You don\u2019t own that many.');return}S.cash+=k*p*(.99-.5*k/c.N);c.m-=k}
+  save();render();checkMs();exchSheet()}
+function issueSh(k){const c=S.co,p=sharePrice();if(c.lastIssue!=null&&c.t-c.lastIssue<12){toast(`Investors won\u2019t buy new shares again until ${ym(c.lastIssue+12)}.`);return}c.treasury+=k*p*.9;c.N+=k;c.lastIssue=c.t;c.sent=Math.max(.7,c.sent-.03);toast(`The company raised ${fmt0(k*p*.9)}.`);save();render();exchSheet()}
+function payDiv(d){const c=S.co,tot=d*c.N;if(c.treasury<tot){toast(`That needs ${fmt0(tot)} in the treasury.`);return}c.treasury-=tot;S.cash+=d*c.m;c.sent=Math.min(1.5,c.sent+.01);c.lastDiv=c.t;c.divs++;
+  toast(`Dividend paid. You received ${fmt0(d*c.m)}.`);save();render();checkMs();exchSheet()}
+function monthStep(log){
+  const c=S.co;c.t++;
+  const med=S.mode==='co'?medIncome():0;S.cash+=med;
+  CGK.forEach(g=>c.imp[g]=1+(c.imp[g]-1)*.9);
+  if(c.t%12===7&&c.t>=19){c.imp.pepper*=.8;log.push('The Portuguese crown fleet unloads its pepper in Lisbon. Pepper prices in Antwerp drop.')}
+  c.exps=c.exps.filter(e=>{if(c.t<e.ret)return true;
+    const units=Math.round(e.units*(1-e.loss)),lost=Math.round(e.ships*e.loss);let rev=0;
+    for(let k=0;k<units;k+=50){const q=Math.min(50,units-k);rev+=q*coPrice(e.g);c.imp[e.g]*=Math.pow(.97,q/1000)}
+    c.treasury+=rev;c.ships+=e.ships-lost;c.returns++;const pr=rev-e.cost;c.sent=Math.max(.7,Math.min(1.5,c.sent+(pr>0?.06:-.05)));
+    log.push(`⚓ Your expedition from ${DEST[e.d].n} is home${lost?`, ${lost} ship${lost>1?'s':''} lost on the way`:''}. ${units.toLocaleString('en-US')} ${CG[e.g].n.toLowerCase()} sold for ${fmt0(rev)}, ${pr>=0?'a profit of':'a loss of'} ${fmt0(Math.abs(pr))} after silver and fitting out.`);return false});
+  c.sent=1+(c.sent-1)*.97;if(c.t-c.lastDiv>24&&c.t>24)c.sent=Math.max(.7,c.sent-.01);
+  if(HIST4[c.t])log.push('📜 '+HIST4[c.t]);
+  c.hist.push(+sharePrice().toFixed(2));if(c.hist.length>48)c.hist.shift();
+  return med;
+}
+function nextMonth(){const c=S.co;if(!c){foundSheet();return}const log=[];const med=monthStep(log);save();render();
+  setSheet(`<h2>📅 ${ym(c.t)}</h2>${log.map(l=>`<p>${l}</p>`).join('')}<p class="small">Your Mediterranean captains sent ${fmt0(med)}. Share price now ${fmt(sharePrice())}.</p><button class="sbtn fill wide" onclick="coSheet()">To the company</button><button class="sbtn wide" onclick="skipToArrival()">⏩ Skip to the next ship arriving</button>`);
+  checkMs()}
+function skipToArrival(){const c=S.co;if(!c.exps.length){toast('No ships at sea.');return}const tgt=Math.min(...c.exps.map(e=>e.ret)),log=[];let med=0;
+  while(c.t<tgt){med+=monthStep(log)}save();render();
+  setSheet(`<h2>📅 ${ym(c.t)}</h2>${log.map(l=>`<p>${l}</p>`).join('')}<p class="small">Meanwhile your Mediterranean captains sent ${fmt0(med)} in total.</p><button class="sbtn fill wide" onclick="coSheet()">To the company</button>`);checkMs()}
+function worldMap(){
+  const c=S.co,t=c?c.t:0;
+  const P=pts=>pts.map(([a,b])=>W(a,b).join(',')).join(' ');
+  const lands=[[[8,55],[8,53.5],[4.4,51.4],[1.6,50.9],[-1.5,49.7],[-4.5,48.4],[-1.2,46],[-1.8,43.4],[-9.3,43.2],[-9,38.7],[-9,37],[-6.3,36.5],[-5.6,36],[3,43.3],[10,44],[12,41],[16,38],[18,40],[20,39],[23,36.5],[26,40],[28,41],[36,36.8],[35,33],[34.3,31.3],[32.5,30],[35,28],[39,21.5],[43.3,12.7],[45,12.8],[52,15.5],[57.5,18.5],[59.8,22.5],[56.3,26.4],[50,29],[48,30],[56.3,27],[61,25.2],[66.7,24.8],[70,22.5],[72.8,21],[72.8,19],[73.8,15.5],[75.8,11.25],[76.3,9.9],[77.5,8.1],[80.3,13.1],[82.2,16.9],[86.9,21.4],[90,22],[92,21],[94.5,16.5],[97.8,16.5],[98.5,12],[98.3,8],[100.3,5.4],[102.25,2.2],[103.5,1.3],[104.2,1.5],[103.4,5],[100.5,13.5],[104,10.4],[105.5,8.7],[109.2,12.2],[106.7,20],[108.5,21.6],[113.5,22.3],[119.3,26],[122,30],[121,37],[124,40],[126,37],[129,35],[130,42],[130,55]],
+    [[-5.9,35.8],[-6.8,34],[-9.6,30.4],[-13.2,27.6],[-15,26],[-15,11],[-13.7,9.5],[-7.5,4.4],[-2,4.8],[1.2,6.1],[3.4,6.4],[6,4.3],[9.5,4],[9.5,1],[9.3,-1],[12,-5],[13.2,-8.8],[12.2,-15.2],[14.5,-22.9],[15.1,-26.6],[17.9,-33],[18.5,-34.4],[20,-34.8],[25.6,-33.9],[31,-29.9],[32.6,-25.9],[35.5,-24],[34.8,-19.8],[40.7,-15],[40.5,-10.3],[39.3,-6.8],[39.7,-4],[40.9,-2.2],[42.5,-0.5],[45.3,2],[49,6],[51.3,11.8],[43.4,11.6],[39.5,15.5],[37.2,19.6],[35.5,23.9],[33.9,27.2],[32.5,30],[32.3,31.3],[29.9,31.2],[25,31.7],[20,32],[19,30.5],[15,32.4],[11,33.8],[10,37.2],[3,36.8],[-1,35.7]],
+    [[49.3,-12],[50.5,-15.5],[47.1,-25],[45.2,-25.5],[43.7,-22],[44.4,-16.2],[47.1,-14]],[[79.9,9.5],[81.8,7.5],[81.2,6.2],[80.2,6],[79.8,8]],
+    [[95.3,5.6],[98,4],[103.8,-1],[106,-5.8],[104.5,-5.9],[101,-3],[97,2.3],[95.2,4.5]],[[105.2,-6.8],[108.5,-6.4],[114.6,-7.7],[114.4,-8.7],[110,-8.2],[105.5,-7]],
+    [[109,1.5],[111,-3],[116,-4],[119,1],[117.5,7],[115,5],[111,1.5]],[[119.5,-5.5],[120.5,.8],[124.8,1.5],[121,-1],[122.5,-5],[120.5,-5.6]],
+    [[120,18.5],[122.3,18.3],[124,12.5],[126,7],[125.4,6],[122,7],[123,10.5],[120.5,14.5]],
+    [[-5.7,50],[1.4,51.2],[1.7,52.7],[0,53.5],[-3,55],[-5,54.5],[-3.3,53.4],[-4.6,52.8],[-5.3,51.7],[-3.1,51.4]],[[-10,51.6],[-6,52.2],[-6,54],[-8,55],[-10,54]],
+    [[130,-12],[130,-40],[118,-35],[115,-34],[114.2,-26],[113.6,-22],[122,-17],[126,-14]],[[-15,-40],[-15,55],[-12,55],[-12,-40]].slice(0,0)];
+  let h=`<svg class="mapsvg" viewBox="0 0 12 12" xmlns="http://www.w3.org/2000/svg"><rect width="12" height="12" fill="var(--alley2)"/><rect width="12" height="12" fill="var(--water)" opacity=".5"/>`;
+  lands.filter(L=>L.length).forEach(L=>h+=`<polygon points="${P(L)}" fill="var(--sand1)" stroke="var(--path)" stroke-width=".03" stroke-linejoin="round"/>`);
+  DK.forEach(d=>{const D=DEST[d],open=D.from<=t;h+=`<polyline points="${P(D.path)}" fill="none" stroke="var(--lapis)" stroke-width=".04" stroke-dasharray=".14 .1" opacity="${open?.5:.15}"/>`});
+  const port=(xy,n,anchor,dx,dy,col)=>`<circle cx="${xy[0]}" cy="${xy[1]}" r=".14" fill="${col||'var(--surface)'}" stroke="var(--lapis)" stroke-width=".05"/><text x="${xy[0]+dx}" y="${xy[1]+dy}" font-size=".26" font-weight="800" fill="var(--text)" text-anchor="${anchor}" font-family="system-ui,sans-serif" stroke="var(--surface)" stroke-width=".07" paint-order="stroke">${n}</text>`;
+  h+=port(W(4.4,51.2),'Antwerp ★','start',.2,-.12,'var(--saffron)')+port(W(-9.1,38.7),'Lisbon','start',.2,.08);
+  DK.forEach(d=>{const D=DEST[d],open=D.from<=t;h+=`<g opacity="${open?1:.4}">`+port(D.xy,D.n+(open?(c&&c.posts[d]?' ⚑':''):` 🔒 ${1500+Math.floor(D.from/12)}`),d==='malabar'?'middle':'end',d==='malabar'?0:-.22,d==='malabar'?-.25:d==='banda'?.5:.1,c&&c.posts[d]?'var(--good)':null)+`</g>`});
+  if(c)c.exps.forEach((e,i)=>{const D=DEST[e.d],f=Math.max(0,Math.min(1,(t-e.dep)/(e.ret-e.dep)));const pts=D.path.map(([a,b])=>W(a,b));const xy=polyAt(f<.5?pts:[...pts].reverse(),f<.5?f*2:(f-.5)*2);
+    h+=`<g transform="translate(${xy[0]+i*.05} ${xy[1]}) scale(.6) translate(-.5 -.6)">${drawIcon('boat',.5,.5)}</g>`});
+  h+=`<text x=".3" y="11.6" font-size=".36" fill="var(--muted)" font-family="Marcellus,Georgia,serif">${ym(t)}</text>`;
+  if(c&&inWindow(t))h+=`<g><rect x="6.2" y="10.9" width="5.55" height=".7" rx=".35" fill="var(--surface)" opacity=".92"/>`+svgTxt(8.97,11.26,'🌬️ Monsoon window: a good month to sail east','.22','var(--text)',700)+`</g>`;
+  return h+`</svg>`;
+}
+const MS4=[
+ {txt:'Found the company',title:'a company founder',ok:()=>!!S.co,prog:()=>0,msg:'The notary stamps the papers. Your company exists, and its shares will trade on the Antwerp exchange. Now commission ships and plan your first expedition; the best months to sail east are February to April.'},
+ {txt:'Send your first expedition east',title:'an Indies merchant',ok:()=>S.co.exps.length>0||S.co.returns>0,prog:()=>0,msg:'Your ships are on their way around Africa. It will be a long wait: use Next month, or skip ahead.'},
+ {txt:'Bring home your first cargo',title:'a spice importer',ok:()=>S.co.returns>0,prog:()=>0,msg:'The quays of Antwerp smell of pepper. Your investors are delighted, and they would be even happier with a dividend.'},
+ {txt:'Pay your first dividend',title:'a respected director',ok:()=>S.co.divs>0,prog:()=>0,msg:'Your share price climbs. A trading post in the East would make every voyage more profitable.'},
+ {txt:'Build a trading post in the East',title:'a governor of trade',ok:()=>DK.some(d=>S.co.posts[d]),prog:()=>0,msg:'Your factor in the East buys ahead of your ships. Now grow the company, but keep control of it.'},
+ {txt:'Make the company worth $3,000,000 while you own more than half',title:'a merchant prince of Antwerp',ok:()=>coValue()>=3e6&&myStake()>.5,prog:()=>Math.min(1,coValue()/3e6)*(myStake()>.5?1:.5),msg:''}
+];
+function showEnding4(){const c=S.co;setSheet(`<h2>End of chapter four</h2>
+  <div class="bubble">${ym(c.t)}. Your company is worth ${fmt0(coValue())}, and its shares are the talk of the Antwerp exchange.</div>
+  <p>Merchants in every port of Europe know your flag. Your factors live in the East, your ships come home every year, and you still hold the majority. In a hundred years, London and Amsterdam will copy what you built.</p>
+  <p>But the most exciting news on the exchange isn\u2019t about pepper anymore. It\u2019s about the lands across the Atlantic: silver, sugar, and a whole New World.</p>
+  <p class="small">Chapter five: The New World. Coming soon.</p>
+  <button class="sbtn fill wide" onclick="closeSheet()">Keep running the company</button>`)}
 function confirmNew(){setSheet(`<h2>Start over?</h2><p>Your coins, goods and notebook will be gone.</p><button class="sbtn fill wide" onclick="newGame()">Start a new game</button><button class="sbtn wide" onclick="closeSheet()">Keep playing</button>`)}
 function newGame(){S=newState();setDistrict('bazaar');save();render();intro()}
 
@@ -1355,7 +1561,7 @@ function trimShelves(){const sp=S.shop;if(!sp||!sp.shelves||sp.shelves.length<=6
 function afterLoad(){
   GK.forEach(g=>{if(S.gw[g]==null)S.gw[g]=1});
   TK.forEach(t=>{S.p[t]=S.p[t]||{};if(S.mood[t]==null)S.mood[t]=0;[...Object.keys(T[t].sells),...Object.keys(T[t].buys)].forEach(g=>{if(S.p[t][g]==null)S.p[t][g]=1})});
-  S.dist=S.dist||'bazaar';setDistrict(S.dist);trimShelves();fixSea();preview=null;walking=false;
+  S.dist=S.dist||'bazaar';setDistrict(S.dist);trimShelves();fixSea();fixCo();preview=null;walking=false;
   try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}
   closeSheet();render();checkMs(true);
 }
@@ -1379,7 +1585,7 @@ for(const [n,v] of [['showNews','news'],['showNotebook','notebook'],['showBag','
 {const f=window.renderStall;window.renderStall=function(t){f(t);setNav('here')}}
 {const f=window.showPlace;window.showPlace=function(t){f(t);if(S.at===t)setNav('here')}}
 if(!S){S=newState();setDistrict('bazaar');save();render();intro();initCloud()}else{GK.forEach(g=>{if(S.gw[g]==null)S.gw[g]=1});TK.forEach(t=>{S.p[t]=S.p[t]||{};if(S.mood[t]==null)S.mood[t]=0;[...Object.keys(T[t].sells),...Object.keys(T[t].buys)].forEach(g=>{if(S.p[t][g]==null)S.p[t][g]=1})});
-  S.dist=S.dist||'bazaar';setDistrict(S.dist);trimShelves();fixSea();let redo=false;
+  S.dist=S.dist||'bazaar';setDistrict(S.dist);trimShelves();fixSea();fixCo();let redo=false;
   if(S.ch===2&&!(S.shop&&S.shop.v===3)){S.cash=500;S.inv=[];S.storeInv=[];S.dist='bazaar';setDistrict('bazaar');S.at=null;S.t=0;S.px=START[0];S.py=START[1];S.visitedHarbour=false;S.shop=newShop();S.ms2=0;S.won2=false;S.contract=null;S.offer=null;redo=true;save()}
   closeSheet();if(S.px==null){S.px=START[0];S.py=START[1];S.at=null}render();checkMs(true);initCloud();if(redo)setSheet(`<h2>Back to the start of chapter two</h2><div class="bubble">Fresh morning, $500 in your purse, Destiny at your side.</div><p>The boarded-up stall in the middle of the bazaar is for rent: $400. Open it, fill its shelves with goods you buy around the bazaar, and it sells them for you all day. Later, runners restock it and the Harbour Quarter opens.</p><button class="sbtn fill wide" onclick="closeSheet()">Let's go</button>`)}
 </script>
