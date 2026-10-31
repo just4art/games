@@ -1,0 +1,951 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Summer Garden</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Marcellus&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#e4eedd; --surface:#fbf8f1; --surface2:#eef3e6; --text:#1f2a1d; --muted:#5f6b5a; --line:#cfdcc4;
+  --soil:#d9c39a; --soil2:#cdb283; --cell:#efe4cb; --accent:#c9822a; --leaf:#3f8a4f; --bad:#b8323f; --good:#2c7a4b; --sky:#2f6fa8;
+  --shadow:0 6px 18px rgba(31,42,29,.12);
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#121a14; --surface:#1b251d; --surface2:#233026; --text:#ecebd9; --muted:#a4ad9b; --line:#334235;
+    --soil:#4f4130; --soil2:#433626; --cell:#5b4b37; --accent:#e9a64a; --leaf:#6cc27e; --bad:#ef6b77; --good:#6cd398; --sky:#7fb1e6;
+    --shadow:0 6px 18px rgba(0,0,0,.35);
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#121a14; --surface:#1b251d; --surface2:#233026; --text:#ecebd9; --muted:#a4ad9b; --line:#334235;
+  --soil:#4f4130; --soil2:#433626; --cell:#5b4b37; --accent:#e9a64a; --leaf:#6cc27e; --bad:#ef6b77; --good:#6cd398; --sky:#7fb1e6;
+  --shadow:0 6px 18px rgba(0,0,0,.35);
+  color-scheme:dark;
+}
+body[data-season="autumn"]{--accent:#c2562b}
+body[data-season="winter"]{--accent:#4f7fbf}
+body[data-season="spring"]{--accent:#b04f8f}
+*,*::before,*::after{box-sizing:border-box}
+html{height:100%}
+body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;font-size:15px;line-height:1.45;min-height:100%;-webkit-tap-highlight-color:transparent}
+h1,h2,h3{font-family:Marcellus,Georgia,serif;font-weight:400;margin:0}
+h1{font-size:26px}
+h2{font-size:20px}
+h3{font-size:15px;margin:12px 0 4px;color:var(--accent)}
+p{margin:6px 0}
+button{font:inherit;color:inherit}
+button:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.app{max-width:560px;margin:0 auto;padding:12px 16px 40px}
+.top{display:flex;align-items:baseline;justify-content:space-between;gap:8px}
+.muted{color:var(--muted)}
+.small{font-size:12.5px}
+.hud{display:grid;grid-template-columns:1.3fr 1fr 1fr;gap:6px;margin:10px 0 8px}
+.chip{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:5px 8px;text-align:center;font-size:12px;color:var(--muted)}
+.chip b{display:block;font-size:16px;color:var(--text);font-variant-numeric:tabular-nums}
+.bar{height:5px;background:var(--line);border-radius:3px;margin-top:3px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--good);transition:width .3s}
+.bar.low i{background:var(--bad)}
+.banner{background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--accent);border-radius:12px;padding:8px 12px;margin:0 0 8px;font-size:14px}
+.banner b{color:var(--accent)}
+.plot{display:grid;gap:4px;padding:8px;border-radius:16px;background:linear-gradient(160deg,var(--soil),var(--soil2));box-shadow:var(--shadow);margin:0 auto;width:min(100%,440px);touch-action:manipulation}
+.cell{position:relative;aspect-ratio:1;border:none;border-radius:10px;background:var(--cell);display:grid;place-items:center;font-size:clamp(20px,7vw,32px);cursor:pointer;padding:0;transition:transform .08s}
+.cell:active{transform:scale(.95)}
+.cell.fixed{cursor:default;background:transparent;opacity:.85}
+.cell.pin{box-shadow:inset 0 0 0 2px var(--sky)}
+.cell .pt{position:absolute;right:4px;bottom:2px;font-size:11px;font-weight:700;font-variant-numeric:tabular-nums;color:var(--good)}
+.cell .pt.neg{color:var(--bad)}
+.cell .pt.zero{color:var(--muted)}
+.cell .hot{position:absolute;inset:0;border-radius:10px;display:grid;place-items:center;font-size:14px;font-weight:700;color:var(--text)}
+.hand{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin:10px 0 4px}
+.htile{display:flex;align-items:center;gap:4px;border:1.5px solid var(--line);background:var(--surface);border-radius:12px;padding:5px 10px;font-size:22px;cursor:pointer}
+.htile span{font-size:13px;font-weight:700;color:var(--muted)}
+.htile.sel{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent)}
+.htile.none{opacity:.35;cursor:default}
+.row{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.row.c{justify-content:center}
+.btn{border:1.5px solid var(--line);background:var(--surface);border-radius:12px;padding:8px 14px;cursor:pointer;font-weight:600}
+.btn.pri{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn.sm{padding:5px 10px;font-size:13px;border-radius:10px}
+.btn:disabled{opacity:.45;cursor:default}
+.btn.big{padding:11px 22px;font-size:16px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin:10px 0}
+.rules{display:grid;gap:3px;font-size:13px}
+.rules div{display:flex;gap:8px}
+.rules .e{width:22px;text-align:center;flex:none}
+.ilist{display:grid;gap:6px}
+.irow{display:flex;align-items:center;gap:10px;border:1px solid var(--line);background:var(--surface2);border-radius:10px;padding:6px 10px;font-size:13.5px;text-align:left;width:100%}
+button.irow{cursor:pointer}
+.irow .ie{font-size:22px;flex:none}
+.irow .it{flex:1;display:flex;flex-direction:column;min-width:0}
+.irow .iv{flex:none;text-align:right;font-size:13.5px;font-variant-numeric:tabular-nums}
+.irow .iv small{display:block;font-size:11px;color:var(--muted)}
+.irow.empty{border-style:dashed;background:transparent;color:var(--muted);justify-content:center}
+.tag{font-size:12px;background:var(--surface2);border:1px solid var(--line);border-radius:6px;padding:0 4px}
+.goal{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:8px 12px;margin:0 0 10px}
+.goal .gl{display:flex;justify-content:space-between;font-size:14px}
+.goal .gl b{font-size:18px;font-variant-numeric:tabular-nums}
+.goal .bar{height:8px;margin:5px 0 4px}
+.goal .bar i{background:var(--accent)}
+.goal.ok .bar i{background:var(--good)}
+.goal.ok .gl span:first-child b{color:var(--good)}
+.hint{text-align:center;font-size:13.5px;margin:8px 0 0;color:var(--muted)}
+.cell.open{box-shadow:inset 0 0 0 2px color-mix(in srgb,var(--accent) 45%,transparent)}
+.help ol{margin:4px 0 6px;padding-left:20px}
+.help li{margin:3px 0}
+.offers{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.offer{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:10px;display:flex;flex-direction:column;gap:4px;min-height:150px}
+.offer .oe{font-size:28px}
+.offer .on{font-weight:700}
+.offer .od{font-size:12.5px;color:var(--muted);flex:1}
+.offer.empty{align-items:center;justify-content:center;color:var(--muted);border-style:dashed}
+.rar{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.04em}
+.rar-C{color:var(--muted)} .rar-U{color:var(--good)} .rar-R{color:var(--sky)} .rar-M{color:var(--accent)} .rar-X{color:var(--bad)}
+.log{font-size:13px;padding:4px 0;border-bottom:1px dashed var(--line)}
+.log:last-child{border-bottom:none}
+.res{display:grid;grid-template-columns:1fr 1fr;gap:10px;align-items:start}
+.mini{display:grid;gap:2px;padding:4px;border-radius:10px;background:var(--soil2)}
+.mini i{aspect-ratio:1;border-radius:4px;background:var(--cell);display:grid;place-items:center;font-style:normal;font-size:clamp(11px,3.4vw,18px)}
+.big-num{font-size:34px;font-family:Marcellus,Georgia,serif;font-variant-numeric:tabular-nums}
+.good{color:var(--good)} .bad{color:var(--bad)}
+.titles{display:grid;grid-template-columns:auto 1fr auto;gap:2px 10px;font-size:13.5px}
+.tip{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);background:var(--text);color:var(--bg);padding:8px 14px;border-radius:12px;font-size:13.5px;max-width:min(92vw,480px);z-index:30;box-shadow:var(--shadow)}
+dialog{border:1px solid var(--line);border-radius:16px;background:var(--surface);color:var(--text);max-width:min(92vw,480px);padding:16px 18px}
+dialog::backdrop{background:rgba(0,0,0,.35)}
+input[type=text]{font:inherit;border:1.5px solid var(--line);background:var(--surface);color:var(--text);border-radius:10px;padding:7px 10px;width:150px}
+footer{margin-top:24px;font-size:12px;color:var(--muted);text-align:center}
+@media (prefers-reduced-motion: reduce){.cell,.bar i{transition:none}}
+</style>
+</head>
+<body>
+<div class="app" id="app"></div>
+<script>
+'use strict';
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;'}[c]));
+
+/* ---------------- seeded randomness ---------------- */
+function seedOf(str) {
+  let h = 1779033703 ^ str.length;
+  for (let i = 0; i < str.length; i++) { h = Math.imul(h ^ str.charCodeAt(i), 3432918353); h = h << 13 | h >>> 19; }
+  h = Math.imul(h ^ h >>> 16, 2246822507); h = Math.imul(h ^ h >>> 13, 3266489909);
+  return (h ^ h >>> 16) >>> 0;
+}
+function rngFor(...parts) {
+  let a = seedOf(parts.join(':'));
+  return function () {
+    a |= 0; a = a + 0x6D2B79F5 | 0;
+    let t = Math.imul(a ^ a >>> 15, 1 | a);
+    t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+    return ((t ^ t >>> 14) >>> 0) / 4294967296;
+  };
+}
+const pick = (r, a) => a[Math.floor(r() * a.length)];
+function wpick(r, entries) {
+  let tot = 0; for (const e of entries) tot += e[1];
+  let x = r() * tot;
+  for (const e of entries) { if ((x -= e[1]) < 0) return e[0]; }
+  return entries[entries.length - 1][0];
+}
+function shuffle(r, a) { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(r() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+
+/* ---------------- tiles and scoring ---------------- */
+const TILES = {
+  flower: {e: '🌸', name: 'Flower', from: 1, w: 3},
+  hive:   {e: '🐝', name: 'Beehive', from: 1, w: 1.6},
+  tree:   {e: '🌳', name: 'Tree', from: 1, w: 2.4},
+  pond:   {e: '💧', name: 'Pond', from: 1, w: 1.1},
+  veg:    {e: '🥕', name: 'Carrots', from: 6, w: 2},
+  house:  {e: '🏠', name: 'Cottage', from: 11, w: 1.2},
+  herb:   {e: '🌿', name: 'Herbs', from: 16, w: 1.6}
+};
+const PLANT = {flower: 1, tree: 1, veg: 1, herb: 1};
+const ROCK = 'rock', WEED = 'weed';
+const FIXED_E = {rock: '🪨', weed: '🥀'};
+const unlocked = d => Object.keys(TILES).filter(t => TILES[t].from <= d);
+
+function baseRules() {
+  return {
+    base: {flower: 1, hive: 0, tree: 1, pond: 0, veg: 3, house: 2, herb: 2},
+    adj: {flower: {}, hive: {flower: 2}, tree: {tree: 1}, pond: {flower: 1, tree: 1, veg: 1, herb: 1}, veg: {tree: -2}, house: {flower: 1, hive: -2}, herb: {herb: -1, veg: 1}},
+    mult: {flower: 1, hive: 1, tree: 1, pond: 1, veg: 1, house: 1, herb: 1},
+    weed: -1, diag: {}, heat: false, empty: 0, lonely: {}
+  };
+}
+function neighbours(w, h) {
+  const n4 = [], nd = [], aff = [];
+  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+    const a = [], d = [];
+    for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { const X = x + dx, Y = y + dy; if (X >= 0 && Y >= 0 && X < w && Y < h) a.push(Y * w + X); }
+    for (const [dx, dy] of [[1, 1], [-1, 1], [1, -1], [-1, -1]]) { const X = x + dx, Y = y + dy; if (X >= 0 && Y >= 0 && X < w && Y < h) d.push(Y * w + X); }
+    n4.push(a); nd.push(d); aff.push([y * w + x, ...a, ...d]);
+  }
+  return {n4, nd, aff};
+}
+const NB = {};
+function nbFor(D) { const k = D.w + 'x' + D.h; return NB[k] || (NB[k] = neighbours(D.w, D.h)); }
+
+/* points one cell earns */
+function cellScore(g, i, D, R, N) {
+  const t = g[i];
+  if (!t) return D.fixed[i] ? 0 : R.empty;
+  if (t === ROCK || t === WEED) return 0;
+  let v = R.base[t], pondNear = false, same = 0;
+  const A = R.adj[t];
+  const scan = list => {
+    for (const j of list) {
+      const n = g[j];
+      if (!n || n === ROCK) continue;
+      if (n === WEED) { if (PLANT[t]) v += R.weed; continue; }
+      if (A[n]) v += A[n];
+      if (n === 'pond') pondNear = true;
+      if (n === t) same++;
+    }
+  };
+  scan(N.n4[i]);
+  if (R.diag[t]) scan(N.nd[i]);
+  if (R.heat && PLANT[t] && !pondNear) v -= 1;
+  if (R.lonely[t] && !same) v += R.lonely[t];
+  return v * R.mult[t];
+}
+function scoreGrid(g, D, R, per) {
+  const N = nbFor(D); let tot = 0;
+  for (let i = 0; i < g.length; i++) { const v = cellScore(g, i, D, R, N); if (per) per[i] = v; tot += v; }
+  return tot;
+}
+
+/* Best layout for a hand: simulated annealing over swaps, with the bench holding unplaced tiles. */
+function solve(D, hand, R, seed) {
+  const N = nbFor(D), rng = rngFor(seed, 'solve');
+  const free = []; for (let i = 0; i < D.w * D.h; i++) if (!D.fixed[i]) free.push(i);
+  const F = free.length, P = F + hand.length;
+  const g = D.fixed.slice();
+  let bestTot = -1e9, bestG = null;
+  const stamp = new Int32Array(g.length); let mark = 0;
+  const local = (a, b) => {
+    mark++; let s = 0;
+    for (const c of [a, b]) { if (c < 0) continue; for (const j of N.aff[c]) if (stamp[j] !== mark) { stamp[j] = mark; s += cellScore(g, j, D, R, N); } }
+    return s;
+  };
+  const iters = Math.max(15000, P * 1800), restarts = 5;
+  for (let r = 0; r < restarts; r++) {
+    const pos = shuffle(rng, hand.concat(new Array(F).fill(null)));
+    for (let k = 0; k < F; k++) g[free[k]] = pos[k];
+    let cur = scoreGrid(g, D, R);
+    if (cur > bestTot) { bestTot = cur; bestG = g.slice(); }
+    for (let it = 0; it < iters; it++) {
+      const a = Math.floor(rng() * P), b = Math.floor(rng() * P);
+      if (a === b || pos[a] === pos[b] || (a >= F && b >= F)) continue;
+      const ca = a < F ? free[a] : -1, cb = b < F ? free[b] : -1;
+      const before = local(ca, cb);
+      [pos[a], pos[b]] = [pos[b], pos[a]];
+      if (ca >= 0) g[ca] = pos[a]; if (cb >= 0) g[cb] = pos[b];
+      const delta = local(ca, cb) - before;
+      const T = 2.5 * Math.pow(0.02, it / iters);
+      if (delta >= 0 || rng() < Math.exp(delta / T)) {
+        cur += delta;
+        if (cur > bestTot) { bestTot = cur; bestG = g.slice(); }
+      } else {
+        [pos[a], pos[b]] = [pos[b], pos[a]];
+        if (ca >= 0) g[ca] = pos[a]; if (cb >= 0) g[cb] = pos[b];
+      }
+    }
+  }
+  return {score: bestTot, grid: bestG};
+}
+
+/* ---------------- days, weather and fairs ---------------- */
+function dayShape(d) {
+  if (d <= 4) return {w: 4, h: 4, hand: 8};
+  if (d <= 12) return {w: 5, h: 4, hand: 10};
+  if (d <= 22) return {w: 5, h: 5, hand: 12};
+  if (d <= 30) return {w: 5, h: 5, hand: 13};
+  if (d <= 60) return {w: 6, h: 5, hand: 15};
+  return {w: 6, h: 6, hand: 17};
+}
+const WEATHER = {
+  rain: {e: '🌧️', name: 'Rain', desc: 'Ponds get +1 more for each plant next to them.', apply: R => { for (const p in PLANT) R.adj.pond[p] += 1; }},
+  heat: {e: '☀️', name: 'Heatwave', desc: 'Plants with no pond next to them lose 1 point.', apply: R => { R.heat = true; }},
+  fog:  {e: '🌫️', name: 'Fog', desc: 'You can’t see your score until you harvest.', apply: () => {}}
+};
+const FAIRS = [
+  {id: 'flowers', name: 'Flower show', desc: 'Flowers score double.', apply: R => { R.mult.flower *= 2; }},
+  {id: 'honey', name: 'Honey fair', desc: 'Beehives score double.', apply: R => { R.mult.hive *= 2; }},
+  {id: 'trees', name: 'Arbour day', desc: 'Trees score double.', apply: R => { R.mult.tree *= 2; }},
+  {id: 'veg', name: 'Harvest festival', desc: 'Carrots score double.', need: 'veg', apply: R => { R.mult.veg *= 2; }},
+  {id: 'cottage', name: 'Open gardens', desc: 'Cottages score double.', need: 'house', apply: R => { R.mult.house *= 2; }},
+  {id: 'tidy', name: 'Tidy garden contest', desc: 'Every empty cell costs 1 point.', apply: R => { R.empty = -1; }}
+];
+const isFair = d => d % 5 === 0;
+const isMarket = d => d <= 30 ? (d % 5 === 2 || d % 5 === 4) : d % 5 === 4;
+/* the day's target, as a share of the best layout without items: it passes 100% around day 7 and doubles by day 30, so you need items to keep up */
+function quota(d) { const q = d <= 30 ? 0.85 * Math.pow(2 / 0.85, (d - 1) / 29) : 2 * Math.pow(1.035, d - 30); return isFair(d) ? q * 1.2 : q; }
+function dmgScale(d) { return d <= 30 ? 0.8 + 0.5 * (d - 1) / 29 : 1.3 * Math.pow(1.02, d - 30); }
+function season(d) { return d <= 30 ? 'summer' : d <= 60 ? 'autumn' : d <= 90 ? 'winter' : 'spring'; }
+const SEASON_NAME = {summer: 'Summer', autumn: 'Autumn', winter: 'Winter', spring: 'Spring'};
+const TITLES = [[10, 'Seedling'], [20, 'Sprout'], [30, 'Gardener'], [50, 'Head gardener'], [75, 'Master gardener'], [100, 'Legendary gardener']];
+function titleFor(days) { let t = 'Newcomer'; for (const [n, name] of TITLES) if (days >= n) t = name; return t; }
+
+/* ---------------- items ---------------- */
+const PRICE = {C: 4, U: 7, R: 12, M: 20, X: 0};
+const RARITY = {C: 'Common', U: 'Uncommon', R: 'Rare', M: 'Mythic', X: 'Pest'};
+const ITEMS = [
+  // income
+  {id: 'tipjar', e: '🫙', name: 'Tip Jar', r: 'C', desc: '+1 gold each night.', night: c => c.gold(1)},
+  {id: 'piggy', e: '🐷', name: 'Piggy Bank', r: 'U', desc: '+2 gold each night.', night: c => c.gold(2)},
+  {id: 'ledger', e: '📒', name: 'Seed Ledger', r: 'R', desc: '+3 gold each night.', night: c => c.gold(3)},
+  {id: 'pot', e: '🏺', name: 'Savings Pot', r: 'U', desc: 'Each night, 10% interest on your gold (at most +5).', night: c => c.gold(Math.min(5, Math.floor(c.st.gold * 0.1)))},
+  {id: 'acorn', e: '🌰', name: 'Acorn', r: 'C', desc: 'Sells for 1 more gold for each night you keep it.', night: (c, it) => { it.n = (it.n || 0) + 1; }, sellBonus: it => it.n || 0},
+  {id: 'honey', e: '🍯', name: 'Honey Jar', r: 'U', desc: 'Sells for 1 more gold for every beehive you harvest.', after: (c, res, it) => { it.n = (it.n || 0) + (res.count.hive || 0); }, sellBonus: it => it.n || 0},
+  {id: 'clover', e: '🍀', name: 'Four-leaf Clover', r: 'C', desc: 'Each night, a 1 in 4 chance of +4 gold.', night: c => { if (c.r() < 0.25) c.gold(4); }},
+  {id: 'purse', e: '👛', name: 'Prize Purse', r: 'U', desc: '+6 gold when you win a fair.', fairWin: c => c.gold(6)},
+  {id: 'basket', e: '🧺', name: 'Market Basket', r: 'C', desc: 'Food costs 1 gold less.', stat: {foodDisc: 1}},
+  {id: 'dice', e: '🎲', name: 'Lucky Dice', r: 'U', desc: 'Your first reroll at each market is free.', stat: {freeReroll: 1}},
+  // scoring rules
+  {id: 'queen', e: '👑', name: 'Queen Bee', r: 'R', desc: 'Beehives score double.', rules: R => { R.mult.hive *= 2; }},
+  {id: 'rosefood', e: '🌹', name: 'Rose Food', r: 'U', desc: 'Flowers score +1.', rules: R => { R.base.flower += 1; }},
+  {id: 'grove', e: '🪵', name: 'Grove Charm', r: 'U', desc: 'Trees get +1 more for each tree next to them.', rules: R => { R.adj.tree.tree = (R.adj.tree.tree || 0) + 1; }},
+  {id: 'hedgehog', e: '🦔', name: 'Hedgehog', r: 'U', desc: 'A tree with no other tree next to it scores +3.', rules: R => { R.lonely.tree = (R.lonely.tree || 0) + 3; }},
+  {id: 'lily', e: '🪷', name: 'Lily Pads', r: 'U', desc: 'Ponds get +1 more for each plant next to them.', rules: R => { for (const p in PLANT) R.adj.pond[p] += 1; }},
+  {id: 'lady', e: '🐞', name: 'Ladybird', r: 'U', desc: 'Flowers get +1 for each beehive next to them.', rules: R => { R.adj.flower.hive = (R.adj.flower.hive || 0) + 1; }},
+  {id: 'fountain', e: '⛲', name: 'Fountain', r: 'M', desc: 'Ponds count their diagonal neighbours too.', rules: R => { R.diag.pond = 1; }},
+  {id: 'scarecrow', e: '🎃', name: 'Pumpkin Scarecrow', r: 'U', desc: 'Weeds do no harm.', rules: R => { R.weed = 0; }},
+  {id: 'compost', e: '♻️', name: 'Compost', r: 'C', need: 'veg', desc: 'Carrots score +1.', rules: R => { R.base.veg += 1; }},
+  {id: 'net', e: '⛱️', name: 'Sun Net', r: 'C', need: 'veg', desc: 'Carrots no longer mind trees.', rules: R => { R.adj.veg.tree = Math.max(0, R.adj.veg.tree || 0); }},
+  {id: 'gnome', e: '🧙', name: 'Garden Gnome', r: 'U', need: 'house', desc: 'Cottages no longer mind beehives.', rules: R => { R.adj.house.hive = Math.max(0, R.adj.house.hive || 0); }},
+  {id: 'snail', e: '🐌', name: 'Friendly Snail', r: 'C', need: 'herb', desc: 'Herbs no longer mind other herbs.', rules: R => { R.adj.herb.herb = Math.max(0, R.adj.herb.herb || 0); }},
+  // more tiles
+  {id: 'seeds', e: '🌱', name: 'Seed Packet', r: 'C', desc: '+1 random tile in your hand each day.', start: c => c.addTile(pick(c.r, unlocked(c.st.day)))},
+  {id: 'gloves', e: '🧤', name: 'Gardening Gloves', r: 'U', desc: '+1 flower in your hand each day.', start: c => c.addTile('flower')},
+  {id: 'liner', e: '🪣', name: 'Pond Liner', r: 'U', desc: '+1 pond in your hand each day.', start: c => c.addTile('pond')},
+  // harvest
+  {id: 'barrow', e: '🛒', name: 'Wheelbarrow', r: 'C', desc: '+4 harvest each day.', bonus: () => ({add: 4})},
+  {id: 'sunflower', e: '🌻', name: 'Sunflower Seeds', r: 'C', desc: '+1 harvest for each flower in your garden.', bonus: (c, res) => ({add: res.count.flower || 0})},
+  {id: 'bonsai', e: '🪴', name: 'Bonsai', r: 'R', desc: '+1 harvest for every night you have owned it.', night: (c, it) => { it.n = (it.n || 0) + 1; }, bonus: (c, res, it) => ({add: it.n || 0})},
+  {id: 'tractor', e: '🚜', name: 'Old Tractor', r: 'R', desc: 'Harvest ×1.5. Each night there is a 1 in 10 chance it breaks down for good.', bonus: () => ({mul: 1.5}), night: (c, it) => { if (c.r() < 0.1) c.breakItem(it, 'broke down'); }},
+  {id: 'trophy', e: '🏆', name: 'Trophy Shelf', r: 'R', desc: 'Harvest +10% for each fair you have won.', bonus: c => ({mul: 1 + 0.1 * c.st.fairsWon})},
+  {id: 'ribbon', e: '🎀', name: 'Blue Ribbon', r: 'U', desc: 'Harvest ×1.3 on fair days.', bonus: c => ({mul: c.day.fair ? 1.3 : 1})},
+  {id: 'eye', e: '💎', name: 'Gardener’s Eye', r: 'R', desc: 'Harvest ×1.4 on days you match the best layout. You find out when you harvest.', bonus: (c, res) => ({mul: res.perfect ? 1.4 : 1, secret: true})},
+  // energy
+  {id: 'hat', e: '👒', name: 'Straw Hat', r: 'C', desc: 'Daily targets are 6% lower.', stat: {targetMul: 0.94}},
+  {id: 'sunscreen', e: '🧴', name: 'Sunscreen', r: 'U', desc: 'Missing a target costs 30% less energy.', stat: {dmgMul: 0.7}},
+  {id: 'teapot', e: '🫖', name: 'Teapot', r: 'C', desc: '+5 energy each night.', night: c => c.heal(5)},
+  {id: 'hammock', e: '🌴', name: 'Hammock', r: 'U', desc: '+25 energy when you win a fair.', fairWin: c => c.heal(25)},
+  {id: 'aloe', e: '🌵', name: 'Aloe Plant', r: 'U', desc: '+25 maximum energy.', stat: {maxE: 25}},
+  {id: 'barrel', e: '🛢️', name: 'Rain Barrel', r: 'C', desc: '+12 energy on rainy mornings.', start: c => { if (c.day.weather === 'rain') c.heal(12); }},
+  {id: 'umbrella', e: '☂️', name: 'Umbrella', r: 'U', desc: 'If your energy would drop to 0, keep 1 instead. Then it breaks.', save: (c, it) => { c.st.energy = 1; c.breakItem(it, 'saved you'); return true; }},
+  {id: 'firstaid', e: '🩹', name: 'First-aid Tin', r: 'R', desc: 'If your energy would drop to 0, go back to 50 instead. Then it breaks.', save: (c, it) => { c.st.energy = 50; c.breakItem(it, 'saved you'); return true; }},
+  {id: 'bed', e: '🛏️', name: 'Raised Bed', r: 'R', desc: 'Losing a fair costs half as much energy.', stat: {fairDmgMul: 0.5}},
+  // hints
+  {id: 'magnifier', e: '🔎', name: 'Magnifying Glass', r: 'C', desc: '+1 peek on fair days.', start: c => { if (c.day.fair) c.charge('peek', 1); }},
+  {id: 'owl', e: '🦉', name: 'Owl', r: 'U', desc: '+1 hotspot each day.', start: c => c.charge('hot', 1)},
+  {id: 'almanac', e: '📖', name: 'Almanac', r: 'U', desc: 'Shows the best possible score every day.', start: c => { c.day.measured = true; }},
+  {id: 'crystal', e: '🔮', name: 'Crystal Ball', r: 'R', desc: '+1 peek each day.', start: c => c.charge('peek', 1)},
+  {id: 'lantern', e: '🏮', name: 'Lantern', r: 'C', desc: 'Fog no longer hides your score.', stat: {fogProof: 1}},
+  // breaking and slots
+  {id: 'wormbin', e: '🪱', name: 'Worm Bin', r: 'R', desc: 'When another item breaks: +15 maximum energy and +3 gold.', onBreak: (c, it) => { it.n = (it.n || 0) + 15; c.gold(3); }, statFn: it => ({maxE: it.n || 0})},
+  {id: 'shed', e: '🛖', name: 'Bigger Shed', r: 'M', desc: '+1 item slot.', stat: {slots: 1}},
+  {id: 'raffle', e: '🎟️', name: 'Raffle Ticket', r: 'U', ticket: true, desc: 'When bought, it draws a random item. It might be a pest.'},
+  // pests
+  {id: 'bindweed', e: '🌾', name: 'Bindweed', r: 'X', desc: 'One more weed in your garden each day. Getting rid of it costs 3 gold.', stat: {weeds: 1}},
+  {id: 'rat', e: '🐀', name: 'Rat', r: 'X', desc: '−1 gold each night. Getting rid of it costs 3 gold.', night: c => c.gold(-1)},
+  // food: used straight away, doesn't need a slot
+  {id: 'apple', e: '🍎', name: 'Apple', r: 'C', food: true, desc: '+20 energy.', eat: c => c.heal(20)},
+  {id: 'pie', e: '🥧', name: 'Plum Pie', r: 'U', food: true, desc: '+45 energy.', eat: c => c.heal(45)},
+  {id: 'nuts', e: '🥜', name: 'Trail Mix', r: 'U', food: true, desc: '+10 maximum energy, and +10 energy.', eat: c => { c.st.maxBonus += 10; c.heal(10); }},
+  {id: 'cake', e: '🎂', name: 'Garden Party Cake', r: 'M', food: true, desc: '+20 maximum energy, then full energy.', eat: c => { c.st.maxBonus += 20; c.st.energy = maxEnergy(c.st); }},
+  {id: 'coffee', e: '☕', name: 'Coffee', r: 'C', food: true, desc: '+1 peek.', eat: c => c.charge('peek', 1)},
+  {id: 'tea', e: '🍵', name: 'Mint Tea', r: 'C', food: true, desc: '+2 hotspots.', eat: c => c.charge('hot', 2)},
+  {id: 'lemonade', e: '🍋', name: 'Lemonade', r: 'C', food: true, desc: '+2 measures.', eat: c => c.charge('measure', 2)},
+  {id: 'choc', e: '🍫', name: 'Chocolate', r: 'R', food: true, desc: '+3 peeks.', eat: c => c.charge('peek', 3)},
+  {id: 'bag', e: '🎁', name: 'Mystery Bag', r: 'C', food: true, desc: '0, 2, 4 or 7 gold.', eat: c => c.gold(pick(c.r, [0, 2, 4, 7]))},
+  {id: 'mushroom', e: '🍄', name: 'Odd Mushroom', r: 'C', food: true, desc: 'Either +2 peeks or −15 energy.', eat: c => { if (c.r() < 0.5) c.charge('peek', 2); else c.heal(-15); }},
+  {id: 'chili', e: '🌶️', name: 'Chili Jam', r: 'U', food: true, desc: 'Your next fair harvest ×1.5.', eat: c => { c.st.temp.chili = (c.st.temp.chili || 1) * 1.5; }},
+  {id: 'tonic', e: '🧪', name: 'Growth Tonic', r: 'R', food: true, desc: 'Harvest +10% for the rest of the run.', eat: c => { c.st.permMul += 0.1; }},
+  {id: 'beans', e: '🫘', name: 'Magic Beans', r: 'R', food: true, desc: 'Breaks 2 of your items at random and gives you a random Mythic item.', eat: c => {
+    for (let k = 0; k < 2 && c.st.items.length; k++) c.breakItem(pick(c.r, c.st.items), 'was eaten by the beanstalk');
+    c.gain(pick(c.r, toolPool('M', c.st)));
+  }}
+];
+const ITEM = Object.fromEntries(ITEMS.map(i => [i.id, i]));
+
+/* ---------------- run state ---------------- */
+const KEY = 'summer-garden-v1', REC = 'summer-garden-records-v1';
+let st = null, ui = {sel: null, tip: ''};
+let rec = {best: 0, runs: 0, titles: {}};
+try { rec = Object.assign(rec, JSON.parse(localStorage.getItem(REC) || '{}')); } catch (e) {}
+try { st = JSON.parse(localStorage.getItem(KEY) || 'null'); } catch (e) {}
+if (st && st.v !== 2) st = null;   // runs saved by the first version used different rules
+function save() { try { localStorage.setItem(KEY, JSON.stringify(st)); localStorage.setItem(REC, JSON.stringify(rec)); } catch (e) {} }
+
+function stats(s) {
+  const o = {targetMul: 1, dmgMul: 1, maxE: 0, slots: 5, foodDisc: 0, freeReroll: 0, fogProof: 0, fairDmgMul: 1, weeds: 0};
+  for (const it of s.items) {
+    const def = ITEM[it.id];
+    for (const src of [def.stat, def.statFn && def.statFn(it)]) {
+      if (!src) continue;
+      for (const k in src) { if (/Mul$/.test(k)) o[k] *= src[k]; else o[k] += src[k]; }
+    }
+  }
+  return o;
+}
+const maxEnergy = s => 100 + stats(s).maxE + s.maxBonus;
+/* today's scoring rules; `except` leaves one item out, to work out what that item adds */
+function rulesFor(s, day, withItems, except) {
+  const R = baseRules();
+  if (day.weather) WEATHER[day.weather].apply(R);
+  if (day.fair) FAIRS.find(f => f.id === day.fair).apply(R);
+  if (withItems) for (const it of s.items) { const def = ITEM[it.id]; if (def.rules && it !== except) def.rules(R); }
+  return R;
+}
+function newRun(seed) {
+  seed = seed || Math.random().toString(36).slice(2, 8);
+  st = {v: 2, seed, day: 1, energy: 100, maxBonus: 0, gold: 6, items: [], charges: {peek: 1, measure: 1, hot: 1},
+    fairsWon: 0, visits: 0, permMul: 1, temp: {}, totalHarvest: 0, phase: 'day', log: [], pending: null, shop: null, reward: null, result: null, milestone: false};
+  rec.runs++;
+  startDay();
+}
+
+/* effect context handed to item hooks */
+/* c.it is the item whose hook is running: its name goes in the log, and what it earns is added to its totals */
+function ctx(r, log) {
+  const tag = text => (c.it ? ITEM[c.it.id].e + ' ' + ITEM[c.it.id].name + ': ' : c.who ? c.who + ': ' : '') + text;
+  const c = {
+    st, day: st.dayState, r, it: null, who: '',
+    gold(n) { if (!n) return; st.gold = Math.max(0, st.gold + n); if (c.it) c.it.g = (c.it.g || 0) + n; log && log.push(tag((n > 0 ? '+' : '') + n + ' gold')); },
+    heal(n) {
+      const m = maxEnergy(st), was = st.energy; st.energy = Math.max(0, Math.min(m, st.energy + n));
+      if (c.it) c.it.en = (c.it.en || 0) + st.energy - was;
+      log && log.push(tag((n > 0 ? '+' : '') + n + ' energy'));
+    },
+    charge(k, n) { st.charges[k] = (st.charges[k] || 0) + n; c.note('+' + n + ' ' + SPELL[k].name.toLowerCase()); log && log.push(tag('+' + n + ' ' + SPELL[k].name.toLowerCase())); },
+    addTile(t) { st.dayState.hand.push(t); c.note('+1 ' + TILES[t].e); log && log.push(tag('+1 ' + TILES[t].e + ' in your hand')); },
+    note(text) { if (c.it && st.dayState && st.phase === 'day') (st.dayState.notes = st.dayState.notes || {})[c.it.id] = text; },
+    breakItem(it, why) {
+      const i = st.items.indexOf(it); if (i < 0) return;
+      st.items.splice(i, 1);
+      (log || st.log).push(ITEM[it.id].e + ' ' + ITEM[it.id].name + ' ' + (why || 'broke'));
+      const was = c.it;
+      for (const o of st.items.slice()) { const d = ITEM[o.id]; if (d.onBreak) { c.it = o; d.onBreak(c, o); } }
+      c.it = was;
+    },
+    gain(id) { gainItem(id, log); }
+  };
+  return c;
+}
+const SPELL = {
+  peek: {e: '🔍', name: 'Peek', desc: 'Places one tile where the best layout has it.'},
+  measure: {e: '📏', name: 'Measure', desc: 'Shows the best possible score for today.'},
+  hot: {e: '🧭', name: 'Hotspot', desc: 'For the rest of the day, shows how many points the selected tile would add on each empty cell.'}
+};
+function each(hook, c, ...args) {
+  for (const it of st.items.slice()) { const d = ITEM[it.id]; if (d[hook] && st.items.includes(it)) { c.it = it; d[hook](c, ...args, it); c.it = null; } }
+}
+
+function startDay() {
+  const d = st.day, r = rngFor(st.seed, 'day', d), S = dayShape(d), s = stats(st);
+  const D = {w: S.w, h: S.h, fixed: new Array(S.w * S.h).fill(null)};
+  const cells = shuffle(r, [...Array(S.w * S.h).keys()]);
+  const weeds = Math.min(7, Math.floor(d / 7) + (d > 30 ? Math.floor((d - 30) / 12) : 0) + s.weeds);
+  const rocks = d < 3 ? 0 : Math.floor(r() * 2);
+  for (let k = 0; k < weeds; k++) D.fixed[cells[k]] = WEED;
+  for (let k = weeds; k < weeds + rocks; k++) D.fixed[cells[k]] = ROCK;
+  const tiles = unlocked(d).map(t => [t, TILES[t].w]);
+  const hand = []; for (let k = 0; k < S.hand; k++) hand.push(wpick(r, tiles));
+  const fair = isFair(d) ? pick(r, FAIRS.filter(f => !f.need || TILES[f.need].from <= d)).id : null;
+  const weather = !fair && d >= 3 && r() < 0.3 ? pick(r, Object.keys(WEATHER)) : null;
+  st.dayState = {D, hand0: hand.slice(), hand, g: D.fixed.slice(), pinned: {}, weather, fair, measured: false, hotOn: false, notes: {}};
+  st.phase = 'day';
+  const log = [];
+  each('start', ctx(rngFor(st.seed, 'start', d), log));
+  st.dayState.startLog = log;
+  const day = st.dayState;
+  const R = rulesFor(st, day, true);
+  const best = solve(D, day.hand, R, st.seed + ':' + d);
+  day.best = best.score; day.bestGrid = best.grid;
+  // the target comes from the best layout of the plain hand with no items, so whatever your items add helps you reach it
+  const base = solve(D, day.hand0, rulesFor(st, day, false), st.seed + ':' + d + ':base');
+  day.base = base.score;
+  day.target0 = Math.max(4, Math.ceil(base.score * quota(d)));
+  day.target = Math.max(4, Math.ceil(day.target0 * s.targetMul));
+  ui.sel = nextSel(day);
+  save();
+}
+
+/* ---------------- playing a day ---------------- */
+function handLeft(day) {
+  const left = {};
+  for (const t of day.hand) left[t] = (left[t] || 0) + 1;
+  for (const t of day.g) if (TILES[t]) left[t]--;
+  return left;
+}
+function nextSel(day, prefer) {
+  const left = handLeft(day);
+  if (prefer && left[prefer] > 0) return prefer;
+  return Object.keys(TILES).find(t => left[t] > 0) || null;
+}
+function tapCell(i) {
+  const day = st.dayState, cur = day.g[i];
+  if (day.D.fixed[i]) return;
+  if (cur && (!ui.sel || ui.sel === cur)) { day.g[i] = null; delete day.pinned[i]; ui.sel = cur; }
+  else if (ui.sel) {
+    const left = handLeft(day);
+    if (left[ui.sel] > 0) { day.g[i] = ui.sel; delete day.pinned[i]; if (left[ui.sel] === 1) ui.sel = cur || nextSel(day); }
+  }
+  save(); render();
+}
+function castPeek() {
+  const day = st.dayState, R = rulesFor(st, day, true), N = nbFor(day.D);
+  if (!st.charges.peek) return;
+  let bestI = -1, bestV = -1e9;
+  for (let i = 0; i < day.g.length; i++) {
+    const t = day.bestGrid[i];
+    if (!TILES[t] || day.g[i] === t) continue;
+    const v = cellScore(day.bestGrid, i, day.D, R, N);
+    if (v > bestV) { bestV = v; bestI = i; }
+  }
+  if (bestI < 0) { toast('Your garden already matches the best layout.'); return; }
+  const t = day.bestGrid[bestI];
+  if (!(handLeft(day)[t] > 0)) {
+    // take one from a cell where it isn't in the best layout
+    const j = day.g.findIndex((x, k) => x === t && day.bestGrid[k] !== t);
+    if (j >= 0) day.g[j] = null;
+  }
+  day.g[bestI] = t; day.pinned[bestI] = true;
+  st.charges.peek--; save(); render();
+}
+function castMeasure() { const day = st.dayState; if (!st.charges.measure || day.measured) return; st.charges.measure--; day.measured = true; save(); render(); }
+function castHot() { const day = st.dayState; if (!st.charges.hot || day.hotOn) return; st.charges.hot--; day.hotOn = true; save(); render(); }
+
+/* What a garden harvests today and where each part comes from. `live` is the preview while you plant. */
+function harvestCalc(day, g, live) {
+  const R = rulesFor(st, day, true), score = scoreGrid(g, day.D, R);
+  const count = {}; for (const t of g) if (TILES[t]) count[t] = (count[t] || 0) + 1;
+  const res = {score, count, perfect: score >= day.best, parts: []}, c = {st, day};
+  for (const it of st.items) {
+    if (!ITEM[it.id].rules) continue;
+    const v = score - scoreGrid(g, day.D, rulesFor(st, day, true, it));
+    if (v) res.parts.push({it, pts: v});
+  }
+  let v = score; const muls = [];
+  for (const it of st.items) {
+    const def = ITEM[it.id]; if (!def.bonus) continue;
+    const b = def.bonus(c, res, it);
+    if (b.add) { v += b.add; res.parts.push({it, add: b.add}); }
+    if (b.mul && b.mul !== 1 && !(live && b.secret)) muls.push({it, mul: b.mul});
+  }
+  if (st.permMul > 1) muls.push({name: '🧪 Growth Tonic', mul: st.permMul});
+  if (day.fair && st.temp.chili) muls.push({name: '🌶️ Chili Jam', mul: st.temp.chili});
+  for (const m of muls) { const gain = v > 0 ? v * (m.mul - 1) : 0; v += gain; res.parts.push({it: m.it, name: m.name, mul: m.mul, add: Math.round(gain)}); }
+  res.harvest = Math.max(0, Math.round(v));
+  return res;
+}
+const partName = p => p.it ? ITEM[p.it.id].e + ' ' + ITEM[p.it.id].name : p.name;
+const partText = p => p.pts != null ? (p.pts > 0 ? '+' : '') + p.pts + ' points' : p.mul ? '×' + Math.round(p.mul * 100) / 100 + ' (+' + p.add + ')' : '+' + p.add;
+
+function harvest() {
+  const day = st.dayState, d = st.day, s = stats(st);
+  const res = harvestCalc(day, day.g);
+  res.best = day.best; res.target = day.target; res.target0 = day.target0;
+  if (res.score > day.best) { day.best = res.score; day.bestGrid = day.g.slice(); res.beat = true; }
+  res.reached = res.harvest >= day.target;
+  res.won = !!day.fair && res.reached;
+  const log = [], c = ctx(rngFor(st.seed, 'harvest', d), log);
+  for (const p of res.parts) if (p.it) p.it.h = (p.it.h || 0) + (p.pts || p.add || 0);
+  each('after', c, res);
+  if (day.fair) delete st.temp.chili;
+
+  const gp = [['the day', 1]];
+  if (res.reached) gp.push(['reaching the target', 2]);
+  const over = res.reached ? Math.min(2, Math.floor((res.harvest / day.target - 1) / 0.25 + 1e-9)) : 0;
+  if (over) gp.push(['beating the target by ' + over * 25 + '% or more', over]);
+  if (res.perfect) gp.push([res.beat ? 'beating the best layout the game found' : 'matching the best layout', 2]);
+  if (res.won) gp.push(['winning the fair', 4]);
+  res.goldParts = gp; res.gold = gp.reduce((a, x) => a + x[1], 0);
+
+  res.dmg = 0;
+  if (!res.reached) {
+    const raw = (5 + 80 * (1 - res.harvest / day.target)) * dmgScale(d) * (day.fair ? 1.6 : 1);
+    res.dmg = Math.round(raw * s.dmgMul * (day.fair ? s.fairDmgMul : 1));
+    const savers = st.items.filter(it => ITEM[it.id].stat && (ITEM[it.id].stat.dmgMul || (day.fair && ITEM[it.id].stat.fairDmgMul)));
+    if (Math.round(raw) > res.dmg) log.push(savers.map(it => ITEM[it.id].e + ' ' + ITEM[it.id].name).join(' and ') + ' saved you ' + (Math.round(raw) - res.dmg) + ' energy');
+  }
+  st.gold += res.gold; st.totalHarvest += res.harvest;
+  st.energy -= res.dmg;
+  if (res.won) { st.fairsWon++; each('fairWin', c); }
+  if (st.energy <= 0) {
+    for (const it of st.items.slice()) { const def = ITEM[it.id]; if (def.save && def.save(c, it)) break; }
+  }
+  res.log = log;
+  st.result = res;
+  st.phase = st.energy <= 0 ? 'over' : 'result';
+  if (st.phase === 'over') endRun();
+  else if (d === 30) st.milestone = true;
+  save(); render(); window.scrollTo(0, 0);
+}
+function endRun() {
+  const days = st.day - 1;
+  rec.best = Math.max(rec.best, days);
+  for (const [n, name] of TITLES) if (days >= n) rec.titles[name] = (rec.titles[name] || 0) + 1;
+}
+function nextAfterResult() {
+  const d = st.day, log = [];
+  st.milestone = false;
+  const c = ctx(rngFor(st.seed, 'night', d), log);
+  c.who = 'A night’s rest'; c.heal(3); c.who = '';
+  each('night', c);
+  st.nightLog = log;
+  rec.best = Math.max(rec.best, d);
+  if (st.result.won) { openReward(); return; }
+  afterReward();
+}
+function afterReward() {
+  if (isMarket(st.day)) openMarket();
+  else { st.day++; startDay(); }
+  save(); render(); window.scrollTo(0, 0);
+}
+
+/* ---------------- market ---------------- */
+function odds(v) {
+  const R = Math.min(30, Math.max(0, (v - 2) * 4)), M = Math.min(4, Math.max(0, (v - 5) * 0.5)), U = Math.min(55, 15 + v * 6);
+  return [['C', 100 - U - R - M], ['U', U], ['R', R], ['M', M]];
+}
+function toolPool(rar, s) {
+  const own = new Set(s.items.map(i => i.id));
+  return ITEMS.filter(i => i.r === rar && !i.food && !own.has(i.id) && (!i.need || TILES[i.need].from <= s.day + 5)).map(i => i.id);
+}
+function foodPool(rar) { return ITEMS.filter(i => i.r === rar && i.food).map(i => i.id); }
+function rollOffer(r, v) {
+  for (let k = 0; k < 20; k++) {
+    const rar = wpick(r, odds(v));
+    const pool = r() < 0.35 ? foodPool(rar) : toolPool(rar, st);
+    const id = pool.length ? pick(r, pool) : null;
+    if (id && !(st.shop && st.shop.offers.includes(id))) return id;
+  }
+  return 'apple';
+}
+function priceOf(id) {
+  const def = ITEM[id]; let p = PRICE[def.r];
+  if (def.food) p = Math.max(1, Math.ceil(p * 0.6) - stats(st).foodDisc);
+  return p;
+}
+const sellValue = it => { const def = ITEM[it.id]; if (def.r === 'X') return -3; return Math.floor(PRICE[def.r] / 2) + (def.sellBonus ? def.sellBonus(it) : 0); };
+function openMarket() {
+  st.visits++;
+  const r = rngFor(st.seed, 'market', st.visits);
+  st.shop = {offers: [], reroll: stats(st).freeReroll ? 0 : 1, rolls: 0};
+  for (let k = 0; k < 4; k++) st.shop.offers.push(rollOffer(r, st.visits));
+  st.phase = 'market';
+}
+function reroll() {
+  const sh = st.shop; if (st.gold < sh.reroll) return;
+  st.gold -= sh.reroll; sh.rolls++;
+  sh.reroll = sh.rolls === 1 && stats(st).freeReroll ? 1 : sh.reroll + 1;
+  const r = rngFor(st.seed, 'market', st.visits, 'roll', sh.rolls);
+  sh.offers = [];
+  for (let k = 0; k < 4; k++) sh.offers.push(rollOffer(r, st.visits));
+  save(); render();
+}
+function buy(k) {
+  const id = st.shop.offers[k]; if (!id) return;
+  const def = ITEM[id], p = priceOf(id);
+  if (st.gold < p) return;
+  if (!def.food && !def.ticket && st.items.length >= stats(st).slots) { toast('Your shed is full. Sell an item first.'); return; }
+  st.gold -= p; st.shop.offers[k] = null;
+  const log = [], c = ctx(rngFor(st.seed, 'buy', st.visits, k, st.shop.rolls), log);
+  if (def.food) { def.eat(c); toast(def.e + ' ' + def.name + ': ' + (log.join(', ') || 'done')); }
+  else if (def.ticket) {
+    const r = c.r, rar = wpick(r, [['C', 30], ['U', 30], ['R', 20], ['M', 5], ['X', 15]]);
+    const pool = rar === 'X' ? ['bindweed', 'rat'].filter(x => !st.items.some(i => i.id === x)) : toolPool(rar, st);
+    const got = pool.length ? pick(r, pool) : 'rat';
+    gainItem(got); toast('🎟️ The raffle gave you ' + ITEM[got].e + ' ' + ITEM[got].name);
+  } else gainItem(id);
+  save(); render();
+}
+function gainItem(id, log) {
+  if (!id) return;
+  if (st.items.length >= stats(st).slots && !ITEM[id].stat?.slots) { st.pending = id; return; }
+  st.items.push({id, n: 0});
+  if (log) log.push('got ' + ITEM[id].e + ' ' + ITEM[id].name);
+}
+function sell(i) {
+  const it = st.items[i], v = sellValue(it);
+  if (st.gold + v < 0) { toast('You need 3 gold to get rid of a pest.'); return; }
+  st.items.splice(i, 1); st.gold += v;
+  if (st.pending && st.items.length < stats(st).slots) { st.items.push({id: st.pending, n: 0}); st.pending = null; }
+  if (st.phase === 'full' && !st.pending) { afterReward(); return; }
+  save(); render();
+}
+
+/* ---------------- fair reward ---------------- */
+function openReward() {
+  const r = rngFor(st.seed, 'reward', st.day), picks = [];
+  for (let k = 0; k < 20 && picks.length < 3; k++) {
+    const rar = wpick(r, odds(st.visits + 3));
+    const pool = toolPool(rar, st).filter(x => !picks.includes(x));
+    if (pool.length) picks.push(pick(r, pool));
+  }
+  st.reward = picks; st.phase = 'reward'; save(); render();
+}
+function takeReward(id) {
+  if (id) gainItem(id); else st.gold += 8;
+  st.reward = null;
+  if (st.pending) { st.phase = 'full'; save(); render(); return; }
+  afterReward();
+}
+
+/* ---------------- rendering ---------------- */
+function toast(msg) { ui.tip = msg; render(); clearTimeout(toast.t); toast.t = setTimeout(() => { ui.tip = ''; render(); }, 2600); }
+function hud() {
+  const m = maxEnergy(st), low = st.energy < m * 0.3;
+  const d = st.day, nextFair = Math.ceil(d / 5) * 5;
+  return `<div class="hud">
+    <div class="chip">Energy<b>${st.energy} / ${m}</b><div class="bar${low ? ' low' : ''}"><i style="width:${Math.max(0, 100 * st.energy / m)}%"></i></div></div>
+    <div class="chip">Gold<b>${st.gold}</b></div>
+    <div class="chip">${isFair(d) ? 'Today' : 'Next fair'}<b>${isFair(d) ? 'Fair' : 'Day ' + nextFair}</b></div>
+  </div>`;
+}
+function itemTotals(it) {
+  const a = [];
+  if (it.h) a.push((it.h > 0 ? '+' : '') + it.h + ' harvest');
+  if (it.g) a.push((it.g > 0 ? '+' : '') + it.g + ' gold');
+  if (it.en) a.push('+' + it.en + ' energy');
+  return a.length ? 'So far: ' + a.join(', ') + '.' : '';
+}
+/* your items as a list with what each one does; `live` maps an item to what it adds today */
+function itemsHtml(selling, live) {
+  const s = stats(st), out = st.items.map((it, i) => {
+    const def = ITEM[it.id], tot = itemTotals(it);
+    const extra = def.sellBonus ? ' Sells for ' + sellValue(it) + ' now.' : def.statFn && it.n ? ' Now +' + it.n + ' maximum energy.' : '';
+    const right = selling ? `<b>${sellValue(it) < 0 ? 'pay 3' : 'sell ' + sellValue(it)}</b>`
+      : live && live.get(it) ? `<b class="good">${esc(live.get(it))}</b><small>today</small>` : '';
+    const tag = selling ? 'button' : 'div';
+    return `<${tag} class="irow" data-item="${i}"><span class="ie">${def.e}</span><span class="it"><b>${esc(def.name)}</b><span class="small muted">${esc(def.desc + extra)}${tot ? ' ' + esc(tot) : ''}</span></span><span class="iv">${right}</span></${tag}>`;
+  });
+  for (let k = st.items.length; k < s.slots; k++) out.push('<div class="irow empty">Empty slot</div>');
+  return `<div class="ilist">${out.join('')}</div>`;
+}
+function bindItems(selling) {
+  if (!selling) return;
+  $$('[data-item]').forEach(b => b.onclick = () => {
+    const it = st.items[+b.dataset.item], def = ITEM[it.id];
+    if (confirm((sellValue(it) < 0 ? 'Pay 3 gold to get rid of ' : 'Sell ') + def.name + (sellValue(it) >= 0 ? ' for ' + sellValue(it) + ' gold' : '') + '?')) sell(+b.dataset.item);
+  });
+}
+function ruleParts(R, t, types) {
+  const parts = [R.base[t] + ' point' + (Math.abs(R.base[t]) === 1 ? '' : 's')];
+  for (const [n, v] of Object.entries(R.adj[t] || {})) if (v && types.includes(n)) parts.push((v > 0 ? '+' : '') + v + ' per ' + TILES[n].e + ' next to it' + (R.diag[t] ? ' (diagonals too)' : ''));
+  if (R.heat && PLANT[t]) parts.push('−1 if no 💧 next to it');
+  if (R.lonely[t]) parts.push('+' + R.lonely[t] + ' if no other ' + TILES[t].e + ' next to it');
+  if (R.mult[t] !== 1) parts.push('then ×' + R.mult[t]);
+  return parts.join(', ');
+}
+function rulesHtml(R, day) {
+  const types = unlocked(st.day), changed = {};
+  // which of your items changed each line
+  for (const it of st.items) {
+    if (!ITEM[it.id].rules) continue;
+    const R2 = rulesFor(st, day, true, it);
+    for (const t of types) if (ruleParts(R2, t, types) !== ruleParts(R, t, types)) (changed[t] = changed[t] || []).push(ITEM[it.id].e);
+    if (R2.weed !== R.weed) (changed.weed = changed.weed || []).push(ITEM[it.id].e);
+  }
+  const tags = k => changed[k] ? ` <span class="tag" title="changed by your items">${changed[k].join('')}</span>` : '';
+  const line = t => `<div><span class="e">${TILES[t].e}</span><span><b>${TILES[t].name}</b>${tags(t)}: ${ruleParts(R, t, types)}</span></div>`;
+  const extra = [];
+  if (day.D.fixed.includes(WEED)) extra.push(`<div><span class="e">🥀</span><span><b>Weed</b>${tags('weed')}: ${R.weed ? R.weed + ' to each plant (🌸🌳🥕🌿) next to it' : 'does no harm'}</span></div>`);
+  if (day.D.fixed.includes(ROCK)) extra.push('<div><span class="e">🪨</span><span><b>Rock</b>: blocks the cell</span></div>');
+  if (R.empty) extra.push(`<div><span class="e">⬜</span><span><b>Empty cell</b>: ${R.empty}</span></div>`);
+  return `<div class="rules">${types.map(line).join('')}${extra.join('')}</div><p class="small muted" style="margin-top:6px">“Next to” means the four cells above, below, left and right. You don’t have to use every tile.${Object.keys(changed).length ? ' The icons after a name show which of your items changed that rule.' : ''}</p>`;
+}
+function missCost(day, harvestNow) {
+  const s = stats(st);
+  if (harvestNow >= day.target) return 0;
+  return Math.round((5 + 80 * (1 - harvestNow / day.target)) * dmgScale(st.day) * (day.fair ? 1.6 * s.fairDmgMul : 1) * s.dmgMul);
+}
+function helpCard() {
+  return `<div class="card help"><h3 style="margin-top:0">How to play</h3>
+    <ol>
+      <li>Your hand is the row of tiles under the plot. One of them is already picked up: it has the orange outline.</li>
+      <li>Tap an empty cell to plant it. The small number in the corner of each cell is what that tile scores where it is.</li>
+      <li>Tiles score by their neighbours, and the rules are listed further down. Move tiles around until your harvest reaches the target, then press <b>Harvest</b>.</li>
+    </ol>
+    <p>If you miss the target you lose energy, and the run ends when your energy runs out. Targets grow every day, so after the first couple of weeks you need items from the market to keep up.</p>
+    <div class="row"><button class="btn sm pri" id="gotit">Got it</button></div></div>`;
+}
+function dayView() {
+  const day = st.dayState, d = st.day, R = rulesFor(st, day, true), s = stats(st);
+  const per = []; const score = scoreGrid(day.g, day.D, R, per);
+  const fog = day.weather === 'fog' && !s.fogProof;
+  const left = handLeft(day), leftN = Object.values(left).reduce((a, b) => a + Math.max(0, b), 0);
+  const H = harvestCalc(day, day.g, true);
+  let hot = null;
+  if (day.hotOn && ui.sel && left[ui.sel] > 0) {
+    hot = {}; const g = day.g.slice();
+    for (let i = 0; i < g.length; i++) if (!g[i] && !day.D.fixed[i]) { g[i] = ui.sel; hot[i] = scoreGrid(g, day.D, R) - score; g[i] = null; }
+  }
+  let banner = '';
+  if (day.fair) { const f = FAIRS.find(x => x.id === day.fair); banner = `<div class="banner">🎪 <b>${f.name}</b>. ${f.desc} The target is higher today. Reach it to win a prize; missing it costs more energy than usual.</div>`; }
+  else if (day.weather) { const w = WEATHER[day.weather]; banner = `<div class="banner">${w.e} <b>${w.name}</b>. ${w.desc}</div>`; }
+  const morning = (st.nightLog || []).concat(day.startLog || []);
+  if (morning.length) banner += `<div class="banner small">Since yesterday: ${esc(morning.join(' · '))}</div>`;
+
+  // what each item adds right now
+  const live = new Map();
+  for (const it of st.items) if (day.notes && day.notes[it.id]) live.set(it, day.notes[it.id]);
+  if (!fog) for (const p of H.parts) if (p.it) live.set(p.it, partText(p));
+  for (const it of st.items) {
+    if (it.id === 'eye') live.set(it, '×1.4 if best');
+    if (it.id === 'hat' && day.target0 > day.target) live.set(it, 'target −' + (day.target0 - day.target));
+  }
+  const reached = H.harvest >= day.target, cost = missCost(day, H.harvest);
+  const bits = [`garden ${score}`].concat(H.parts.filter(p => p.pts == null).map(p => (p.it ? ITEM[p.it.id].e : p.name.split(' ')[0]) + ' ' + (p.mul ? '×' + Math.round(p.mul * 100) / 100 : '+' + p.add)));
+  const goal = `<div class="goal${reached && !fog ? ' ok' : ''}">
+      <div class="gl"><span>Harvest <b>${fog ? '?' : H.harvest}</b></span><span>Target <b>${day.target}</b>${day.target0 > day.target ? ' <span class="small muted">(👒 −' + (day.target0 - day.target) + ')</span>' : ''}</span></div>
+      <div class="bar"><i style="width:${fog ? 0 : Math.min(100, 100 * H.harvest / day.target)}%"></i></div>
+      <div class="small muted">${fog ? 'Fog: you’ll see your harvest after you pick it.' : esc(bits.join(' · ')) + (bits.length > 1 ? ' = ' + H.harvest : '') + '. ' + (reached ? 'Target reached.' : 'Harvesting now would cost ' + cost + ' energy.')}${day.measured ? ' Best garden possible today: ' + day.best + '.' : ''}</div>
+    </div>`;
+  const hint = ui.sel ? `Tap an empty cell to plant ${TILES[ui.sel].e}. Tapping a planted tile swaps it with ${TILES[ui.sel].e}.`
+    : leftN ? 'Tap a tile in your hand to pick it up.' : 'Everything is planted. Tap a planted tile to pick it up and move it, or harvest.';
+  const cells = day.g.map((t, i) => {
+    if (day.D.fixed[i]) return `<button class="cell fixed" disabled>${FIXED_E[day.D.fixed[i]]}</button>`;
+    const pt = t && !fog ? `<span class="pt${per[i] < 0 ? ' neg' : per[i] === 0 ? ' zero' : ''}">${per[i] > 0 ? '+' : ''}${per[i]}</span>` : '';
+    const h = hot && hot[i] != null && !fog ? `<span class="hot" style="background:color-mix(in srgb,${hot[i] >= 0 ? 'var(--good)' : 'var(--bad)'} ${Math.min(60, 12 + Math.abs(hot[i]) * 8)}%,transparent)">${hot[i] > 0 ? '+' : ''}${hot[i]}</span>` : '';
+    return `<button class="cell${day.pinned[i] ? ' pin' : ''}${!t && ui.sel ? ' open' : ''}" data-c="${i}" aria-label="cell ${i + 1}${t ? ': ' + TILES[t].name : ''}">${t ? TILES[t].e : ''}${pt}${h}</button>`;
+  }).join('');
+  const hand = Object.keys(TILES).filter(t => day.hand.includes(t)).map(t =>
+    `<button class="htile${ui.sel === t ? ' sel' : ''}${left[t] > 0 ? '' : ' none'}" data-t="${t}" title="${TILES[t].name}">${TILES[t].e}<span>×${left[t]}</span></button>`).join('');
+  const spells = Object.keys(SPELL).map(k => {
+    const used = (k === 'measure' && day.measured) || (k === 'hot' && day.hotOn);
+    return `<button class="btn sm" data-spell="${k}" title="${esc(SPELL[k].desc)}" ${!st.charges[k] || used ? 'disabled' : ''}>${SPELL[k].e} ${SPELL[k].name} ×${st.charges[k] || 0}</button>`;
+  }).join('');
+  const showHelp = ui.help || (!rec.seenHelp && d <= 2);
+  return `<div class="top"><h1>Day ${d}</h1><span class="muted">${SEASON_NAME[season(d)]} · <button class="btn sm" id="help">How to play</button> <button class="btn sm" id="menu">Menu</button></span></div>
+    ${hud()}${showHelp ? helpCard() : ''}${banner}${goal}
+    <div class="plot" style="grid-template-columns:repeat(${day.D.w},1fr)">${cells}</div>
+    <p class="hint">${hint}</p>
+    <div class="hand">${hand}</div>
+    <div class="row c" style="margin-top:8px">${spells}</div>
+    <p class="small muted" style="text-align:center;margin:4px 0 0">🔍 Peek plants one tile where the best layout has it. 📏 Measure shows the best possible garden score. 🧭 Hotspot shows what the picked-up tile would add on each empty cell.</p>
+    <div class="row c" style="margin-top:10px"><button class="btn" id="clear">Clear</button><button class="btn pri big" id="harvest">Harvest</button></div>
+    <div class="card"><h3 style="margin-top:0">Scoring today</h3>${rulesHtml(R, day)}</div>
+    <div class="card"><h3 style="margin-top:0">Your items</h3>${st.items.length ? '' : '<p class="small muted">None yet. The market opens after day 2.</p>'}${itemsHtml(false, live)}</div>`;
+}
+function miniGrid(D, g) {
+  return `<div class="mini" style="grid-template-columns:repeat(${D.w},1fr)">${g.map((t, i) => `<i>${D.fixed[i] ? FIXED_E[D.fixed[i]] : t ? TILES[t].e : ''}</i>`).join('')}</div>`;
+}
+function resultView() {
+  const res = st.result, day = st.dayState, d = st.day;
+  const head = `<div class="big-num ${res.reached ? 'good' : 'bad'}">${res.harvest} / ${res.target}</div>
+    <p>${day.fair ? (res.won ? 'You won the fair. Choose a prize next.' : 'Not enough for the fair.') : res.reached ? 'Target reached.' : 'Short of the target by ' + (res.target - res.harvest) + '.'}${res.dmg ? ' You lose ' + res.dmg + ' energy.' : ' No energy lost.'}</p>`;
+  const lines = [];
+  const pts = res.parts.filter(p => p.pts != null), more = res.parts.filter(p => p.pts == null);
+  lines.push(`Your garden scored ${res.score} points${pts.length ? ', including ' + pts.map(p => partName(p) + ' ' + partText(p)).join(', ') : ''}. The best layout the game found scores ${res.best}${res.beat ? ', and you beat it' : res.perfect ? ', and you matched it' : ''}.`);
+  if (more.length) lines.push(`Harvest: ${res.score} from the garden, ` + more.map(p => partName(p) + ' ' + partText(p)).join(', ') + ` = ${res.harvest}.`);
+  if (res.target0 > res.target) lines.push(`👒 Straw Hat lowered the target from ${res.target0} to ${res.target}.`);
+  lines.push(`Gold +${res.gold}: ` + res.goldParts.map(([w, n]) => n + ' for ' + w).join(', ') + '.');
+  const next = isMarket(d) && !res.won ? 'Go to the market' : res.won ? 'Choose a prize' : 'Next day';
+  return `<div class="top"><h1>Day ${d} harvest</h1></div>${hud()}
+    <div class="card" style="text-align:center">${head}</div>
+    <div class="res"><div><h3>Your garden</h3>${miniGrid(day.D, day.g)}</div><div><h3>Best layout found</h3>${miniGrid(day.D, day.bestGrid)}</div></div>
+    <div class="card">${lines.concat(res.log).map(l => `<div class="log">${esc(l)}</div>`).join('')}</div>
+    ${st.milestone ? `<div class="card" style="border-color:var(--accent)"><h2>Summer is over: you made it through 30 days</h2><p>That completes the run, and you’ve earned the title <b>Gardener</b>. You can keep going into autumn. From here the targets grow by 3% a day and missing them costs more energy, so the question is how far your items can carry you. Day 100 is the top title.</p></div>` : ''}
+    <div class="row c"><button class="btn pri big" id="next">${next}</button></div>`;
+}
+function marketView() {
+  const sh = st.shop, s = stats(st);
+  const offers = sh.offers.map((id, k) => {
+    if (!id) return '<div class="offer empty">sold</div>';
+    const def = ITEM[id], p = priceOf(id), full = !def.food && !def.ticket && st.items.length >= s.slots;
+    return `<div class="offer"><span class="oe">${def.e}</span><span class="on">${esc(def.name)}</span><span class="rar rar-${def.r}">${RARITY[def.r]}${def.food ? ' food' : ''}</span><span class="od">${esc(def.desc)}</span>
+      <button class="btn sm pri" data-buy="${k}" ${st.gold < p ? 'disabled' : ''}>${full ? 'Shed full · ' : 'Buy · '}${p} gold</button></div>`;
+  }).join('');
+  const nightLog = st.nightLog && st.nightLog.length ? `<div class="banner small">Overnight: ${esc(st.nightLog.join(', '))}</div>` : '';
+  const nextOpen = (() => { for (let x = st.day + 1; x < st.day + 12; x++) if (isMarket(x)) return x; return '?'; })();
+  return `<div class="top"><h1>Evening market</h1><span class="muted">after day ${st.day}</span></div>${hud()}${nightLog}
+    <p class="small muted">Food is used straight away. Everything else takes one of your ${s.slots} slots. The market opens next after day ${nextOpen}${isFair(Math.ceil((st.day + 1) / 5) * 5) ? ', and the next fair is on day ' + Math.ceil((st.day + 1) / 5) * 5 : ''}.</p>
+    <div class="offers">${offers}</div>
+    <div class="row c" style="margin:10px 0"><button class="btn" id="reroll" ${st.gold < sh.reroll ? 'disabled' : ''}>Reroll · ${sh.reroll ? sh.reroll + ' gold' : 'free'}</button><button class="btn pri" id="leave">Start day ${st.day + 1}</button></div>
+    <div class="card"><h3 style="margin-top:0">Your items <span class="small muted">tap to sell</span></h3>${itemsHtml(true)}${st.pending ? `<p class="bad small">No room for ${ITEM[st.pending].e} ${esc(ITEM[st.pending].name)}. Sell something to make room, or it’s lost when you leave.</p>` : ''}</div>`;
+}
+function rewardView() {
+  return `<div class="top"><h1>Fair prize</h1></div>${hud()}
+    <p>Choose one item, or take 8 gold.</p>
+    <div class="offers">${st.reward.map(id => { const def = ITEM[id]; return `<div class="offer"><span class="oe">${def.e}</span><span class="on">${esc(def.name)}</span><span class="rar rar-${def.r}">${RARITY[def.r]}</span><span class="od">${esc(def.desc)}</span><button class="btn sm pri" data-take="${id}">Take</button></div>`; }).join('')}
+    <div class="offer"><span class="oe">💰</span><span class="on">8 gold</span><span class="od">Save it for the market.</span><button class="btn sm pri" data-take="">Take</button></div></div>
+    <div class="card"><h3 style="margin-top:0">Your items</h3>${itemsHtml(false)}</div>`;
+}
+function fullView() {
+  return `<div class="top"><h1>No room</h1></div>${hud()}
+    <p>Your shed is full, so there’s no room for ${ITEM[st.pending].e} <b>${esc(ITEM[st.pending].name)}</b> (${esc(ITEM[st.pending].desc)}). Sell an item to make room, or let it go.</p>
+    <div class="card">${itemsHtml(true)}</div>
+    <div class="row c"><button class="btn" id="letgo">Let it go</button></div>`;
+}
+function overView() {
+  const days = st.day - 1, title = titleFor(days);
+  return `<div class="top"><h1>The garden is quiet</h1></div>
+    <div class="card" style="text-align:center"><div class="big-num">${days} day${days === 1 ? '' : 's'}</div><p>Title: <b>${title}</b></p>
+    <p class="small muted">Fairs won ${st.fairsWon} · total harvest ${st.totalHarvest} · seed ${esc(st.seed)}</p></div>
+    ${st.result ? `<div class="card">${[`On day ${st.day} your harvest was ${st.result.harvest} against a target of ${st.result.target}, and you lost ${st.result.dmg} energy.`].concat(st.result.log).map(l => `<div class="log">${esc(l)}</div>`).join('')}</div>` : ''}
+    <div class="row c"><button class="btn pri big" id="again">New run</button><button class="btn" id="same">Replay this seed</button></div>`;
+}
+function titleView() {
+  const has = st && st.phase !== 'over';
+  return `<div style="text-align:center;padding:30px 0 10px"><div style="font-size:54px">🌸🐝🌳</div><h1 style="font-size:34px">Summer Garden</h1>
+    <p class="muted">A garden puzzle with a run, a market and fairs. Lay out each day’s plants as well as you can, build up your items, and see how many days you last.</p></div>
+    <div class="row c">${has ? `<button class="btn pri big" id="cont">Continue day ${st.day}</button>` : ''}<button class="btn ${has ? '' : 'pri '}big" id="new">New run</button></div>
+    <div class="row c" style="margin-top:10px"><input type="text" id="seed" placeholder="seed (optional)"><button class="btn sm" id="seeded">Start with seed</button></div>
+    <div class="card"><h3 style="margin-top:0">How it works</h3>
+      <p>Each day you get a small plot and a hand of tiles. Tap a tile in your hand, then tap a cell to plant it. Each tile scores by what’s next to it, and the rules are listed under the plot.</p>
+      <p>Every day has a target harvest. If you miss it you lose energy, more the further short you are, and the run ends when your energy runs out. The targets grow every day, faster than a perfect layout of a plain hand, so you need items to keep up.</p>
+      <p>Items raise your harvest, change the scoring rules, give you more tiles or protect your energy. You can only buy them at the market, which opens on some evenings, usually twice between fairs. Every fifth day is a fair with its own rule and a higher target: win it for a prize.</p>
+      <p>Day 30 completes the run. After that it keeps getting harder, and day 100 is the top title.</p></div>
+    <div class="card"><h3 style="margin-top:0">Your records</h3><p>Longest run: <b>${rec.best} days</b> · runs started: ${rec.runs}</p>
+      <div class="titles">${TITLES.map(([n, name]) => `<span>${rec.titles[name] ? '✓' : '·'}</span><span>${name}</span><span class="muted">day ${n}</span>`).join('')}</div></div>
+    <footer>Inspired by the run structure of GeoGuessr’s HorrorGuessr mode. No sign-in, progress is saved in this browser.</footer>`;
+}
+function render() {
+  const app = $('#app');
+  document.body.dataset.season = st && st.phase !== 'title' ? season(st.day) : 'summer';
+  if (!st || ui.title) app.innerHTML = titleView();
+  else app.innerHTML = ({day: dayView, result: resultView, market: marketView, reward: rewardView, full: fullView, over: overView}[st.phase] || dayView)();
+  if (ui.tip) app.insertAdjacentHTML('beforeend', `<div class="tip">${esc(ui.tip)}</div>`);
+  bind();
+}
+function bind() {
+  const on = (sel, fn) => { const el = $(sel); if (el) el.onclick = fn; };
+  on('#cont', () => { ui.title = false; render(); });
+  on('#new', () => { if (!st || st.phase === 'over' || confirm('Start a new run? The current one will be lost.')) { ui.title = false; newRun(); render(); } });
+  on('#seeded', () => { const s = $('#seed').value.trim(); if (!s) return; if (!st || st.phase === 'over' || confirm('Start a new run? The current one will be lost.')) { ui.title = false; newRun(s); render(); } });
+  on('#menu', () => { ui.title = true; render(); });
+  on('#help', () => { ui.help = !ui.help; render(); });
+  on('#gotit', () => { ui.help = false; rec.seenHelp = true; save(); render(); });
+  on('#again', () => { newRun(); render(); });
+  on('#same', () => { newRun(st.seed); render(); });
+  on('#harvest', () => {
+    const left = handLeft(st.dayState), unused = Object.values(left).reduce((a, b) => a + b, 0);
+    if (unused && !confirm(unused + ' tile' + (unused > 1 ? 's are' : ' is') + ' still in your hand. Harvest anyway?')) return;
+    harvest();
+  });
+  on('#next', nextAfterResult);
+  on('#reroll', reroll);
+  on('#leave', () => { if (st.pending) st.pending = null; st.shop = null; st.nightLog = null; st.day++; startDay(); render(); window.scrollTo(0, 0); });
+  on('#letgo', () => { st.pending = null; afterReward(); });
+  $$('[data-c]').forEach(b => b.onclick = () => tapCell(+b.dataset.c));
+  $$('[data-t]').forEach(b => b.onclick = () => { const t = b.dataset.t; if (!(handLeft(st.dayState)[t] > 0)) return; ui.sel = ui.sel === t ? null : t; render(); });
+  on('#clear', () => { const day = st.dayState; day.g = day.D.fixed.slice(); day.pinned = {}; ui.sel = nextSel(day); save(); render(); });
+  $$('[data-spell]').forEach(b => b.onclick = () => ({peek: castPeek, measure: castMeasure, hot: castHot}[b.dataset.spell])());
+  $$('[data-buy]').forEach(b => b.onclick = () => buy(+b.dataset.buy));
+  $$('[data-take]').forEach(b => b.onclick = () => takeReward(b.dataset.take));
+  if (st && (st.phase === 'market' || st.phase === 'full')) bindItems(true);
+}
+ui.title = true;
+render();
+</script>
+</body>
+</html>
