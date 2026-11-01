@@ -10,21 +10,21 @@
 <style>
 :root{
   --bg:#e6ebe4; --surface:#fbf8f1; --surface2:#eef2ea; --text:#1f2a1d; --muted:#5f6b5a; --line:#cfd8c8;
-  --map:#cfdcc4; --road:#fbf8f1; --hill:#d4a35e; --accent:#c9822a; --bad:#b8323f; --good:#2c7a4b; --sky:#2f6fa8;
+  --map:#c9d6be; --road:#fbf8f1; --hill:#d4a35e; --block:#e3dccb; --park:#b5d3a4; --works:#e07a2e; --accent:#c9822a; --bad:#b8323f; --good:#2c7a4b; --sky:#2f6fa8;
   --shadow:0 6px 18px rgba(31,42,29,.12);
   color-scheme:light;
 }
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]){
     --bg:#121a14; --surface:#1b251d; --surface2:#233026; --text:#ecebd9; --muted:#a4ad9b; --line:#334235;
-    --map:#24312a; --road:#55665a; --hill:#9a7440; --accent:#e9a64a; --bad:#ef6b77; --good:#6cd398; --sky:#7fb1e6;
+    --map:#1d2820; --road:#4f5f53; --hill:#9a7440; --block:#2c3a30; --park:#2a4a33; --works:#e08a3e; --accent:#e9a64a; --bad:#ef6b77; --good:#6cd398; --sky:#7fb1e6;
     --shadow:0 6px 18px rgba(0,0,0,.35);
     color-scheme:dark;
   }
 }
 :root[data-theme="dark"]{
   --bg:#121a14; --surface:#1b251d; --surface2:#233026; --text:#ecebd9; --muted:#a4ad9b; --line:#334235;
-  --map:#24312a; --road:#55665a; --hill:#9a7440; --accent:#e9a64a; --bad:#ef6b77; --good:#6cd398; --sky:#7fb1e6;
+  --map:#1d2820; --road:#4f5f53; --hill:#9a7440; --block:#2c3a30; --park:#2a4a33; --works:#e08a3e; --accent:#e9a64a; --bad:#ef6b77; --good:#6cd398; --sky:#7fb1e6;
   --shadow:0 6px 18px rgba(0,0,0,.35);
   color-scheme:dark;
 }
@@ -60,28 +60,40 @@ button:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
 .goal .bar i{background:var(--accent)}
 .goal.ok .bar i{background:var(--good)}
 .goal.ok .gl span:first-child b{color:var(--good)}
-.town{display:block;width:min(100%,440px);margin:0 auto;background:var(--map);border-radius:16px;box-shadow:var(--shadow);touch-action:manipulation;user-select:none;-webkit-user-select:none}
-.town .st{stroke:var(--road);stroke-width:9;stroke-linecap:round}
+.town{display:block;width:100%;max-width:480px;margin:0 auto;background:var(--map);border-radius:16px;box-shadow:var(--shadow);touch-action:manipulation;user-select:none;-webkit-user-select:none}
+.town .block{fill:var(--block)}
+.town .park{fill:var(--park)}
+.town .st{stroke:var(--road);stroke-width:12;stroke-linecap:round}
 .town .st.hill{stroke:var(--hill)}
-.town .wk{stroke:var(--road);stroke-width:2;stroke-dasharray:2 5;opacity:.7}
-.town .route{fill:none;stroke:var(--sky);stroke-width:5;stroke-linecap:round;stroke-linejoin:round;opacity:.9}
+.town .st.closed{stroke:var(--road);opacity:.45}
+.town .works{stroke:var(--works);stroke-width:6;stroke-dasharray:5 4}
+.town .routec{fill:none;stroke:var(--bg);stroke-width:10;stroke-linecap:round;stroke-linejoin:round;opacity:.8}
+.town .route{fill:none;stroke:var(--sky);stroke-width:6;stroke-linecap:round;stroke-linejoin:round}
 .town .best{stroke:var(--good)}
-.town .dot{fill:var(--line)}
 .town .em{font-size:22px;text-anchor:middle;dominant-baseline:central}
 .town .sm{font-size:13px}
-.town .cost{font-size:10px;font-weight:700;text-anchor:middle;dominant-baseline:central;fill:#fff}
-.town .costbg{fill:var(--hill)}
+.town .hs{font-size:17px}
+.town .po{fill:var(--accent)}
+.town .po-e{font-size:19px}
+.town .house{fill:var(--surface);stroke:var(--line);stroke-width:2.5}
+.town .h-express{stroke:#e0b020} .town .h-meal{stroke:#d9542b} .town .h-box{stroke:#b04f8f} .town .h-parcel{stroke:#a07a4a} .town .h-letter{stroke:#d0607a}
+.town .hdone{stroke:var(--good);fill:color-mix(in srgb,var(--good) 20%,var(--surface))}
+.town .bike{fill:var(--sky)}
+.town .bk{font-size:14px}
+.town .cost{font-size:10.5px;font-weight:700;text-anchor:middle;dominant-baseline:central;fill:#fff}
+.town .costbg{fill:var(--hill);stroke:var(--map);stroke-width:1.5}
 .town .lbl{font-size:10.5px;font-weight:700;text-anchor:middle;dominant-baseline:central}
 .town .valbg{fill:var(--surface);stroke:var(--line)} .town .val{fill:var(--text)}
 .town .latebg{fill:var(--surface);stroke:var(--bad)} .town .late{fill:var(--bad)}
 .town .farbg{fill:var(--surface);stroke:var(--sky)} .town .far{fill:var(--sky)}
 .town .dlbg{fill:var(--accent)} .town .dl{fill:#fff}
 .town .gotbg{fill:var(--good)} .town .got{fill:#fff}
-.town .ok{fill:var(--good)} .town .okt{font-size:11px;font-weight:700;fill:#fff;text-anchor:middle;dominant-baseline:central}
+.town .ok{fill:var(--good);stroke:var(--surface);stroke-width:1.5} .town .okt{font-size:11px;font-weight:700;fill:#fff;text-anchor:middle;dominant-baseline:central}
 .town .hit{fill:transparent;cursor:pointer}
-.town .off{opacity:.3}
-.town .tick{font-size:16px}
-.hint{text-align:center;font-size:13.5px;margin:8px 0 0;color:var(--muted)}
+.town .off{opacity:.35}
+.hint{font-size:13.5px;color:var(--muted);text-align:center;margin:8px 0 6px}
+.fold summary{cursor:pointer;font-family:Marcellus,Georgia,serif;font-size:15px;color:var(--accent);list-style-position:inside}
+.fold[open] summary{margin-bottom:8px}
 .ctl{display:flex;gap:6px;justify-content:center;margin:10px 0 0}
 .ctl .btn{flex:1;max-width:150px;padding:10px 8px}
 .pack .packh{display:flex;justify-content:space-between;align-items:baseline;gap:8px;font-size:13.5px;margin-bottom:6px}
@@ -140,6 +152,10 @@ button.irow{cursor:pointer}
 .titles{display:grid;grid-template-columns:auto 1fr auto;gap:2px 10px;font-size:13.5px}
 .tip{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);background:var(--text);color:var(--bg);padding:8px 14px;border-radius:12px;font-size:13.5px;max-width:min(92vw,480px);z-index:30;box-shadow:var(--shadow)}
 input[type=text]{font:inherit;border:1.5px solid var(--line);background:var(--surface);color:var(--text);border-radius:10px;padding:7px 10px;width:150px}
+.sheet-bg{position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:flex-end;justify-content:center;padding:16px;z-index:40}
+.sheet{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:16px;width:100%;max-width:480px;box-shadow:var(--shadow)}
+.sheet p{margin:0 0 12px;font-size:15px}
+.sheet .btn{min-width:120px}
 footer{margin-top:24px;font-size:12px;color:var(--muted);text-align:center}
 @media (prefers-reduced-motion: reduce){.bar i{transition:none}}
 </style>
@@ -795,6 +811,8 @@ function takeReward(id) {
 }
 
 /* ---------------- rendering ---------------- */
+/* an in-page question instead of confirm(): browsers let people switch confirm() off, and then it always says no */
+function ask(text, yes, fn) { ui.ask = {text, yes, fn}; render(); }
 function toast(msg) { ui.tip = msg; render(); clearTimeout(toast.t); toast.t = setTimeout(() => { ui.tip = ''; render(); }, 2800); }
 function hud() {
   const m = maxEnergy(st), low = st.energy < m * 0.3;
@@ -822,37 +840,56 @@ function pill(x, y, text, cls) {
    worth if you ride there next (below); o.sim marks deliveries done, numbered in the order they happened. */
 function townSvg(day, R, route, o) {
   o = o || {};
-  const sp = 60, pad = 32, W = day.W, H = day.H;
+  const sp = 64, pad = 38, W = day.W, H = day.H;
   const X = i => pad + (i % W) * sp, Y = i => pad + Math.floor(i / W) * sp;
   const w = pad * 2 + (W - 1) * sp, h = pad * 2 + (H - 1) * sp, out = [];
+  // city blocks between the streets; a few of them are parks
+  for (let y = 0; y < H - 1; y++) for (let x = 0; x < W - 1; x++) {
+    const park = seedOf(day.depot + ':' + day.W + ':' + x + ':' + y) % 6 === 0, c = y * W + x;
+    out.push(`<rect x="${X(c) + 10}" y="${Y(c) + 10}" width="${sp - 20}" height="${sp - 20}" rx="7" class="${park ? 'park' : 'block'}"/>`);
+  }
+  const marks = [];
   for (const k in day.E) {
     const [a, b] = k.split('-').map(Number), t = day.E[k], mx = (X(a) + X(b)) / 2, my = (Y(a) + Y(b)) / 2;
     const line = cls => `<line x1="${X(a)}" y1="${Y(a)}" x2="${X(b)}" y2="${Y(b)}" class="${cls}"/>`;
-    if (t === 'w') { out.push(line(R.works ? 'st hill' : 'wk'), `<text x="${mx}" y="${my}" class="em sm">🚧</text>`); continue; }
+    if (t === 'w') { out.push(line(R.works ? 'st hill' : 'st closed')); marks.push(line('works')); if (R.works) marks.push(costMark(mx, my, R.works)); continue; }
     out.push(line(t === 'h' ? 'st hill' : 'st'));
-    if (t === 'h') out.push(`<circle cx="${mx}" cy="${my}" r="7.5" class="costbg"/><text x="${mx}" y="${my}" class="cost">${R.hill}</text>`);
+    if (t === 'h') marks.push(costMark(mx, my, R.hill));
   }
-  if (o.best && o.best.length > 1) out.push(`<polyline points="${o.best.map(i => X(i) + ',' + Y(i)).join(' ')}" class="route best"/>`);
-  if (route && route.length > 1) out.push(`<polyline points="${route.map(i => X(i) + ',' + Y(i)).join(' ')}" class="route"/>`);
-  for (let i = 0; i < W * H; i++) out.push(`<circle cx="${X(i)}" cy="${Y(i)}" r="3" class="dot"/>`);
-  out.push(`<text x="${X(day.depot)}" y="${Y(day.depot)}" class="em">🏤</text>`);
+  out.push(...marks);
+  if (o.best && o.best.length > 1) out.push(routeLine(o.best, X, Y, 'best'));
+  if (route && route.length > 1) out.push(routeLine(route, X, Y, ''));
   const bag = new Set(day.bag), done = {};
   if (o.sim) o.sim.del.forEach((x, k) => { done[x.i] = {k: k + 1, v: x.v}; });
+  const px = X(day.depot), py = Y(day.depot);
+  out.push(`<rect x="${px - 17}" y="${py - 17}" width="34" height="34" rx="9" class="po"/><text x="${px}" y="${py + 1}" class="em po-e">🏤</text>`);
   day.parcels.forEach((p, i) => {
     const x = X(p.at), y = Y(p.at), packed = bag.has(i), dn = done[i];
-    out.push(`<text x="${x}" y="${y}" class="em${!packed && !dn ? ' off' : ''}">${PT[p.type].e}</text>`);
-    if (dn) { out.push(`<circle cx="${x + 14}" cy="${y - 14}" r="8.5" class="ok"/><text x="${x + 14}" y="${y - 14}" class="okt">${dn.k}</text>`, pill(x, y + 20, '+' + dn.v, 'got')); return; }
+    out.push(`<g class="${!packed && !dn ? 'off' : ''}"><circle cx="${x}" cy="${y}" r="15" class="house h-${p.type}${dn ? ' hdone' : ''}"/><text x="${x}" y="${y + 1}" class="em hs">${PT[p.type].e}</text></g>`);
+    if (dn) { out.push(`<circle cx="${x + 14}" cy="${y - 14}" r="8.5" class="ok"/><text x="${x + 14}" y="${y - 14}" class="okt">${dn.k}</text>`, pill(x, y + 25, '+' + dn.v, 'got')); return; }
     if (!o.labels) return;
     const away = o.dist ? o.dist[p.at] : Infinity, reach = away < Infinity, arrive = (o.now || 0) + (reach ? away : 0);
     const late = p.type === 'express' && arrive > p.dl + R.dl;
-    let g = pill(x, y + 20, worthAt(p, R, arrive), late ? 'late' : 'val');
-    if (reach && (packed || !o.setOff)) g += pill(x, y - 21, '→' + away, 'far');
-    if (p.type === 'express') g += pill(x + 21, y + 2, '⏱' + (p.dl + R.dl), 'dl');
+    let g = pill(x, y + 25, worthAt(p, R, arrive), late ? 'late' : 'val');
+    if (reach && (packed || !o.setOff)) g += pill(x, y - 25, '→' + away, 'far');
+    if (p.type === 'express') g += pill(x + 25, y, '⏱' + (p.dl + R.dl), 'dl');
     out.push(`<g class="${packed ? '' : 'off'}">${g}</g>`);
   });
-  if (o.bike != null) out.push(`<text x="${X(o.bike) - 16}" y="${Y(o.bike) - 15}" class="em sm">🚲</text>`);
-  if (o.tap) for (let i = 0; i < W * H; i++) out.push(`<circle cx="${X(i)}" cy="${Y(i)}" r="27" class="hit" data-n="${i}"/>`);
-  return `<svg class="town" viewBox="0 0 ${w} ${h}" role="img" aria-label="Town map">${out.join('')}</svg>`;
+  if (o.bike != null && (o.setOff || o.bike !== day.depot)) out.push(`<circle cx="${X(o.bike) - 17}" cy="${Y(o.bike) - 17}" r="12" class="bike"/><text x="${X(o.bike) - 17}" y="${Y(o.bike) - 16}" class="em bk">🚲</text>`);
+  if (o.tap) for (let i = 0; i < W * H; i++) out.push(`<circle cx="${X(i)}" cy="${Y(i)}" r="29" class="hit" data-n="${i}"/>`);
+  return `<svg class="town" viewBox="0 0 ${w} ${h}" role="img" aria-label="Town map">${ARROWS}${out.join('')}</svg>`;
+}
+const ARROWS = '<defs><marker id="arr" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="2.7" markerHeight="2.7" orient="auto"><path d="M2,1.5 L7.5,5 L2,8.5" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></marker></defs>';
+function costMark(x, y, n) { return `<circle cx="${x}" cy="${y}" r="8" class="costbg"/><text x="${x}" y="${y}" class="cost">${n}</text>`; }
+/* a route with an outline, and an arrow in the middle of every street it takes */
+function routeLine(route, X, Y, cls) {
+  const pts = [];
+  for (let k = 0; k < route.length; k++) {
+    if (k) pts.push(((X(route[k - 1]) + X(route[k])) / 2) + ',' + ((Y(route[k - 1]) + Y(route[k])) / 2));
+    pts.push(X(route[k]) + ',' + Y(route[k]));
+  }
+  const p = pts.join(' ');
+  return `<polyline points="${p}" class="routec"/><polyline points="${p}" class="route ${cls}" marker-mid="url(#arr)"/>`;
 }
 function itemTotals(it) {
   const a = [];
@@ -877,7 +914,8 @@ function itemsHtml(selling, live) {
 function bindItems() {
   $$('[data-item]').forEach(b => b.onclick = () => {
     const it = st.items[+b.dataset.item], def = ITEM[it.id];
-    if (confirm((sellValue(it) < 0 ? 'Pay 3 gold to get rid of ' : 'Sell ') + def.name + (sellValue(it) >= 0 ? ' for ' + sellValue(it) + ' gold' : '') + '?')) sell(+b.dataset.item);
+    const k = +b.dataset.item;
+    ask((sellValue(it) < 0 ? 'Pay 3 gold to get rid of ' : 'Sell ') + def.name + (sellValue(it) >= 0 ? ' for ' + sellValue(it) + ' gold' : '') + '?', sellValue(it) < 0 ? 'Pay 3 gold' : 'Sell', () => sell(k));
   });
 }
 function ruleLines(R, types, day) {
@@ -966,7 +1004,6 @@ function bagHtml(day, R, sim, setOff, dist) {
     <div class="slots" style="grid-template-columns:repeat(${R.cap},1fr)">${slots}</div>
     ${free.length ? `<div class="loose">${free.map(chip).join('')}<span class="small muted">Letters take no space.</span></div>` : ''}
     ${left.length ? `<div class="packh" style="margin-top:10px"><b>Left at the post office</b><span>${setOff ? '' : 'tap to pack'}</span></div><div class="loose">${left.map(chip).join('')}</div>` : ''}
-    <p class="small muted" style="margin:6px 0 0">The number on each is what it’s worth if you ride there next.</p>
   </div>`;
 }
 function dayView() {
@@ -992,25 +1029,24 @@ function dayView() {
   const goal = `<div class="goal${reached ? ' ok' : ''}">
       <div class="gl"><span>Takings <b>${T.takings}</b></span><span>Moves left <b>${left}</b> / ${B}</span><span>Target <b>${day.target}</b>${day.target0 > day.target ? ' <span class="small muted">(🧢 −' + (day.target0 - day.target) + ')</span>' : ''}</span></div>
       <div class="bar"><i style="width:${Math.min(100, 100 * T.takings / day.target)}%"></i></div>
-      <div class="small muted">${esc(bits.join(' · ')) + (bits.length > 1 ? ' = ' + T.takings : '')}. ${reached ? 'Target reached.' : 'Ending now would cost ' + cost + ' energy.'}${day.measured ? ' Best possible today: ' + day.best + ' points.' : ''}</div>
+      <div class="small muted">${bits.length > 1 ? esc(bits.join(' · ')) + ' = ' + T.takings + '. ' : ''}${reached ? 'Target reached.' : 'Ending now would cost ' + cost + ' energy.'}${day.measured ? ' Best possible today: ' + day.best + '.' : ''}</div>
     </div>`;
-  const hint = !setOff ? 'Pack your bag below, then tap a corner of the map to ride there. Blue: moves away. Below each house: what it’s worth if you go there next.'
-    : left > 0 ? 'Tap a corner to ride there by the shortest way.' : 'You’re out of moves. End the shift to collect your takings.';
+  const hint = !setOff ? 'Pack your bag, then tap a corner to ride there.'
+    : left > 0 ? 'Tap a corner to ride there.' : 'You’re out of moves. End the shift.';
   const dist = allDist(day, R)[sim.at];
   const spells = Object.keys(SPELL).map(k => {
     const used = k === 'measure' && day.measured;
     return `<button class="btn sm" data-spell="${k}" title="${esc(SPELL[k].desc)}" ${!st.charges[k] || used ? 'disabled' : ''}>${SPELL[k].e} ${SPELL[k].name} ×${st.charges[k] || 0}</button>`;
   }).join('');
-  return `<div class="top"><h1>Day ${d}</h1><span class="muted">${SEASON_NAME[season(d)]} · <button class="btn sm" id="help">How to play</button> <button class="btn sm" id="menu">Menu</button></span></div>
+  return `<div class="top"><h1>Day ${d}</h1><span class="muted">${SEASON_NAME[season(d)]} · <button class="btn sm" id="help">Help</button> <button class="btn sm" id="menu">Menu</button></span></div>
     ${hud()}${banner}${goal}
     ${townSvg(day, R, day.route, {sim, bike: sim.at, tap: true, labels: true, dist, now: sim.t, setOff})}
     <div class="ctl"><button class="btn" id="undo" ${day.taps.length ? '' : 'disabled'}>↶ Undo</button><button class="btn" id="restart" ${day.taps.length ? '' : 'disabled'}>⟲ Restart</button><button class="btn pri" id="end">End shift</button></div>
     <p class="hint">${hint}</p>
+    <div class="row c">${spells}</div>
     ${bagHtml(day, R, sim, setOff, dist)}
-    <div class="row c" style="margin-top:8px">${spells}</div>
-    <p class="small muted" style="text-align:center;margin:4px 0 0">🔍 Peek packs your bag the best way (before you set off) and rides to the next stop on the best route. 📏 Measure shows the best possible score.</p>
-    <div class="card"><h3 style="margin-top:0">Rules today</h3>${rulesHtml(R, day)}</div>
-    <div class="card"><h3 style="margin-top:0">Your items</h3>${st.items.length ? '' : '<p class="small muted">None yet. The market opens after day 2.</p>'}${itemsHtml(false, live)}</div>`;
+    <details class="card fold" data-k="rulesOpen" ${ui.rulesOpen ?? d <= 2 ? 'open' : ''}><summary>Rules today</summary>${rulesHtml(R, day)}</details>
+    <details class="card fold" data-k="itemsOpen" ${ui.itemsOpen ?? true ? 'open' : ''}><summary>Your items <span class="small muted">${st.items.map(it => ITEM[it.id].e).join('')}</span></summary>${st.items.length ? '' : '<p class="small muted">None yet. The market opens after day 2.</p>'}${itemsHtml(false, live)}</details>`;
 }
 function stopsHtml(day, sim) {
   if (!sim.del.length) return '<p class="small muted">No deliveries.</p>';
@@ -1099,28 +1135,34 @@ function render() {
   if (ui.help) app.innerHTML = helpView();
   else if (!st || ui.title) app.innerHTML = titleView();
   else app.innerHTML = ({day: dayView, result: resultView, market: marketView, reward: rewardView, full: fullView, over: overView}[st.phase] || dayView)();
+  if (ui.ask) app.insertAdjacentHTML('beforeend', `<div class="sheet-bg"><div class="sheet" role="dialog" aria-modal="true"><p>${esc(ui.ask.text)}</p><div class="row c"><button class="btn" id="askno">Cancel</button><button class="btn pri" id="askyes">${esc(ui.ask.yes)}</button></div></div></div>`);
   if (ui.tip) app.insertAdjacentHTML('beforeend', `<div class="tip">${esc(ui.tip)}</div>`);
   bind();
 }
 function bind() {
   const on = (sel, fn) => { const el = $(sel); if (el) el.onclick = fn; };
+  on('#askno', () => { ui.ask = null; render(); });
+  on('#askyes', () => { const f = ui.ask.fn; ui.ask = null; render(); f(); });
   on('#cont', () => { ui.title = false; render(); });
-  on('#new', () => { if (!st || st.phase === 'over' || confirm('Start a new run? The current one will be lost.')) { ui.title = false; newRun(); render(); } });
-  on('#seeded', () => { const s = $('#seed').value.trim(); if (!s) return; if (!st || st.phase === 'over' || confirm('Start a new run? The current one will be lost.')) { ui.title = false; newRun(s); render(); } });
+  const fresh = (fn) => { if (!st || st.phase === 'over') fn(); else ask('Start a new run? The current one will be lost.', 'Start a new run', fn); };
+  on('#new', () => fresh(() => { ui.title = false; newRun(); render(); }));
+  on('#seeded', () => { const s = $('#seed').value.trim(); if (s) fresh(() => { ui.title = false; newRun(s); render(); }); });
   on('#menu', () => { ui.title = true; render(); });
   on('#help', () => { ui.help = true; render(); window.scrollTo(0, 0); });
   const closeHelp = () => { ui.help = false; rec.seenHelp = true; save(); render(); window.scrollTo(0, 0); };
   on('#helpback', closeHelp); on('#helpdone', closeHelp);
+  $$('details[data-k]').forEach(el => el.ontoggle = () => { ui[el.dataset.k] = el.open; });
   $$('[data-show]').forEach(b => b.onclick = () => { ui.show = b.dataset.show; render(); });
   on('#again', () => { newRun(); render(); });
   on('#same', () => { newRun(st.seed); render(); });
   on('#undo', undo);
   on('#restart', restartRoute);
   on('#end', () => {
+    // only ask when something in the bag can still be reached with the moves left
     const day = st.dayState, R = rulesFor(st, day, true), sim = simulate(day, R, day.route), left = budgetOf(day, R) - sim.t;
-    const waiting = day.bag.filter(i => !sim.done.has(i)).length;
-    if (left > 0 && waiting && !confirm('You still have ' + left + ' move' + (left > 1 ? 's' : '') + ' and ' + waiting + ' deliver' + (waiting > 1 ? 'ies' : 'y') + ' in your bag. End the shift anyway?')) return;
-    endShift();
+    const dist = allDist(day, R)[sim.at], reachable = day.bag.filter(i => !sim.done.has(i) && dist[day.parcels[i].at] <= left).length;
+    if (reachable) ask('You still have ' + left + ' move' + (left > 1 ? 's' : '') + ', enough to reach ' + reachable + ' more deliver' + (reachable > 1 ? 'ies' : 'y') + ' in your bag. End the shift anyway?', 'End shift', endShift);
+    else endShift();
   });
   on('#next', nextAfterResult);
   on('#reroll', reroll);

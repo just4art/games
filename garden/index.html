@@ -118,6 +118,10 @@ button.irow{cursor:pointer}
 dialog{border:1px solid var(--line);border-radius:16px;background:var(--surface);color:var(--text);max-width:min(92vw,480px);padding:16px 18px}
 dialog::backdrop{background:rgba(0,0,0,.35)}
 input[type=text]{font:inherit;border:1.5px solid var(--line);background:var(--surface);color:var(--text);border-radius:10px;padding:7px 10px;width:150px}
+.sheet-bg{position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:flex-end;justify-content:center;padding:16px;z-index:40}
+.sheet{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:16px;width:100%;max-width:480px;box-shadow:var(--shadow)}
+.sheet p{margin:0 0 12px;font-size:15px}
+.sheet .btn{min-width:120px}
 footer{margin-top:24px;font-size:12px;color:var(--muted);text-align:center}
 @media (prefers-reduced-motion: reduce){.cell,.bar i{transition:none}}
 </style>
@@ -705,6 +709,8 @@ function takeReward(id) {
 }
 
 /* ---------------- rendering ---------------- */
+/* an in-page question instead of confirm(): browsers let people switch confirm() off, and then it always says no */
+function ask(text, yes, fn) { ui.ask = {text, yes, fn}; render(); }
 function toast(msg) { ui.tip = msg; render(); clearTimeout(toast.t); toast.t = setTimeout(() => { ui.tip = ''; render(); }, 2600); }
 function hud() {
   const m = maxEnergy(st), low = st.energy < m * 0.3;
@@ -739,7 +745,8 @@ function bindItems(selling) {
   if (!selling) return;
   $$('[data-item]').forEach(b => b.onclick = () => {
     const it = st.items[+b.dataset.item], def = ITEM[it.id];
-    if (confirm((sellValue(it) < 0 ? 'Pay 3 gold to get rid of ' : 'Sell ') + def.name + (sellValue(it) >= 0 ? ' for ' + sellValue(it) + ' gold' : '') + '?')) sell(+b.dataset.item);
+    const k = +b.dataset.item;
+    ask((sellValue(it) < 0 ? 'Pay 3 gold to get rid of ' : 'Sell ') + def.name + (sellValue(it) >= 0 ? ' for ' + sellValue(it) + ' gold' : '') + '?', sellValue(it) < 0 ? 'Pay 3 gold' : 'Sell', () => sell(k));
   });
 }
 function ruleParts(R, t, types) {
@@ -918,14 +925,18 @@ function render() {
   document.body.dataset.season = st && st.phase !== 'title' ? season(st.day) : 'summer';
   if (!st || ui.title) app.innerHTML = titleView();
   else app.innerHTML = ({day: dayView, result: resultView, market: marketView, reward: rewardView, full: fullView, over: overView}[st.phase] || dayView)();
+  if (ui.ask) app.insertAdjacentHTML('beforeend', `<div class="sheet-bg"><div class="sheet" role="dialog" aria-modal="true"><p>${esc(ui.ask.text)}</p><div class="row c"><button class="btn" id="askno">Cancel</button><button class="btn pri" id="askyes">${esc(ui.ask.yes)}</button></div></div></div>`);
   if (ui.tip) app.insertAdjacentHTML('beforeend', `<div class="tip">${esc(ui.tip)}</div>`);
   bind();
 }
 function bind() {
   const on = (sel, fn) => { const el = $(sel); if (el) el.onclick = fn; };
+  on('#askno', () => { ui.ask = null; render(); });
+  on('#askyes', () => { const f = ui.ask.fn; ui.ask = null; render(); f(); });
   on('#cont', () => { ui.title = false; render(); });
-  on('#new', () => { if (!st || st.phase === 'over' || confirm('Start a new run? The current one will be lost.')) { ui.title = false; newRun(); render(); } });
-  on('#seeded', () => { const s = $('#seed').value.trim(); if (!s) return; if (!st || st.phase === 'over' || confirm('Start a new run? The current one will be lost.')) { ui.title = false; newRun(s); render(); } });
+  const fresh = (fn) => { if (!st || st.phase === 'over') fn(); else ask('Start a new run? The current one will be lost.', 'Start a new run', fn); };
+  on('#new', () => fresh(() => { ui.title = false; newRun(); render(); }));
+  on('#seeded', () => { const s = $('#seed').value.trim(); if (s) fresh(() => { ui.title = false; newRun(s); render(); }); });
   on('#menu', () => { ui.title = true; render(); });
   on('#help', () => { ui.help = !ui.help; render(); });
   on('#gotit', () => { ui.help = false; rec.seenHelp = true; save(); render(); });
@@ -933,8 +944,8 @@ function bind() {
   on('#same', () => { newRun(st.seed); render(); });
   on('#harvest', () => {
     const left = handLeft(st.dayState), unused = Object.values(left).reduce((a, b) => a + b, 0);
-    if (unused && !confirm(unused + ' tile' + (unused > 1 ? 's are' : ' is') + ' still in your hand. Harvest anyway?')) return;
-    harvest();
+    if (unused) ask(unused + ' tile' + (unused > 1 ? 's are' : ' is') + ' still in your hand. Harvest anyway?', 'Harvest', harvest);
+    else harvest();
   });
   on('#next', nextAfterResult);
   on('#reroll', reroll);
