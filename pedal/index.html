@@ -71,21 +71,39 @@ button:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
 .town .sm{font-size:13px}
 .town .cost{font-size:10px;font-weight:700;text-anchor:middle;dominant-baseline:central;fill:#fff}
 .town .costbg{fill:var(--hill)}
-.town .lbl{font-size:10.5px;font-weight:700;text-anchor:middle;dominant-baseline:central;fill:var(--text)}
-.town .lblbg{fill:var(--surface);stroke:var(--line)}
-.town .far{fill:var(--sky)}
-.town .farbg{fill:var(--surface);stroke:var(--sky)}
+.town .lbl{font-size:10.5px;font-weight:700;text-anchor:middle;dominant-baseline:central}
+.town .valbg{fill:var(--surface);stroke:var(--line)} .town .val{fill:var(--text)}
+.town .latebg{fill:var(--surface);stroke:var(--bad)} .town .late{fill:var(--bad)}
+.town .farbg{fill:var(--surface);stroke:var(--sky)} .town .far{fill:var(--sky)}
+.town .dlbg{fill:var(--accent)} .town .dl{fill:#fff}
+.town .gotbg{fill:var(--good)} .town .got{fill:#fff}
+.town .ok{fill:var(--good)} .town .okt{font-size:11px;font-weight:700;fill:#fff;text-anchor:middle;dominant-baseline:central}
 .town .hit{fill:transparent;cursor:pointer}
 .town .off{opacity:.3}
 .town .tick{font-size:16px}
 .hint{text-align:center;font-size:13.5px;margin:8px 0 0;color:var(--muted)}
-.bag{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin:10px 0 4px}
-.pc{display:flex;align-items:center;gap:4px;border:1.5px solid var(--accent);background:var(--surface);border-radius:12px;padding:4px 9px;font-size:18px;cursor:pointer}
-.pc span{font-size:12.5px;font-weight:700;color:var(--text);font-variant-numeric:tabular-nums}
-.pc.out{border:1.5px dashed var(--line);opacity:.55}
-.pc.done{border-color:var(--good);background:color-mix(in srgb,var(--good) 12%,var(--surface))}
-.pc.late{border-color:var(--line);opacity:.5}
-.pc:disabled{cursor:default}
+.ctl{display:flex;gap:6px;justify-content:center;margin:10px 0 0}
+.ctl .btn{flex:1;max-width:150px;padding:10px 8px}
+.pack .packh{display:flex;justify-content:space-between;align-items:baseline;gap:8px;font-size:13.5px;margin-bottom:6px}
+.pack .packh span{color:var(--muted);font-size:12px;text-align:right}
+.slots{display:grid;gap:6px}
+.slot{border:1.5px dashed var(--line);border-radius:12px;min-height:60px;display:grid;place-items:center;color:var(--muted);font-size:12px}
+.loose{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:6px}
+.pc{display:flex;flex-direction:column;align-items:center;justify-content:center;border:1.5px solid var(--accent);background:var(--surface);border-radius:12px;padding:4px 6px;min-height:60px;min-width:50px;cursor:pointer;line-height:1.15}
+.pc .pe{font-size:20px}
+.pc b{font-size:14px;font-variant-numeric:tabular-nums}
+.pc small{font-size:10.5px;color:var(--muted);white-space:nowrap;min-height:12px}
+.pc.s2{grid-column:span 2}
+.pc.out{border:1.5px dashed var(--line);opacity:.65}
+.pc.done{border-color:var(--good);background:color-mix(in srgb,var(--good) 14%,var(--surface))}
+.seg{display:flex;margin:12px auto 8px;border:1.5px solid var(--line);border-radius:12px;overflow:hidden;width:max-content;max-width:100%}
+.seg button{border:none;background:var(--surface);padding:8px 14px;font-weight:600;cursor:pointer}
+.seg button.on{background:var(--accent);color:#fff}
+.stops{margin:2px 0;padding-left:20px;font-size:13px}
+.ex{display:grid;grid-template-columns:44% 1fr;gap:12px;align-items:start;margin:14px 0;padding-bottom:14px;border-bottom:1px dashed var(--line)}
+.ex h3{margin-top:0}
+.ex .town{width:100%;box-shadow:none;border-radius:10px}
+.ex .slots .pc,.ex .loose .pc{cursor:default;min-width:0}
 .row{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
 .row.c{justify-content:center}
 .btn{border:1.5px solid var(--line);background:var(--surface);border-radius:12px;padding:8px 14px;cursor:pointer;font-weight:600}
@@ -117,12 +135,9 @@ button.irow{cursor:pointer}
 .log{font-size:13px;padding:4px 0;border-bottom:1px dashed var(--line)}
 .log:last-child{border-bottom:none}
 .res{display:grid;grid-template-columns:1fr 1fr;gap:10px;align-items:start}
-.res .town{border-radius:10px;box-shadow:none}
 .big-num{font-size:34px;font-family:Marcellus,Georgia,serif;font-variant-numeric:tabular-nums}
 .good{color:var(--good)} .bad{color:var(--bad)}
 .titles{display:grid;grid-template-columns:auto 1fr auto;gap:2px 10px;font-size:13.5px}
-.help ol{margin:4px 0 6px;padding-left:20px}
-.help li{margin:3px 0}
 .tip{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);background:var(--text);color:var(--bg);padding:8px 14px;border-radius:12px;font-size:13.5px;max-width:min(92vw,480px);z-index:30;box-shadow:var(--shadow)}
 input[type=text]{font:inherit;border:1.5px solid var(--line);background:var(--surface);color:var(--text);border-radius:10px;padding:7px 10px;width:150px}
 footer{margin-top:24px;font-size:12px;color:var(--muted);text-align:center}
@@ -187,7 +202,7 @@ function parcelValue(p, t, k, R) {
   else if (p.type === 'meal') v = Math.max(2, p.pts + R.add.meal - Math.floor(t / (2 * R.cool)));
   else v = p.pts + R.add[p.type];
   v *= R.mult[p.type];
-  if (R.bell && k === 1) v *= 2;
+  if (R.bell && k === 1) v += R.bell;
   if (R.stars && k % 3 === 0) v += R.stars;
   return v;
 }
@@ -397,7 +412,7 @@ const ITEMS = [
   {id: 'stopwatch', e: '⏱️', name: 'Stopwatch', r: 'U', need: 'express', desc: 'Express deadlines are 3 moves later.', rules: R => { R.dl += 3; }},
   {id: 'rocket', e: '🚀', name: 'Rocket Sticker', r: 'R', need: 'express', desc: 'Express deliveries score double.', rules: R => { R.mult.express *= 2; }},
   {id: 'coolbox', e: '🧊', name: 'Thermal Bag', r: 'U', need: 'meal', desc: 'Hot meals lose value half as fast.', rules: R => { R.cool *= 2; }},
-  {id: 'bell', e: '🔔', name: 'Bike Bell', r: 'C', desc: 'Your first delivery each day scores double.', rules: R => { R.bell = 1; }},
+  {id: 'bell', e: '🔔', name: 'Bike Bell', r: 'C', desc: 'Your first delivery each day scores 5 more.', rules: R => { R.bell += 5; }},
   {id: 'stars', e: '⭐', name: 'Five Stars', r: 'R', desc: 'Every third delivery scores 4 more.', rules: R => { R.stars += 4; }},
   {id: 'kettle', e: '🏠', name: 'Kettle at Home', r: 'C', desc: '+4 points if you end the shift back at the post office.', rules: R => { R.home += 4; }},
   {id: 'horn', e: '📯', name: 'Post Horn', r: 'M', desc: 'Every kind of delivery is worth 1 more.', rules: R => { for (const t in R.add) R.add[t] += 1; R.late += 1; }},
@@ -420,7 +435,7 @@ const ITEMS = [
   {id: 'mattress', e: '🛏️', name: 'Good Mattress', r: 'R', desc: 'Losing a big day costs half as much energy.', stat: {fairDmgMul: 0.5}},
   // hints
   {id: 'notebook', e: '📓', name: 'Notebook', r: 'C', desc: '+1 peek on big days.', start: c => { if (c.day.fair) c.charge('peek', 1); }},
-  {id: 'owl', e: '🦉', name: 'Night Owl', r: 'U', desc: '+1 use of Distances each day.', start: c => c.charge('map', 1)},
+  {id: 'owl', e: '🦉', name: 'Night Owl', r: 'U', desc: '+1 peek every other day.', start: c => { if (c.st.day % 2 === 0) c.charge('peek', 1); }},
   {id: 'radio', e: '📻', name: 'Traffic Report', r: 'U', desc: 'Shows the best possible score every day.', start: c => { c.day.measured = true; }},
   {id: 'crystal', e: '🔮', name: 'Crystal Ball', r: 'R', desc: '+1 peek each day.', start: c => c.charge('peek', 1)},
   // breaking and slots
@@ -436,7 +451,7 @@ const ITEMS = [
   {id: 'nuts', e: '🥜', name: 'Trail Mix', r: 'U', food: true, desc: '+10 maximum energy, and +10 energy.', eat: c => { c.st.maxBonus += 10; c.heal(10); }},
   {id: 'cake', e: '🎂', name: 'Birthday Cake', r: 'M', food: true, desc: '+20 maximum energy, then full energy.', eat: c => { c.st.maxBonus += 20; c.st.energy = maxEnergy(c.st); }},
   {id: 'coffee', e: '☕', name: 'Coffee', r: 'C', food: true, desc: '+1 peek.', eat: c => c.charge('peek', 1)},
-  {id: 'tea', e: '🍵', name: 'Mint Tea', r: 'C', food: true, desc: '+2 uses of Distances.', eat: c => c.charge('map', 2)},
+  {id: 'tea', e: '🍵', name: 'Mint Tea', r: 'C', food: true, desc: '+1 measure and +10 energy.', eat: c => { c.charge('measure', 1); c.heal(10); }},
   {id: 'lemonade', e: '🍋', name: 'Lemonade', r: 'C', food: true, desc: '+2 measures.', eat: c => c.charge('measure', 2)},
   {id: 'choc', e: '🍫', name: 'Chocolate', r: 'R', food: true, desc: '+3 peeks.', eat: c => c.charge('peek', 3)},
   {id: 'bag', e: '🎁', name: 'Mystery Bag', r: 'C', food: true, desc: '0, 2, 4 or 7 gold.', eat: c => c.gold(pick(c.r, [0, 2, 4, 7]))},
@@ -480,9 +495,10 @@ function rulesFor(s, day, withItems, except) {
 }
 function newRun(seed) {
   seed = seed || Math.random().toString(36).slice(2, 8);
-  st = {v: 1, seed, day: 1, energy: 100, maxBonus: 0, gold: 6, items: [], charges: {peek: 1, measure: 1, map: 1},
+  st = {v: 1, seed, day: 1, energy: 100, maxBonus: 0, gold: 6, items: [], charges: {peek: 1, measure: 1},
     fairsWon: 0, visits: 0, permMul: 1, temp: {}, total: 0, phase: 'day', pending: null, shop: null, reward: null, result: null, milestone: false};
   rec.runs++;
+  if (!rec.seenHelp) ui.help = true;
   startDay();
 }
 
@@ -513,8 +529,7 @@ function ctx(r, log) {
 }
 const SPELL = {
   peek: {e: '🔍', name: 'Peek', desc: 'Packs your bag the best way if you haven’t set off, then rides to the next stop on the best route from where you are.'},
-  measure: {e: '📏', name: 'Measure', desc: 'Shows the best possible score for today.'},
-  map: {e: '🧭', name: 'Distances', desc: 'For the rest of the day, shows how many moves each delivery is from where you are.'}
+  measure: {e: '📏', name: 'Measure', desc: 'Shows the best possible score for today.'}
 };
 function each(hook, c, ...args) {
   for (const it of st.items.slice()) { const d = ITEM[it.id]; if (d[hook] && st.items.includes(it)) { c.it = it; d[hook](c, ...args, it); c.it = null; } }
@@ -531,7 +546,7 @@ function startDay() {
   const fair = isFair(d) ? pick(r, FAIRS.filter(f => !f.need || PT[f.need].from <= d)).id : null;
   const weather = !fair && d >= 3 && r() < 0.3 ? pick(r, Object.keys(WEATHER).filter(w => !WEATHER[w].need || PT[WEATHER[w].need].from <= d)) : null;
   const town = makeTown(d, r, fair);
-  const day = Object.assign(town, {weather, fair, route: [town.depot], taps: [], bag: [], measured: false, mapOn: false, notes: {}});
+  const day = Object.assign(town, {weather, fair, route: [town.depot], taps: [], bag: [], measured: false, notes: {}});
   st.dayState = day; st.phase = 'day';
   // deadlines and the length of the day come from the plain rules
   const R0 = rulesFor(st, day, false), D0 = allDist(day, R0);
@@ -556,7 +571,7 @@ function startDay() {
 function bagSpace(day, R) { return day.bag.reduce((a, i) => a + sizeOf(day.parcels[i], R), 0); }
 function toggleBag(i) {
   const day = st.dayState, R = rulesFor(st, day, true), p = day.parcels[i];
-  if (day.route.length > 1) { toast('You’ve set off, so your bag is packed. Undo back to the post office to change it.'); return; }
+  if (day.route.length > 1) { toast('Your bag is packed once you set off. Press Restart to repack.'); return; }
   if (p.type === 'letter') { toast('Letters take no space, so they always come along.'); return; }
   const k = day.bag.indexOf(i);
   if (k >= 0) day.bag.splice(k, 1);
@@ -594,7 +609,6 @@ function castPeek() {
   st.charges.peek--; save(); render();
 }
 function castMeasure() { const day = st.dayState; if (!st.charges.measure || day.measured) return; st.charges.measure--; day.measured = true; save(); render(); }
-function castMap() { const day = st.dayState; if (!st.charges.map || day.mapOn) return; st.charges.map--; day.mapOn = true; save(); render(); }
 
 /* What a route takes in today and where each part comes from. `live` is the preview while you ride. */
 function takingsCalc(day, route, live) {
@@ -674,6 +688,7 @@ function endRun() {
 }
 function nextAfterResult() {
   const d = st.day, log = [];
+  ui.show = null;
   st.milestone = false;
   const c = ctx(rngFor(st.seed, 'night', d), log);
   c.who = 'A night’s rest'; c.heal(3); c.who = '';
@@ -790,46 +805,52 @@ function hud() {
     <div class="chip">${isFair(d) ? 'Today' : 'Next big day'}<b>${isFair(d) ? 'Big day' : 'Day ' + next}</b></div>
   </div>`;
 }
-/* short label for a delivery: its points now, plus the deadline for express */
-function parcelLabel(p, R) {
-  const v = parcelValue(p, 0, 2, R);
-  if (p.type === 'express') return v + ' by ' + (p.dl + R.dl);
-  if (p.type === 'meal') return v + '↓';
-  if (p.type === 'box' && R.boxSize > 1) return v + ' (2)';
-  return String(v);
+/* what a delivery is worth if it arrives at move t (k = 2 leaves out the first-delivery and third-delivery bonuses) */
+const worthAt = (p, R, t) => parcelValue(p, t, 2, R);
+/* the small print for a delivery: the express deadline, how fast a meal cools, how much space it takes */
+function parcelNote(p, R, short) {
+  if (p.type === 'express') return (short ? 'by ' : 'by move ') + (p.dl + R.dl);
+  if (p.type === 'meal') return short ? '−1 per ' + 2 * R.cool : '−1 every ' + 2 * R.cool + ' moves';
+  const sz = sizeOf(p, R);
+  return sz === 0 ? 'no space' : short && sz === 1 ? '' : sz + ' space' + (sz > 1 ? 's' : '');
 }
+function pill(x, y, text, cls) {
+  const w = 10 + String(text).length * 6.4;
+  return `<rect x="${x - w / 2}" y="${y - 7.5}" width="${w}" height="15" rx="7.5" class="${cls}bg"/><text x="${x}" y="${y}" class="lbl ${cls}">${esc(text)}</text>`;
+}
+/* The map. o.labels adds, for each delivery still to do, how many moves away it is (blue, above) and what it is
+   worth if you ride there next (below); o.sim marks deliveries done, numbered in the order they happened. */
 function townSvg(day, R, route, o) {
   o = o || {};
-  const sp = 60, pad = 30, W = day.W, H = day.H;
+  const sp = 60, pad = 32, W = day.W, H = day.H;
   const X = i => pad + (i % W) * sp, Y = i => pad + Math.floor(i / W) * sp;
   const w = pad * 2 + (W - 1) * sp, h = pad * 2 + (H - 1) * sp, out = [];
   for (const k in day.E) {
     const [a, b] = k.split('-').map(Number), t = day.E[k], mx = (X(a) + X(b)) / 2, my = (Y(a) + Y(b)) / 2;
-    if (t === 'w') {
-      if (R.works) out.push(`<line x1="${X(a)}" y1="${Y(a)}" x2="${X(b)}" y2="${Y(b)}" class="st hill"/>`);
-      else out.push(`<line x1="${X(a)}" y1="${Y(a)}" x2="${X(b)}" y2="${Y(b)}" class="wk"/>`);
-      out.push(`<text x="${mx}" y="${my}" class="em sm">🚧</text>`);
-    } else out.push(`<line x1="${X(a)}" y1="${Y(a)}" x2="${X(b)}" y2="${Y(b)}" class="st${t === 'h' ? ' hill' : ''}"/>`);
-    if (t === 'h' && !o.mini) out.push(`<circle cx="${mx}" cy="${my}" r="7" class="costbg"/><text x="${mx}" y="${my}" class="cost">${R.hill}</text>`);
+    const line = cls => `<line x1="${X(a)}" y1="${Y(a)}" x2="${X(b)}" y2="${Y(b)}" class="${cls}"/>`;
+    if (t === 'w') { out.push(line(R.works ? 'st hill' : 'wk'), `<text x="${mx}" y="${my}" class="em sm">🚧</text>`); continue; }
+    out.push(line(t === 'h' ? 'st hill' : 'st'));
+    if (t === 'h') out.push(`<circle cx="${mx}" cy="${my}" r="7.5" class="costbg"/><text x="${mx}" y="${my}" class="cost">${R.hill}</text>`);
   }
   if (o.best && o.best.length > 1) out.push(`<polyline points="${o.best.map(i => X(i) + ',' + Y(i)).join(' ')}" class="route best"/>`);
   if (route && route.length > 1) out.push(`<polyline points="${route.map(i => X(i) + ',' + Y(i)).join(' ')}" class="route"/>`);
   for (let i = 0; i < W * H; i++) out.push(`<circle cx="${X(i)}" cy="${Y(i)}" r="3" class="dot"/>`);
   out.push(`<text x="${X(day.depot)}" y="${Y(day.depot)}" class="em">🏤</text>`);
-  const sim = o.sim, bag = new Set(day.bag);
+  const bag = new Set(day.bag), done = {};
+  if (o.sim) o.sim.del.forEach((x, k) => { done[x.i] = {k: k + 1, v: x.v}; });
   day.parcels.forEach((p, i) => {
-    const x = X(p.at), y = Y(p.at), done = sim && sim.done.has(i);
-    out.push(`<text x="${x}" y="${y}" class="em${!bag.has(i) && !done ? ' off' : ''}">${done ? '✅' : PT[p.type].e}</text>`);
-    if (!o.mini && !done) {
-      const lab = parcelLabel(p, R), lw = 8 + lab.length * 6;
-      out.push(`<g class="${bag.has(i) ? '' : 'off'}"><rect x="${x - lw / 2}" y="${y + 11}" width="${lw}" height="14" rx="7" class="lblbg"/><text x="${x}" y="${y + 18}" class="lbl">${esc(lab)}</text></g>`);
-    }
-    if (o.dist && !done && bag.has(i) && o.dist[p.at] < Infinity) {
-      const lab = '→' + o.dist[p.at], lw = 8 + lab.length * 6;
-      out.push(`<rect x="${x - lw / 2}" y="${y - 27}" width="${lw}" height="14" rx="7" class="farbg"/><text x="${x}" y="${y - 20}" class="lbl far">${lab}</text>`);
-    }
+    const x = X(p.at), y = Y(p.at), packed = bag.has(i), dn = done[i];
+    out.push(`<text x="${x}" y="${y}" class="em${!packed && !dn ? ' off' : ''}">${PT[p.type].e}</text>`);
+    if (dn) { out.push(`<circle cx="${x + 14}" cy="${y - 14}" r="8.5" class="ok"/><text x="${x + 14}" y="${y - 14}" class="okt">${dn.k}</text>`, pill(x, y + 20, '+' + dn.v, 'got')); return; }
+    if (!o.labels) return;
+    const away = o.dist ? o.dist[p.at] : Infinity, reach = away < Infinity, arrive = (o.now || 0) + (reach ? away : 0);
+    const late = p.type === 'express' && arrive > p.dl + R.dl;
+    let g = pill(x, y + 20, worthAt(p, R, arrive), late ? 'late' : 'val');
+    if (reach && (packed || !o.setOff)) g += pill(x, y - 21, '→' + away, 'far');
+    if (p.type === 'express') g += pill(x + 21, y + 2, '⏱' + (p.dl + R.dl), 'dl');
+    out.push(`<g class="${packed ? '' : 'off'}">${g}</g>`);
   });
-  if (o.bike != null) out.push(`<text x="${X(o.bike) - 15}" y="${Y(o.bike) - 15}" class="em sm">🚲</text>`);
+  if (o.bike != null) out.push(`<text x="${X(o.bike) - 16}" y="${Y(o.bike) - 15}" class="em sm">🚲</text>`);
   if (o.tap) for (let i = 0; i < W * H; i++) out.push(`<circle cx="${X(i)}" cy="${Y(i)}" r="27" class="hit" data-n="${i}"/>`);
   return `<svg class="town" viewBox="0 0 ${w} ${h}" role="img" aria-label="Town map">${out.join('')}</svg>`;
 }
@@ -869,7 +890,7 @@ function ruleLines(R, types, day) {
   L.streets = 'A street costs 1 move, a hill costs ' + R.hill + '. Roadworks 🚧 ' + (R.works ? 'cost ' + R.works + '.' : 'are closed.');
   L.bag = 'Your bag holds ' + R.cap + ' spaces.';
   L.moves = 'You have ' + budgetOf(day, R) + ' moves today.';
-  if (R.bell) L.bell = 'Your first delivery scores double.';
+  if (R.bell) L.bell = 'Your first delivery scores ' + R.bell + ' more.';
   if (R.stars) L.stars = 'Every third delivery scores ' + R.stars + ' more.';
   if (R.home) L.home = '+' + R.home + ' points if you end the shift at the post office.';
   for (const t in PT) if (!types.includes(t)) delete L[t];
@@ -888,19 +909,68 @@ function rulesHtml(R, day) {
   return `<div class="rules">${Object.keys(now).map(k => `<div><span class="e">${PT[k] ? PT[k].e : icon[k]}</span><span><b>${PT[k] ? PT[k].name : name[k]}</b>${tags(k)}: ${now[k]}</span></div>`).join('')}</div>
     <p class="small muted" style="margin-top:6px">Moves are counted from when you leave the post office.${Object.keys(changed).length ? ' The icons after a name show which of your items changed that rule.' : ''}</p>`;
 }
-function helpCard() {
-  return `<div class="card help"><h3 style="margin-top:0">How to play</h3>
-    <ol>
-      <li>The map is the town. You start at the post office 🏤, and each icon is a house waiting for a delivery. The number under it is what it’s worth.</li>
-      <li>Before you set off, pack your bag: tap the deliveries under the map to put them in or take them out. Faded ones stay behind.</li>
-      <li>Tap any corner of the map to ride there by the shortest way. Anything in your bag for a house you pass is delivered. Each street costs moves, and you only have so many.</li>
-      <li>Press <b>End shift</b> when you’re done. Your takings need to reach the target.</li>
-    </ol>
-    <p>If you miss the target you lose energy, and the run ends when your energy runs out. Targets grow every day, so after the first couple of weeks you need items from the market to keep up. Undo and Restart are free, so try routes out.</p>
-    <div class="row"><button class="btn sm pri" id="gotit">Got it</button></div></div>`;
+/* ---------------- how to play, with small example maps ---------------- */
+function exampleTown(W, H, depot, parcels, edges) {
+  const E = {};
+  for (let i = 0; i < W * H; i++) for (const j of nbrs(W, H)[i]) if (j > i) E[ek(i, j)] = 's';
+  return {W, H, E: Object.assign(E, edges || {}), depot, parcels, bag: parcels.map((p, i) => i), moves: 99};
+}
+function exampleSvg(town, taps, labels) {
+  const R = baseRules();
+  let route = [town.depot];
+  for (const n of taps) route = route.concat(ridePath(town, R, route[route.length - 1], n, new Set()).path.slice(1));
+  const sim = simulate(town, R, route);
+  return townSvg(town, R, route, {sim, labels, dist: allDist(town, R)[sim.at], now: sim.t});
+}
+function chipHtml(p, R, value, cls, data) {
+  return `<button class="pc s${sizeOf(p, R)}${cls ? ' ' + cls : ''}"${data || ''}><span class="pe">${PT[p.type].e}</span><b>${value}</b><small>${esc(parcelNote(p, R, true))}</small></button>`;
+}
+function helpView() {
+  const R = baseRules();
+  const ride = exampleTown(4, 3, 0, [{type: 'letter', at: 3, pts: 1}, {type: 'parcel', at: 6, pts: 4}]);
+  const hill = exampleTown(4, 2, 0, [{type: 'parcel', at: 3, pts: 3}], {'1-2': 'h', '5-6': 'w'});
+  const exp = exampleTown(4, 2, 0, [{type: 'express', at: 3, pts: 5, dl: 3}, {type: 'parcel', at: 4, pts: 3}]);
+  const meal = exampleTown(3, 3, 0, [{type: 'meal', at: 8, pts: 8}]);
+  const bagR = baseRules(), bagItems = [{type: 'parcel', pts: 3}, {type: 'express', pts: 5, dl: 7}, {type: 'box', pts: 7}];
+  const ex = (svg, title, text) => `<div class="ex"><div>${svg}</div><div><h3>${title}</h3>${text}</div></div>`;
+  return `<div class="top"><h1>How to play</h1><button class="btn sm" id="helpback">Back</button></div>
+    <p>Each day you deliver what you can in a limited number of moves. Your takings need to reach the day’s target.</p>
+    ${ex(exampleSvg(ride, [3, 6]), 'Riding', `<p>You start at the post office 🏤. Tap any corner and you ride there by the shortest way. Each street is 1 move.</p><p>Every house you pass gets its delivery. Here the rider tapped the top-right corner, then the 📦 house: 💌 arrived at move 3 and 📦 at move 5, so 1 + 4 = 5 points. The green circles number the deliveries in order.</p>`)}
+    ${ex(exampleSvg(hill, [], true), 'Hills and roadworks', `<p>A street with a number on it is a hill and costs that many moves. 🚧 roadworks are closed.</p><p>The blue number above a house is how many moves away it is from where you are now. Here the way along the bottom is closed, so the 📦 is 4 moves away, over the hill.</p>`)}
+    ${ex(exampleSvg(exp, [], true), 'Express ⚡', `<p>Express is worth 5 if it arrives by the move on its clock, and 2 after that. This one says ⏱3.</p><p>The number under each house is what it’s worth if you ride there next. It turns red when an express would arrive late. Here, going to 📦 first would make the express arrive at move 5, worth only 2. Going to ⚡ first gets the full 5.</p>`)}
+    ${ex(exampleSvg(meal, [8]), 'Hot meals 🍕', `<p>A hot meal starts at 8 points and loses 1 point every 2 moves after you set off. This one arrived at move 4, so it was worth 6.</p>`)}
+    <div class="ex"><div><div class="slots" style="grid-template-columns:repeat(4,1fr)">${bagItems.map(p => chipHtml(p, bagR, p.pts)).join('')}</div><div class="loose">${chipHtml({type: 'letter', pts: 1}, bagR, 1)}</div></div><div><h3>Packing your bag</h3>
+      <p>Your bag has 4 spaces. 📦 parcels, ⚡ express and 🍕 hot meals take 1 space, 🎁 big boxes take 2, and 💌 letters take none, so they always come along.</p>
+      <p>You pack before you set off: tap a delivery to put it in or take it out. You usually can’t reach every house anyway, so leave behind what isn’t worth the trip. To repack later, press Restart.</p></div></div>
+    <div class="card"><h3 style="margin-top:0">The run</h3>
+      <p>If your takings miss the target, you lose energy, more the further short you are. The run ends when your energy runs out. After each shift you can compare your route with the best possible one.</p>
+      <p>Targets grow every day, faster than a perfect route can keep up with, so you need items. The market opens on some evenings, usually twice between big days. Every fifth day is a big day with its own rule and a higher target; win it for a prize. Day 30 completes the run, and after that it keeps getting harder.</p>
+      <p>Undo and Restart are free, so try a few routes before you end the shift.</p></div>
+    <div class="row c"><button class="btn pri big" id="helpdone">${st && !ui.title ? 'Back to the game' : 'Got it'}</button></div>`;
+}
+
+/* the bag: slots for what you packed, letters that come along for free, and what stays at the post office */
+function bagHtml(day, R, sim, setOff, dist) {
+  const P = day.parcels, used = bagSpace(day, R);
+  const chip = i => {
+    const d = sim.del.find(x => x.i === i), away = dist[P[i].at];
+    const v = d ? '+' + d.v : worthAt(P[i], R, sim.t + (away < Infinity ? away : 0));
+    return chipHtml(P[i], R, v, d ? 'done' : day.bag.includes(i) ? '' : 'out', ` data-p="${i}"`);
+  };
+  const packed = day.bag.filter(i => sizeOf(P[i], R) > 0), free = day.bag.filter(i => sizeOf(P[i], R) === 0);
+  const left = P.map((p, i) => i).filter(i => !day.bag.includes(i));
+  let slots = packed.map(chip).join('');
+  for (let k = used; k < R.cap; k++) slots += '<div class="slot">empty</div>';
+  return `<div class="card pack">
+    <div class="packh"><b>Your bag · ${used} of ${R.cap} spaces</b><span>${setOff ? 'packed (Restart to repack)' : 'tap to take out'}</span></div>
+    <div class="slots" style="grid-template-columns:repeat(${R.cap},1fr)">${slots}</div>
+    ${free.length ? `<div class="loose">${free.map(chip).join('')}<span class="small muted">Letters take no space.</span></div>` : ''}
+    ${left.length ? `<div class="packh" style="margin-top:10px"><b>Left at the post office</b><span>${setOff ? '' : 'tap to pack'}</span></div><div class="loose">${left.map(chip).join('')}</div>` : ''}
+    <p class="small muted" style="margin:6px 0 0">The number on each is what it’s worth if you ride there next.</p>
+  </div>`;
 }
 function dayView() {
-  const day = st.dayState, d = st.day, R = rulesFor(st, day, true), s = stats(st);
+  const day = st.dayState, d = st.day, R = rulesFor(st, day, true);
   const T = takingsCalc(day, day.route, true), sim = T.sim, B = budgetOf(day, R), left = B - sim.t;
   const setOff = day.route.length > 1;
   let banner = '';
@@ -920,35 +990,32 @@ function dayView() {
   const reached = T.takings >= day.target, cost = missCost(day, T.takings);
   const bits = [`deliveries ${sim.pts}`].concat(sim.home ? ['🏤 +' + sim.home] : [], T.parts.filter(p => p.pts == null).map(p => (p.it ? ITEM[p.it.id].e : p.name.split(' ')[0]) + ' ' + (p.mul ? '×' + Math.round(p.mul * 100) / 100 : '+' + p.add)));
   const goal = `<div class="goal${reached ? ' ok' : ''}">
-      <div class="gl"><span>Takings <b>${T.takings}</b></span><span>Moves left <b>${left}</b></span><span>Target <b>${day.target}</b>${day.target0 > day.target ? ' <span class="small muted">(🧢 −' + (day.target0 - day.target) + ')</span>' : ''}</span></div>
+      <div class="gl"><span>Takings <b>${T.takings}</b></span><span>Moves left <b>${left}</b> / ${B}</span><span>Target <b>${day.target}</b>${day.target0 > day.target ? ' <span class="small muted">(🧢 −' + (day.target0 - day.target) + ')</span>' : ''}</span></div>
       <div class="bar"><i style="width:${Math.min(100, 100 * T.takings / day.target)}%"></i></div>
       <div class="small muted">${esc(bits.join(' · ')) + (bits.length > 1 ? ' = ' + T.takings : '')}. ${reached ? 'Target reached.' : 'Ending now would cost ' + cost + ' energy.'}${day.measured ? ' Best possible today: ' + day.best + ' points.' : ''}</div>
     </div>`;
-  const hint = !setOff ? 'Pack your bag below, then tap a corner of the map to ride there.'
-    : left > 0 ? 'Tap a corner to ride there by the shortest way. Undo takes back the last ride.' : 'You’re out of moves. End the shift to collect your takings.';
-  const dist = day.mapOn ? allDist(day, R)[sim.at] : null;
-  const space = bagSpace(day, R);
-  const chips = day.parcels.map((p, i) => {
-    const done = sim.done.has(i), inBag = day.bag.includes(i);
-    const cls = done ? 'done' : inBag ? '' : 'out';
-    return `<button class="pc ${cls}" data-p="${i}" ${done ? 'disabled' : ''} title="${PT[p.type].name}">${done ? '✅' : PT[p.type].e}<span>${esc(parcelLabel(p, R))}</span></button>`;
-  }).join('');
+  const hint = !setOff ? 'Pack your bag below, then tap a corner of the map to ride there. Blue: moves away. Below each house: what it’s worth if you go there next.'
+    : left > 0 ? 'Tap a corner to ride there by the shortest way.' : 'You’re out of moves. End the shift to collect your takings.';
+  const dist = allDist(day, R)[sim.at];
   const spells = Object.keys(SPELL).map(k => {
-    const used = (k === 'measure' && day.measured) || (k === 'map' && day.mapOn);
+    const used = k === 'measure' && day.measured;
     return `<button class="btn sm" data-spell="${k}" title="${esc(SPELL[k].desc)}" ${!st.charges[k] || used ? 'disabled' : ''}>${SPELL[k].e} ${SPELL[k].name} ×${st.charges[k] || 0}</button>`;
   }).join('');
-  const showHelp = ui.help || (!rec.seenHelp && d <= 2);
   return `<div class="top"><h1>Day ${d}</h1><span class="muted">${SEASON_NAME[season(d)]} · <button class="btn sm" id="help">How to play</button> <button class="btn sm" id="menu">Menu</button></span></div>
-    ${hud()}${showHelp ? helpCard() : ''}${banner}${goal}
-    ${townSvg(day, R, day.route, {sim, bike: sim.at, tap: true, dist})}
+    ${hud()}${banner}${goal}
+    ${townSvg(day, R, day.route, {sim, bike: sim.at, tap: true, labels: true, dist, now: sim.t, setOff})}
+    <div class="ctl"><button class="btn" id="undo" ${day.taps.length ? '' : 'disabled'}>↶ Undo</button><button class="btn" id="restart" ${day.taps.length ? '' : 'disabled'}>⟲ Restart</button><button class="btn pri" id="end">End shift</button></div>
     <p class="hint">${hint}</p>
-    <div class="bag">${chips}</div>
-    <p class="small muted" style="text-align:center;margin:2px 0 0">Bag ${space} / ${R.cap} spaces${setOff ? ' · packed' : ' · tap to pack or unpack'}</p>
+    ${bagHtml(day, R, sim, setOff, dist)}
     <div class="row c" style="margin-top:8px">${spells}</div>
-    <p class="small muted" style="text-align:center;margin:4px 0 0">🔍 Peek packs your bag the best way (before you set off) and rides to the next stop on the best route. 📏 Measure shows the best possible score. 🧭 Distances shows how many moves each delivery is from you.</p>
-    <div class="row c" style="margin-top:10px"><button class="btn" id="undo" ${day.taps.length ? '' : 'disabled'}>Undo</button><button class="btn" id="restart" ${day.taps.length ? '' : 'disabled'}>Restart</button><button class="btn pri big" id="end">End shift</button></div>
+    <p class="small muted" style="text-align:center;margin:4px 0 0">🔍 Peek packs your bag the best way (before you set off) and rides to the next stop on the best route. 📏 Measure shows the best possible score.</p>
     <div class="card"><h3 style="margin-top:0">Rules today</h3>${rulesHtml(R, day)}</div>
     <div class="card"><h3 style="margin-top:0">Your items</h3>${st.items.length ? '' : '<p class="small muted">None yet. The market opens after day 2.</p>'}${itemsHtml(false, live)}</div>`;
+}
+function stopsHtml(day, sim) {
+  if (!sim.del.length) return '<p class="small muted">No deliveries.</p>';
+  return '<ol class="stops">' + sim.del.map(x => `<li>${PT[day.parcels[x.i].type].e} at move ${x.t}: <b>+${x.v}</b></li>`).join('') +
+    (sim.home ? `<li>🏤 back at the post office: <b>+${sim.home}</b></li>` : '') + '</ol>';
 }
 function resultView() {
   const res = st.result, day = st.dayState, d = st.day, R = rulesFor(st, day, true);
@@ -956,15 +1023,19 @@ function resultView() {
     <p>${day.fair ? (res.won ? 'You won the big day. Choose a prize next.' : 'Not enough for the big day.') : res.reached ? 'Target reached.' : 'Short of the target by ' + (res.target - res.takings) + '.'}${res.dmg ? ' You lose ' + res.dmg + ' energy.' : ' No energy lost.'}</p>`;
   const lines = [];
   const pts = res.parts.filter(p => p.pts != null), more = res.parts.filter(p => p.pts == null);
-  lines.push(`You delivered ${res.sim.del.length} of ${day.parcels.length} for ${res.points} points${res.sim.home ? ' (including +' + res.sim.home + ' for ending at the post office)' : ''}${pts.length ? ', including ' + pts.map(p => partName(p) + ' ' + partText(p)).join(', ') : ''}. The best route scores ${res.best}${res.beat ? ', so you beat it by ' + (res.points - res.best) : res.perfect ? ', and you matched it' : ''}.`);
+  lines.push(`You delivered ${res.sim.del.length} of ${day.parcels.length} for ${res.points} points${pts.length ? ', including ' + pts.map(p => partName(p) + ' ' + partText(p)).join(', ') : ''}. The best route scores ${res.best}${res.beat ? ', so you beat it by ' + (res.points - res.best) : res.perfect ? ', and you matched it' : ''}.`);
   if (more.length) lines.push(`Takings: ${res.points} from deliveries, ` + more.map(p => partName(p) + ' ' + partText(p)).join(', ') + ` = ${res.takings}.`);
   if (res.target0 > res.target) lines.push(`🧢 Cap lowered the target from ${res.target0} to ${res.target}.`);
   lines.push(`Gold +${res.gold}: ` + res.goldParts.map(([w, n]) => n + ' for ' + w).join(', ') + '.');
   const next = isMarket(d) && !res.won ? 'Go to the market' : res.won ? 'Choose a prize' : 'Next day';
   const bestDay = Object.assign({}, day, {bag: day.bestBag}), bestSim = simulate(bestDay, R, res.bestRoute);
+  const show = ui.show || (res.perfect ? 'mine' : 'best');
+  const map = show === 'best' ? townSvg(bestDay, R, null, {sim: bestSim, best: res.bestRoute}) : townSvg(day, R, day.route, {sim: res.sim});
   return `<div class="top"><h1>Day ${d} takings</h1></div>${hud()}
     <div class="card" style="text-align:center">${head}</div>
-    <div class="res"><div><h3>Your route · ${res.points}</h3>${townSvg(day, R, day.route, {sim: res.sim, mini: true})}</div><div><h3>Best route · ${res.best}</h3>${townSvg(bestDay, R, null, {sim: bestSim, mini: true, best: res.bestRoute})}</div></div>
+    <div class="seg"><button data-show="mine" class="${show === 'mine' ? 'on' : ''}">Your route · ${res.points}</button><button data-show="best" class="${show === 'best' ? 'on' : ''}">Best route · ${res.best}</button></div>
+    ${map}
+    <div class="res"><div><h3>Your stops</h3>${stopsHtml(day, res.sim)}</div><div><h3>Best stops</h3>${stopsHtml(day, bestSim)}</div></div>
     <div class="card">${lines.concat(res.log).map(l => `<div class="log">${esc(l)}</div>`).join('')}</div>
     ${st.milestone ? `<div class="card" style="border-color:var(--accent)"><h2>Summer is over: you made it through 30 days</h2><p>That completes the run, and you’ve earned the title <b>Senior courier</b>. You can keep going into autumn. From here the targets grow by 4% a day and missing them costs more energy, so the question is how far your items can carry you. Day 100 is the top title, and the run goes on after it for as long as you last.</p></div>` : ''}
     <div class="row c"><button class="btn pri big" id="next">${next}</button></div>`;
@@ -1011,7 +1082,7 @@ function titleView() {
   const has = st && st.phase !== 'over';
   return `<div style="text-align:center;padding:30px 0 10px"><div style="font-size:54px">🚲📦💌</div><h1 style="font-size:34px">Pedal Post</h1>
     <p class="muted">A route puzzle with a run, a market and big days. Plan each day’s deliveries as well as you can, build up your items, and see how many days you last.</p></div>
-    <div class="row c">${has ? `<button class="btn pri big" id="cont">Continue day ${st.day}</button>` : ''}<button class="btn ${has ? '' : 'pri '}big" id="new">New run</button></div>
+    <div class="row c">${has ? `<button class="btn pri big" id="cont">Continue day ${st.day}</button>` : ''}<button class="btn ${has ? '' : 'pri '}big" id="new">New run</button><button class="btn big" id="help">How to play</button></div>
     <div class="row c" style="margin-top:10px"><input type="text" id="seed" placeholder="seed (optional)"><button class="btn sm" id="seeded">Start with seed</button></div>
     <div class="card"><h3 style="margin-top:0">How it works</h3>
       <p>Each day you get a small town, a bag and a number of moves. Pack the deliveries that fit in your bag, then tap the map to ride. Every house you pass gets its delivery. Parcels are worth their number, letters take no space, express deliveries have a deadline, hot meals cool down as you ride, and big boxes take two spaces.</p>
@@ -1025,7 +1096,8 @@ function titleView() {
 function render() {
   const app = $('#app');
   document.body.dataset.season = st && !ui.title ? season(st.day) : 'summer';
-  if (!st || ui.title) app.innerHTML = titleView();
+  if (ui.help) app.innerHTML = helpView();
+  else if (!st || ui.title) app.innerHTML = titleView();
   else app.innerHTML = ({day: dayView, result: resultView, market: marketView, reward: rewardView, full: fullView, over: overView}[st.phase] || dayView)();
   if (ui.tip) app.insertAdjacentHTML('beforeend', `<div class="tip">${esc(ui.tip)}</div>`);
   bind();
@@ -1036,8 +1108,10 @@ function bind() {
   on('#new', () => { if (!st || st.phase === 'over' || confirm('Start a new run? The current one will be lost.')) { ui.title = false; newRun(); render(); } });
   on('#seeded', () => { const s = $('#seed').value.trim(); if (!s) return; if (!st || st.phase === 'over' || confirm('Start a new run? The current one will be lost.')) { ui.title = false; newRun(s); render(); } });
   on('#menu', () => { ui.title = true; render(); });
-  on('#help', () => { ui.help = !ui.help; render(); });
-  on('#gotit', () => { ui.help = false; rec.seenHelp = true; save(); render(); });
+  on('#help', () => { ui.help = true; render(); window.scrollTo(0, 0); });
+  const closeHelp = () => { ui.help = false; rec.seenHelp = true; save(); render(); window.scrollTo(0, 0); };
+  on('#helpback', closeHelp); on('#helpdone', closeHelp);
+  $$('[data-show]').forEach(b => b.onclick = () => { ui.show = b.dataset.show; render(); });
   on('#again', () => { newRun(); render(); });
   on('#same', () => { newRun(st.seed); render(); });
   on('#undo', undo);
@@ -1054,7 +1128,7 @@ function bind() {
   on('#letgo', () => { st.pending = null; afterReward(); });
   $$('[data-n]').forEach(b => b.onclick = () => tapNode(+b.dataset.n));
   $$('[data-p]').forEach(b => b.onclick = () => toggleBag(+b.dataset.p));
-  $$('[data-spell]').forEach(b => b.onclick = () => ({peek: castPeek, measure: castMeasure, map: castMap}[b.dataset.spell])());
+  $$('[data-spell]').forEach(b => b.onclick = () => ({peek: castPeek, measure: castMeasure}[b.dataset.spell])());
   $$('[data-buy]').forEach(b => b.onclick = () => buy(+b.dataset.buy));
   $$('[data-take]').forEach(b => b.onclick = () => takeReward(b.dataset.take));
   if (st && (st.phase === 'market' || st.phase === 'full')) bindItems();
