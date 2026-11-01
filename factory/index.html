@@ -1,0 +1,1628 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<title>Ore to Orbit</title>
+<style>
+:root{
+  --bg:#e9ebe4; --surface:#fbfbf8; --surface2:#f0f2ec; --text:#22261f; --muted:#646b5e; --line:#d5d9cd;
+  --accent:#c9741a; --accent2:#fbe7cf; --good:#2e7d4a; --bad:#c0392b; --warn:#b07800;
+  --shadow:0 6px 24px rgba(20,24,16,.18);
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#141714; --surface:#1e221e; --surface2:#272c27; --text:#ebe8df; --muted:#a3a99b; --line:#363c35;
+    --accent:#f0a040; --accent2:#3d2e1a; --good:#6cc58a; --bad:#ef7a6c; --warn:#e8b84a;
+    --shadow:0 6px 24px rgba(0,0,0,.5);
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#141714; --surface:#1e221e; --surface2:#272c27; --text:#ebe8df; --muted:#a3a99b; --line:#363c35;
+  --accent:#f0a040; --accent2:#3d2e1a; --good:#6cc58a; --bad:#ef7a6c; --warn:#e8b84a;
+  --shadow:0 6px 24px rgba(0,0,0,.5);
+  color-scheme:dark;
+}
+*,*::before,*::after{box-sizing:border-box}
+html,body{height:100%;margin:0;overflow:hidden;overscroll-behavior:none}
+body{background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;font-size:15px;line-height:1.45;-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none}
+button{font:inherit;color:inherit;cursor:pointer;touch-action:manipulation}
+button:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+img{-webkit-user-drag:none}
+#cv{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:none;background:#2f3628}
+.card{background:color-mix(in srgb,var(--surface) 92%,transparent);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+#top{position:fixed;left:8px;right:8px;top:calc(env(safe-area-inset-top,0px) + 8px);display:flex;gap:6px;align-items:flex-start;z-index:5;pointer-events:none}
+#top>*{pointer-events:auto}
+#goal{flex:1;min-width:0;text-align:left;padding:6px 10px}
+#gt{font-size:12px;color:var(--muted);display:flex;justify-content:space-between;gap:6px}
+#gchips{display:flex;flex-wrap:wrap;gap:4px 10px;margin-top:2px}
+.gc{display:inline-flex;align-items:center;gap:3px;font-weight:600;font-variant-numeric:tabular-nums;font-size:14px}
+.gc img{width:22px;height:22px}
+.gc.ok{color:var(--good)}
+.side{display:flex;flex-direction:column;gap:6px;align-items:stretch}
+#pow{padding:5px 9px;font-size:13px;font-variant-numeric:tabular-nums;text-align:left;min-width:128px}
+#pow .bar{display:block;height:4px;border-radius:2px;background:var(--line);margin-top:3px;overflow:hidden}
+#pow .bar i{display:block;height:100%;width:0;background:var(--good)}
+#pow.low .bar i{background:var(--bad)}
+#pow.low{color:var(--bad)}
+.side .row{display:flex;gap:6px}
+.side .row .card{flex:1;padding:5px 0;font-size:14px;font-weight:600;text-align:center}
+#hint{position:fixed;left:8px;right:8px;top:80px;z-index:4;padding:7px 34px 7px 11px;font-size:13.5px;max-width:560px}
+#hint[hidden]{display:none}
+#hint{cursor:pointer}
+#hint.min #hintt{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#hint .x{position:absolute;right:4px;top:3px;border:0;background:none;font-size:18px;color:var(--muted);width:28px;height:28px}
+#zoom{position:fixed;right:8px;top:46%;display:flex;flex-direction:column;gap:6px;z-index:4}
+#zoom button{width:40px;height:40px;font-size:20px;padding:0}
+#strip{position:fixed;left:8px;right:8px;bottom:calc(env(safe-area-inset-bottom,0px) + 84px);z-index:5;display:flex;gap:8px;align-items:center;padding:7px 8px 7px 11px;max-width:620px;margin:0 auto}
+#strip[hidden]{display:none}
+#strip .sinfo{flex:1;min-width:0;font-size:13px}
+#strip .tip{color:var(--muted);font-size:12.5px}
+.cost{display:inline-flex;gap:8px;flex-wrap:wrap;vertical-align:middle;margin-left:4px}
+.cost span{display:inline-flex;align-items:center;gap:2px;font-variant-numeric:tabular-nums;font-weight:600}
+.cost img{width:18px;height:18px}
+.cost .no{color:var(--bad)}
+#bar{position:fixed;left:0;right:0;bottom:0;z-index:6;display:flex;gap:5px;overflow-x:auto;padding:7px 8px calc(env(safe-area-inset-bottom,0px) + 7px);background:var(--surface);border-top:1px solid var(--line);scrollbar-width:none}
+#bar::-webkit-scrollbar{display:none}
+.tool{flex:0 0 auto;width:64px;height:62px;border:1px solid transparent;border-radius:12px;background:var(--surface2);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;font-size:11px;padding:2px;color:var(--muted)}
+.tool img{width:32px;height:32px}
+.tool.on{background:var(--accent2);border-color:var(--accent);color:var(--text);font-weight:600}
+.tool.sep{margin-right:6px}
+.btn{border:1px solid var(--line);background:var(--surface2);border-radius:11px;padding:8px 13px;font-weight:600}
+.btn.pri{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn.bad{color:var(--bad)}
+.btn[disabled]{opacity:.45;cursor:default}
+.btn.sm{padding:5px 10px;font-size:13px}
+#sheet{position:fixed;left:0;right:0;bottom:0;z-index:20;background:var(--surface);border-top:1px solid var(--line);border-radius:18px 18px 0 0;box-shadow:var(--shadow);max-height:72vh;max-height:72dvh;overflow:auto;padding:12px 16px calc(env(safe-area-inset-bottom,0px) + 16px);max-width:640px;margin:0 auto;-webkit-user-select:text;user-select:text}
+#sheet.tall{max-height:92vh;max-height:92dvh}
+#sheet[hidden]{display:none}
+@media (min-width:900px){
+  #sheet{left:auto;right:12px;top:12px;bottom:auto;width:400px;border-radius:16px;border:1px solid var(--line);max-height:calc(100vh - 110px)}
+  #sheet.tall{width:560px;max-height:calc(100vh - 110px)}
+  #top{right:424px}
+  body.nosheet #top{right:8px}
+  #zoom{right:auto;left:8px}
+}
+.sh-h{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.sh-h img{width:40px;height:40px}
+.sh-h .t{flex:1;min-width:0}
+.sh-h b{font-size:17px}
+.x{border:0;background:var(--surface2);border-radius:50%;width:34px;height:34px;font-size:20px;line-height:1;color:var(--muted);flex:0 0 auto}
+.muted{color:var(--muted)}
+.small{font-size:13px}
+.lbl{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin:12px 0 5px}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.row.end{justify-content:flex-end}
+.mt{margin-top:12px}
+.recs{display:grid;grid-template-columns:repeat(auto-fill,minmax(132px,1fr));gap:6px}
+.rec{display:flex;align-items:center;gap:6px;text-align:left;border:1px solid var(--line);background:var(--surface2);border-radius:10px;padding:6px 7px;font-size:13px}
+.rec img{width:26px;height:26px}
+.rec small{display:flex;gap:2px;align-items:center;color:var(--muted);font-size:11.5px}
+.rec small img{width:15px;height:15px}
+.rec.on{border-color:var(--accent);background:var(--accent2);font-weight:600}
+.flt{display:grid;grid-template-columns:repeat(auto-fill,minmax(44px,1fr));gap:5px}
+.flt button{border:1px solid var(--line);background:var(--surface2);border-radius:9px;height:44px;padding:0;font-size:12px}
+.flt button img{width:28px;height:28px;vertical-align:middle}
+.flt button.on{border-color:var(--accent);background:var(--accent2)}
+.inv{display:flex;flex-wrap:wrap;gap:6px 14px;font-variant-numeric:tabular-nums}
+.inv span{display:inline-flex;align-items:center;gap:4px}
+.inv img{width:24px;height:24px}
+.ii{width:18px;height:18px;vertical-align:-4px}
+.stat{font-weight:600}
+.stat.work{color:var(--good)} .stat.bad{color:var(--bad)} .stat.warn{color:var(--warn)}
+.tabs{display:flex;gap:4px;background:var(--surface2);border-radius:11px;padding:3px;margin-bottom:10px}
+.tabs button{flex:1;border:0;background:none;border-radius:9px;padding:7px 0;font-weight:600;color:var(--muted)}
+.tabs button.on{background:var(--surface);color:var(--text);box-shadow:0 1px 3px rgba(0,0,0,.12)}
+.need{display:flex;align-items:center;gap:8px;margin:6px 0}
+.need img{width:30px;height:30px}
+.need .nb{flex:1}
+.pbar{height:7px;border-radius:4px;background:var(--line);overflow:hidden;margin-top:3px}
+.pbar i{display:block;height:100%;background:var(--accent)}
+.pbar.ok i{background:var(--good)}
+.unl{display:flex;flex-wrap:wrap;gap:6px}
+.unl span{display:inline-flex;align-items:center;gap:4px;background:var(--surface2);border-radius:8px;padding:3px 8px 3px 4px;font-size:13px}
+.unl img{width:24px;height:24px}
+.rs{border:1px solid var(--line);border-radius:12px;padding:9px 11px;margin-bottom:8px;display:flex;gap:10px;align-items:center}
+.rs .t{flex:1;min-width:0}
+.stock{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:6px}
+.stock div{display:flex;align-items:center;gap:7px;background:var(--surface2);border-radius:10px;padding:5px 8px;font-variant-numeric:tabular-nums}
+.stock img{width:28px;height:28px}
+.stock small{display:block;color:var(--muted);font-size:11.5px;line-height:1.2}
+.help h3{font-size:16px;margin:18px 0 4px}
+.help p{margin:4px 0 8px}
+.help canvas{width:100%;display:block;border-radius:12px;background:#2f3628}
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:13px;margin:6px 0}
+.legend span{display:inline-flex;align-items:center;gap:5px}
+.legend img{width:26px;height:26px;border-radius:5px}
+#toast{position:fixed;left:50%;transform:translateX(-50%);top:calc(env(safe-area-inset-top,0px) + 120px);z-index:30;background:var(--text);color:var(--bg);padding:8px 14px;border-radius:12px;font-size:14px;max-width:min(92vw,460px);text-align:center;box-shadow:var(--shadow);pointer-events:none;transition:opacity .25s}
+#toast[hidden]{display:block;opacity:0}
+#catch{position:fixed;inset:0;z-index:50;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.5);color:#fff;font-size:16px}
+#catch[hidden]{display:none}
+.sheet-bg{position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:flex-end;justify-content:center;padding:16px;z-index:40}
+.dlg{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:16px;width:100%;max-width:440px;box-shadow:var(--shadow)}
+.dlg p{margin:0 0 14px}
+</style>
+</head>
+<body class="nosheet">
+<canvas id="cv"></canvas>
+<div id="top">
+  <button id="goal" class="card" aria-label="Goals and hub"><div id="gt"></div><div id="gchips"></div></button>
+  <div class="side">
+    <button id="pow" class="card"><span id="pwt"></span><span class="bar"><i id="pwb"></i></span></button>
+    <div class="row"><button id="spd" class="card" aria-label="Game speed">×1</button><button id="menu" class="card" aria-label="Menu">☰</button></div>
+  </div>
+</div>
+<div id="hint" class="card" hidden><span id="hintt"></span><button class="x" id="hintx" aria-label="Hide hints">×</button></div>
+<div id="zoom"><button class="card" id="zin" aria-label="Zoom in">+</button><button class="card" id="zout" aria-label="Zoom out">−</button><button class="card" id="zhome" aria-label="Back to the hub">⌂</button></div>
+<div id="strip" class="card" hidden></div>
+<div id="bar"></div>
+<div id="sheet" hidden></div>
+<div id="toast" hidden></div>
+<div id="catch" hidden></div>
+<div id="ask" hidden></div>
+<script>
+'use strict';
+/* ================= helpers ================= */
+const $ = s => document.querySelector(s);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;'}[c]));
+const clamp = (v, a, b) => v < a ? a : v > b ? b : v;
+function mulberry32(a) { return function () { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+function hash2(x, y, s) { let h = (x * 374761393 + y * 668265263 + s * 1442695041) | 0; h = Math.imul(h ^ h >>> 13, 1274126177); return ((h ^ h >>> 16) >>> 0) / 4294967296; }
+const fmt = n => n >= 1e6 ? (n / 1e6).toFixed(1) + 'M' : n >= 1e4 ? (n / 1e3).toFixed(1) + 'k' : String(Math.floor(n));
+const num = n => n >= 10 ? String(Math.round(n)) : n >= 1 ? n.toFixed(1).replace(/\.0$/, '') : n.toFixed(2).replace(/0$/, '');
+function fmtT(s) { s = Math.floor(s); const h = Math.floor(s / 3600), m = Math.floor(s % 3600 / 60); return h ? `${h} h ${m} min` : m ? `${m} min` : `${s} s`; }
+
+/* ================= data ================= */
+const DX = [1, 0, -1, 0], DY = [0, 1, 0, -1];   // E S W N
+const SP = 0.5;          // spacing of items on a belt, in tiles
+const BELT = 1.25;       // belt speed, tiles per second
+const INS = 1.2;         // inserter swings per second
+const TICK = 1 / 30;
+const WATER = 5, ORE = {1: 'iron-ore', 2: 'copper-ore', 3: 'coal', 4: 'stone'};
+const ORE_N = {1: 'iron ore', 2: 'copper ore', 3: 'coal', 4: 'stone', 5: 'water'};
+const SMELT = {'iron-ore': 'iron', 'copper-ore': 'copper', stone: 'brick', iron: 'steel'};
+const POW = {miner: 90, asm: 75, efurnace: 150, ins: 15};
+const GEN = 600, HUBPOW = 400, COAL_KJ = 3600, COAL_HEAT = 8;
+
+const IT = {
+  'iron-ore': 'Iron ore', 'copper-ore': 'Copper ore', coal: 'Coal', stone: 'Stone',
+  iron: 'Iron plate', copper: 'Copper plate', brick: 'Stone brick', steel: 'Steel',
+  gear: 'Gear', pipe: 'Pipe', wire: 'Copper wire', circuit: 'Circuit',
+  red: 'Red science', green: 'Green science', engine: 'Engine', adv: 'Advanced circuit', blue: 'Blue science',
+  frame: 'Rocket frame', part: 'Rocket part'
+};
+const IORDER = Object.keys(IT);
+
+// m: f = furnace, a = assembler; n = how many one craft makes; t = seconds at speed 1
+const RC = {
+  iron: {m: 'f', in: {'iron-ore': 1}, out: 'iron', n: 1, t: 1.6},
+  copper: {m: 'f', in: {'copper-ore': 1}, out: 'copper', n: 1, t: 1.6},
+  brick: {m: 'f', in: {stone: 2}, out: 'brick', n: 1, t: 3.2},
+  steel: {m: 'f', in: {iron: 5}, out: 'steel', n: 1, t: 8},
+  gear: {m: 'a', in: {iron: 2}, out: 'gear', n: 1, t: 1},
+  pipe: {m: 'a', in: {iron: 1}, out: 'pipe', n: 1, t: 0.5},
+  wire: {m: 'a', in: {copper: 1}, out: 'wire', n: 2, t: 0.5},
+  circuit: {m: 'a', in: {iron: 1, wire: 3}, out: 'circuit', n: 1, t: 1},
+  red: {m: 'a', in: {copper: 1, gear: 1}, out: 'red', n: 1, t: 5},
+  green: {m: 'a', in: {circuit: 1, gear: 1, iron: 1}, out: 'green', n: 1, t: 6},
+  engine: {m: 'a', in: {steel: 1, gear: 1, pipe: 2}, out: 'engine', n: 1, t: 10},
+  adv: {m: 'a', in: {circuit: 2, wire: 4, steel: 1}, out: 'adv', n: 1, t: 6},
+  blue: {m: 'a', in: {adv: 1, engine: 1}, out: 'blue', n: 2, t: 12},
+  frame: {m: 'a', in: {steel: 2, brick: 4, copper: 4}, out: 'frame', n: 1, t: 10},
+  part: {m: 'a', in: {frame: 1, adv: 1, engine: 1}, out: 'part', n: 1, t: 15}
+};
+
+const BD = {
+  belt: {n: 'Belt', cost: {iron: 1}, tip: 'Tap to place, drag to draw a line. Tap a belt again to turn it.'},
+  miner: {n: 'Miner', cost: {iron: 8, gear: 3}, tip: 'Place it on ore. The ore comes out on the arrow side.'},
+  furnace: {n: 'Furnace', cost: {stone: 5}, tip: 'Smelts ore into plates and burns coal. Plates come out on the arrow side.'},
+  ins: {n: 'Inserter', cost: {iron: 3, gear: 2}, tip: 'Takes items from the tile behind it and puts them on the tile ahead.'},
+  asm: {n: 'Assembler', cost: {iron: 9, gear: 5}, tip: 'Makes the recipe you choose. New ones use the last recipe you picked.'},
+  splitter: {n: 'Splitter', cost: {iron: 5, gear: 3}, tip: 'Takes items from behind and hands them out left, ahead and right in turn.'},
+  tunnel: {n: 'Tunnel', cost: {iron: 6, gear: 2}, tip: ''},
+  sorter: {n: 'Sorter', cost: {iron: 4, circuit: 2}, tip: 'Sends the item you choose to one side and lets everything else through.'},
+  gen: {n: 'Generator', cost: {iron: 12, gear: 6}, tip: 'Burns coal and gives 600 kW of power.'},
+  efurnace: {n: 'Electric furnace', cost: {steel: 6, adv: 2, brick: 8}, tip: 'Smelts twice as fast, using power instead of coal.'},
+  hub: {n: 'Hub', cost: {}}
+};
+const TOOLS = ['belt', 'miner', 'furnace', 'ins', 'asm', 'splitter', 'tunnel', 'sorter', 'gen', 'efurnace'];
+const TN = {hand: 'Look', remove: 'Remove', belt: 'Belt', miner: 'Miner', furnace: 'Furnace', ins: 'Inserter', asm: 'Assembler', splitter: 'Splitter', tunnel: 'Tunnel', sorter: 'Sorter', gen: 'Generator', efurnace: 'E-furnace'};
+
+// goals: deliver `need` to the hub; finishing one unlocks buildings `b` and recipes `r`
+const MS = [
+  {need: {iron: 30}, b: ['asm', 'ins', 'gen'], r: ['gear', 'pipe']},
+  {need: {gear: 40, copper: 40}, b: ['splitter', 'tunnel'], r: ['wire', 'circuit'],
+    hint: 'Assemblers make parts and use power. Set one to Gear and feed it iron plates, straight from a furnace or with an inserter from a belt. Copper plates come from copper ore, the orange stones.'},
+  {need: {circuit: 50}, b: ['sorter'], r: ['red', 'brick'],
+    hint: 'A circuit needs one iron plate and three copper wires. Wire comes from copper plates. An assembler can put its wire straight into a circuit assembler next to it, while iron plates come in from another side.'},
+  {need: {red: 40, brick: 40}, r: ['steel', 'green'],
+    hint: 'Red science needs a copper plate and a gear. A furnace turns two stone into a brick. Science you deliver can be spent on research: tap the goal card and open Research.'},
+  {need: {steel: 40, green: 40}, b: ['efurnace'], r: ['engine', 'adv', 'blue'],
+    hint: 'A furnace turns five iron plates into one steel. Green science needs a circuit, a gear and an iron plate; a machine can take its inputs from three sides.'},
+  {need: {engine: 30, adv: 30, blue: 30}, r: ['frame', 'part'],
+    hint: 'An engine needs steel, a gear and two pipes. An advanced circuit needs two circuits, four wires and steel. Blue science needs an advanced circuit and an engine.'},
+  {need: {part: 100}, fin: true,
+    hint: 'A rocket part needs a rocket frame, an advanced circuit and an engine. A frame needs steel, bricks and copper plates. Deliver 100 parts to launch the rocket.'}
+];
+
+const RS = {
+  mine: {n: 'Mining', d: 'Miners work 25% faster per level.'},
+  smelt: {n: 'Smelting', d: 'Furnaces work 25% faster per level.'},
+  craft: {n: 'Assembling', d: 'Assemblers work 25% faster per level.'},
+  belt: {n: 'Logistics', d: 'Belts, tunnels and inserters move 20% faster per level.'},
+  power: {n: 'Power', d: 'Generators and the hub give 25% more power per level.'}
+};
+function rcost(L) {
+  const n = Math.round(10 * Math.pow(1.6, L)), c = {red: n};
+  if (L >= 2) c.green = Math.round(n * 0.7);
+  if (L >= 4) c.blue = Math.round(n * 0.5);
+  return c;
+}
+
+/* ================= the world and its simulation ================= */
+function makeWorld(w, h) {
+  return {W: w, H: h, ore: new Uint8Array(w * h), grid: new Array(w * h).fill(null), ents: [], nid: 1, dirty: true,
+    pr: 1, dem: 0, demS: 0, cap: HUBPOW, hubPow: HUBPOW, mod: {mine: 1, smelt: 1, craft: 1, belt: 1, power: 1},
+    unl: null, deliver: null, take: null, t: 0, order: [], others: [], gens: []};
+}
+function at(w, x, y) { return x < 0 || y < 0 || x >= w.W || y >= w.H ? null : w.grid[y * w.W + x]; }
+function setCells(w, e, v) { const s = e.t === 'hub' ? 3 : 1; for (let j = 0; j < s; j++) for (let i = 0; i < s; i++) w.grid[(e.y + j) * w.W + e.x + i] = v; }
+function addEnt(w, e) { if (!e.id) e.id = w.nid++; else w.nid = Math.max(w.nid, e.id + 1); w.ents.push(e); setCells(w, e, e); w.dirty = true; return e; }
+function delEnt(w, e) { setCells(w, e, null); const k = w.ents.indexOf(e); if (k >= 0) w.ents.splice(k, 1); w.dirty = true; }
+function mk(t, x, y, d) {
+  const e = {t, x, y, d: d || 0};
+  if (t === 'belt') e.it = [];
+  else if (t === 'miner') { e.prog = 0; e.on = 0; }
+  else if (t === 'furnace' || t === 'efurnace') Object.assign(e, {ii: null, inN: 0, fuel: 0, heat: 0, busy: 0, prog: 0, cr: null, oi: null, on: 0});
+  else if (t === 'asm') Object.assign(e, {r: null, inv: {}, busy: 0, prog: 0, on: 0});
+  else if (t === 'ins') Object.assign(e, {hold: null, prog: 0, f: null});
+  else if (t === 'splitter') { e.buf = null; e.rr = 0; }
+  else if (t === 'sorter') { e.buf = null; e.f = null; e.side = 1; }
+  else if (t === 'tunnel') { e.role = 'in'; e.q = []; e.buf = null; }
+  else if (t === 'gen') { e.fuel = 0; e.en = 0; }
+  return e;
+}
+const unlocked = (w, k) => !w.unl || w.unl.has(k);
+// the directions an entity hands items out in
+function outDirs(e) {
+  switch (e.t) {
+    case 'belt': case 'miner': case 'furnace': case 'efurnace': case 'asm': case 'ins': return [e.d];
+    case 'splitter': return [(e.d + 3) % 4, e.d, (e.d + 1) % 4];
+    case 'sorter': return [e.d, (e.d + e.side) % 4];
+    case 'tunnel': return e.role === 'out' ? [e.d] : [];
+  }
+  return [];
+}
+// is something behind (x,y), seen along d, handing items into (x,y)?
+function feeds(w, x, y, d) { const n = at(w, x - DX[d], y - DY[d]); return !!n && n.t !== 'hub' && outDirs(n).includes(d); }
+
+// after any change: belt update order (the end of a line first), belt corners, tunnel pairs
+function rebuild(w) {
+  w.dirty = false;
+  const belts = [], others = [], gens = [];
+  for (const e of w.ents) { if (e.t === 'belt') belts.push(e); else { others.push(e); if (e.t === 'gen') gens.push(e); } }
+  const dep = new Map();
+  for (const b of belts) {
+    if (dep.has(b)) continue;
+    const path = [], on = new Set();
+    let c = b;
+    while (c && c.t === 'belt' && !dep.has(c) && !on.has(c)) { on.add(c); path.push(c); c = at(w, c.x + DX[c.d], c.y + DY[c.d]); }
+    let k = c && c.t === 'belt' && dep.has(c) ? dep.get(c) + 1 : 0;
+    for (let i = path.length - 1; i >= 0; i--) dep.set(path[i], k++);
+  }
+  belts.sort((a, b) => dep.get(a) - dep.get(b));
+  for (const b of belts) {
+    const back = feeds(w, b.x, b.y, b.d), L = feeds(w, b.x, b.y, (b.d + 1) % 4), R = feeds(w, b.x, b.y, (b.d + 3) % 4);
+    b._c = !back && L !== R ? (L ? 1 : 3) : 0;   // a corner: fed from one side only
+  }
+  for (const e of others) if (e.t === 'tunnel') { e._out = null; e._in = null; }
+  for (const e of others) if (e.t === 'tunnel' && e.role === 'in') {
+    for (let k = 1; k <= 5; k++) {
+      const t = at(w, e.x + DX[e.d] * k, e.y + DY[e.d] * k);
+      if (t && t.t === 'tunnel' && t.d === e.d) { if (t.role === 'out' && !t._in) { e._out = t; e._len = k; t._in = e; } break; }
+    }
+  }
+  w.order = belts; w.others = others; w.gens = gens;
+}
+
+// offer item k to entity e, moving in direction d; with test set, only ask
+function accept(w, e, k, d, test) {
+  switch (e.t) {
+    case 'belt': {
+      if (d === (e.d + 2) % 4) return false;
+      const l = e.it[e.it.length - 1];
+      if (l && l.p < SP) return false;
+      if (!test) e.it.push({i: k, p: 0, s: d});
+      return true;
+    }
+    case 'hub': if (!test && w.deliver) w.deliver(k); return true;
+    case 'furnace': case 'efurnace': {
+      if (k === 'coal' && e.t === 'furnace') { if (e.fuel >= 6) return false; if (!test) e.fuel++; return true; }
+      const o = SMELT[k];
+      if (!o || !unlocked(w, o)) return false;
+      if (e.inN > 0 && e.ii !== k) return false;
+      if (e.inN >= Math.max(10, RC[o].in[k] * 3)) return false;
+      if (!test) { e.ii = k; e.inN++; }
+      return true;
+    }
+    case 'asm': {
+      const r = RC[e.r];
+      if (!r || !r.in[k]) return false;
+      const n = e.inv[k] || 0;
+      if (n >= Math.max(4, r.in[k] * 3)) return false;
+      if (!test) e.inv[k] = n + 1;
+      return true;
+    }
+    case 'splitter': case 'sorter':
+      if (d !== e.d || e.buf) return false;
+      if (!test) e.buf = k;
+      return true;
+    case 'tunnel': {
+      if (e.role !== 'in' || d !== e.d || !e._out) return false;
+      const q = e.q, L = e._len, l = q[q.length - 1];
+      if (q.length >= L * 2 || (l && l.r > L - SP)) return false;
+      if (!test) q.push({i: k, r: L});
+      return true;
+    }
+    case 'gen':
+      if (k !== 'coal' || e.fuel >= 8) return false;
+      if (!test) e.fuel++;
+      return true;
+  }
+  return false;
+}
+function push(w, e, k, d) { const t = at(w, e.x + DX[d], e.y + DY[d]); return !!t && t !== e && accept(w, t, k, d); }
+// an inserter picking something up: the first item `ok` agrees to
+function takeFrom(w, s, ok, f) {
+  switch (s.t) {
+    case 'belt': for (let i = 0; i < s.it.length; i++) { const k = s.it[i].i; if (ok(k)) { s.it.splice(i, 1); return k; } } return null;
+    case 'miner': { const k = ORE[w.ore[s.y * w.W + s.x]]; if (s.on > 0 && ok(k)) { s.on--; return k; } return null; }
+    case 'furnace': case 'efurnace': if (s.on > 0 && ok(s.oi)) { s.on--; return s.oi; } return null;
+    case 'asm': { const k = RC[s.r] && RC[s.r].out; if (s.on > 0 && k && ok(k)) { s.on--; return k; } return null; }
+    case 'splitter': case 'sorter': if (s.buf && ok(s.buf)) { const k = s.buf; s.buf = null; return k; } return null;
+    case 'tunnel': if (s.role === 'out' && s.buf && ok(s.buf)) { const k = s.buf; s.buf = null; return k; } return null;
+    case 'hub': if (f && w.take && ok(f) && w.take(f)) return f; return null;
+  }
+  return null;
+}
+
+function tickBelt(w, b, v) {
+  const it = b.it;
+  if (!it.length) return;
+  let lim = 1;
+  for (let k = 0; k < it.length; k++) { const o = it[k]; o.p = Math.min(o.p + v, lim); lim = o.p - SP; }
+  if (it[0].p < 1) return;
+  const t = at(w, b.x + DX[b.d], b.y + DY[b.d]);
+  if (!t) return;
+  if (accept(w, t, it[0].i, b.d)) it.shift();
+  // a machine can also take the second item, so one unwanted item does not block everything
+  else if (t.t !== 'belt' && it.length > 1 && it[1].p >= 1 - SP - 1e-6 && accept(w, t, it[1].i, b.d)) it.splice(1, 1);
+}
+const TK = {
+  miner(w, e, dt) {
+    const k = ORE[w.ore[e.y * w.W + e.x]];
+    if (!k) { e.st = 'noore'; return; }
+    if (e.on > 0 && push(w, e, k, e.d)) e.on--;
+    if (e.on >= 2) { e.st = 'full'; return; }
+    w.dem += POW.miner;
+    e.prog += dt * 0.5 * w.mod.mine * w.pr;
+    if (e.prog >= 1) { e.prog -= 1; e.on++; }
+    e.st = 'work';
+  },
+  furnace(w, e, dt) {
+    const elec = e.t === 'efurnace';
+    if (e.on > 0 && push(w, e, e.oi, e.d)) e.on--;
+    if (e.busy) {
+      const r = RC[e.cr];
+      if (elec) w.dem += POW.efurnace;
+      e.prog += dt * (elec ? 2 * w.pr : 1) * w.mod.smelt / r.t;
+      if (e.prog >= 1) { e.prog = 0; e.busy = 0; e.on += r.n; e.oi = r.out; }
+      e.st = 'work';
+      return;
+    }
+    if (!e.inN) { e.st = 'noin'; return; }
+    const o = SMELT[e.ii], r = RC[o];
+    if (e.on >= 2 || (e.on > 0 && e.oi !== o)) { e.st = 'full'; return; }
+    if (e.inN < r.in[e.ii]) { e.st = 'noin'; return; }
+    if (!elec) {
+      if (e.heat <= 0) { if (e.fuel > 0) { e.fuel--; e.heat += COAL_HEAT; } else { e.st = 'nofuel'; return; } }
+      e.heat -= r.t / 1.6;
+    }
+    e.inN -= r.in[e.ii];
+    if (!e.inN) e.ii = null;
+    e.cr = o; e.busy = 1; e.prog = 0; e.st = 'work';
+  },
+  asm(w, e, dt) {
+    const r = RC[e.r];
+    if (!r) { e.st = 'norec'; return; }
+    if (e.on > 0 && push(w, e, r.out, e.d)) e.on--;
+    if (e.busy) {
+      w.dem += POW.asm;
+      e.prog += dt * w.mod.craft * w.pr / r.t;
+      if (e.prog >= 1) { e.prog = 0; e.busy = 0; e.on += r.n; }
+      e.st = 'work';
+      return;
+    }
+    if (e.on + r.n > r.n * 2) { e.st = 'full'; return; }
+    for (const k in r.in) if ((e.inv[k] || 0) < r.in[k]) { e.st = 'noin'; e.miss = k; return; }
+    for (const k in r.in) e.inv[k] -= r.in[k];
+    e.busy = 1; e.prog = 0; e.st = 'work';
+  },
+  ins(w, e, dt) {
+    const t = at(w, e.x + DX[e.d], e.y + DY[e.d]);
+    if (e.hold) {
+      if (e.prog < 1) { w.dem += POW.ins; e.prog = Math.min(1, e.prog + dt * INS * w.mod.belt * w.pr); e.st = 'work'; return; }
+      if (t && accept(w, t, e.hold, e.d)) { e.hold = null; e.prog = 0; e.st = 'work'; } else e.st = 'full';
+      return;
+    }
+    const s = at(w, e.x - DX[e.d], e.y - DY[e.d]);
+    if (!s || !t || s === t) { e.st = 'noin'; return; }
+    if (s.t === 'hub' && !e.f) { e.st = 'nofilter'; return; }
+    const k = takeFrom(w, s, k => (!e.f || k === e.f) && accept(w, t, k, e.d, true), e.f);
+    if (k) { e.hold = k; e.prog = 0; e.st = 'work'; } else e.st = 'noin';
+  },
+  splitter(w, e) {
+    if (!e.buf) return;
+    const ds = [(e.d + 3) % 4, e.d, (e.d + 1) % 4];
+    for (let k = 0; k < 3; k++) { const j = (e.rr + k) % 3; if (push(w, e, e.buf, ds[j])) { e.buf = null; e.rr = (j + 1) % 3; return; } }
+  },
+  sorter(w, e) {
+    if (e.buf && push(w, e, e.buf, e.buf === e.f ? (e.d + e.side) % 4 : e.d)) e.buf = null;
+  },
+  tunnel(w, e, dt) {
+    if (e.role === 'out') { if (e.buf && push(w, e, e.buf, e.d)) e.buf = null; return; }
+    const q = e.q;
+    if (!q.length) return;
+    const v = BELT * w.mod.belt * dt;
+    let lim = 0;
+    for (const o of q) { o.r = Math.max(o.r - v, lim); lim = o.r + SP; }
+    if (q[0].r <= 0 && e._out && !e._out.buf) e._out.buf = q.shift().i;
+  }
+};
+TK.efurnace = TK.furnace;
+
+function tick(w, dt) {
+  if (w.dirty) rebuild(w);
+  w.dem = 0;
+  const v = BELT * w.mod.belt * dt;
+  for (const b of w.order) tickBelt(w, b, v);
+  for (const e of w.others) { const f = TK[e.t]; if (f) f(w, e, dt); }
+  // power: the hub's own supply first, then generators that have coal
+  const hp = w.hubPow * w.mod.power, gp = GEN * w.mod.power;
+  let live = 0;
+  for (const g of w.gens) if (g.en > 0 || g.fuel > 0) live++;
+  w.cap = hp + live * gp;
+  w.pr = w.dem > 0 ? Math.min(1, w.cap / w.dem) : 1;
+  const load = Math.max(0, Math.min(w.dem, w.cap) - hp);
+  for (const g of w.gens) {
+    if (!(g.en > 0 || g.fuel > 0)) { g.st = 'nofuel'; continue; }
+    g.st = load > 0 ? 'work' : 'idle';
+    if (load > 0) {
+      g.en -= load / live * dt;
+      if (g.en <= 0 && g.fuel > 0) { g.fuel--; g.en += COAL_KJ; }
+      if (g.en < 0) g.en = 0;
+    }
+  }
+  w.demS += (w.dem - w.demS) * 0.08;
+  w.t += dt;
+}
+
+/* ================= map ================= */
+const MW = 72, MH = 72, HX = 34, HY = 34;   // hub top-left; it covers 3 x 3 tiles
+function genWorld(seed) {
+  const w = makeWorld(MW, MH), R = mulberry32(seed), cx = HX + 1.5, cy = HY + 1.5;
+  const nearHub = (x, y) => Math.abs(x + 0.5 - cx) < 3.6 && Math.abs(y + 0.5 - cy) < 3.6;
+  const blob = (bx, by, r, v, over) => {
+    for (let y = Math.floor(by - r - 1); y <= by + r + 1; y++) for (let x = Math.floor(bx - r - 1); x <= bx + r + 1; x++) {
+      if (x < 0 || y < 0 || x >= MW || y >= MH || nearHub(x, y)) continue;
+      const d = Math.hypot(x + 0.5 - bx, y + 0.5 - by);
+      if (d < r - 0.4 + hash2(x, y, seed + v * 17) * 0.9 && (over || !w.ore[y * MW + x])) w.ore[y * MW + x] = v;
+    }
+  };
+  // the four ores close to the hub, at right angles to each other
+  const a0 = R() * Math.PI * 2;
+  [[1, 6.4, 2.6], [3, 5.6, 2.0], [2, 6.8, 2.4], [4, 6.6, 2.0]].forEach(([v, d, r], k) => {
+    const a = a0 + k * Math.PI / 2 + (R() - 0.5) * 0.5;
+    blob(cx + Math.cos(a) * d, cy + Math.sin(a) * d, r, v);
+  });
+  // larger patches further out
+  const kinds = [1, 1, 1, 2, 2, 2, 3, 3, 4, 4];
+  for (let k = 0, tries = 0; k < 26 && tries < 400; tries++) {
+    const x = 3 + R() * (MW - 6), y = 3 + R() * (MH - 6), d = Math.hypot(x - cx, y - cy);
+    if (d < 13) continue;
+    blob(x, y, 2.4 + R() * 2.8 + d / 30, kinds[k % kinds.length], false);
+    k++;
+  }
+  for (let k = 0, tries = 0; k < 7 && tries < 200; tries++) {
+    const x = R() * MW, y = R() * MH;
+    if (Math.hypot(x - cx, y - cy) < 12) continue;
+    blob(x, y, 2 + R() * 3, WATER, false);
+    k++;
+  }
+  return w;
+}
+
+/* ================= drawing: sprites ================= */
+const SPR = {};
+function spr(key, px, fn) {
+  let c = SPR[key];
+  if (c) return c;
+  c = document.createElement('canvas'); c.width = c.height = px;
+  const g = c.getContext('2d');
+  g.scale(px, px); g.translate(0.5, 0.5); g.lineJoin = 'round'; g.lineCap = 'round';
+  fn(g);
+  return SPR[key] = c;
+}
+function rr(g, x, y, w, h, r) { g.beginPath(); g.moveTo(x + r, y); g.arcTo(x + w, y, x + w, y + h, r); g.arcTo(x + w, y + h, x, y + h, r); g.arcTo(x, y + h, x, y, r); g.arcTo(x, y, x + w, y, r); g.closePath(); }
+function poly(g, pts) { g.beginPath(); pts.forEach(([x, y], i) => i ? g.lineTo(x, y) : g.moveTo(x, y)); g.closePath(); }
+const OREC = {1: ['#94a9c4', '#5b7090', '#cbd7e6'], 2: ['#df8c4a', '#9a5326', '#f4b98a'], 3: ['#343438', '#141416', '#606068'], 4: ['#d1bd93', '#9a865b', '#ece0c4']};
+const GROUND = ['#5a6544', '#57623f', '#5d6847', '#59643f'];
+function groundSpr(v, o) {
+  return spr('g' + v + '_' + o, 96, g => {
+    const R = mulberry32(v * 31 + o * 7 + 3);
+    if (o === WATER) {
+      g.fillStyle = '#3b7ba3'; g.fillRect(-0.5, -0.5, 1, 1);
+      g.strokeStyle = 'rgba(160,210,240,.35)'; g.lineWidth = 0.035;
+      for (let k = 0; k < 2; k++) { const x = R() * 0.6 - 0.4, y = R() * 0.7 - 0.35; g.beginPath(); g.moveTo(x, y); g.quadraticCurveTo(x + 0.12, y - 0.07, x + 0.24, y); g.stroke(); }
+      return;
+    }
+    g.fillStyle = GROUND[v]; g.fillRect(-0.5, -0.5, 1, 1);
+    for (let k = 0; k < 7; k++) { g.fillStyle = R() < 0.5 ? 'rgba(0,0,0,.08)' : 'rgba(255,255,255,.06)'; g.beginPath(); g.arc(R() - 0.5, R() - 0.5, 0.02 + R() * 0.05, 0, 7); g.fill(); }
+    if (o) {
+      const c = OREC[o];
+      for (let k = 0; k < 6; k++) {
+        const x = R() * 0.74 - 0.37, y = R() * 0.74 - 0.37, r = 0.07 + R() * 0.07;
+        g.fillStyle = c[1]; g.beginPath(); g.ellipse(x + 0.025, y + 0.03, r, r * 0.8, 0.4, 0, 7); g.fill();
+        g.fillStyle = c[0]; g.beginPath(); g.ellipse(x, y, r, r * 0.8, 0.4, 0, 7); g.fill();
+        g.fillStyle = c[2]; g.beginPath(); g.arc(x - r * 0.35, y - r * 0.3, r * 0.28, 0, 7); g.fill();
+      }
+    }
+  });
+}
+function plate(g, c, d) {
+  g.fillStyle = d; rr(g, -0.36, -0.18, 0.72, 0.44, 0.08); g.fill();
+  g.fillStyle = c; rr(g, -0.36, -0.26, 0.72, 0.42, 0.08); g.fill();
+  g.strokeStyle = 'rgba(255,255,255,.45)'; g.lineWidth = 0.04; g.beginPath(); g.moveTo(-0.26, -0.17); g.lineTo(0.2, -0.17); g.stroke();
+}
+function gearPath(g, r1, r2, n) {
+  g.beginPath();
+  for (let i = 0; i < n * 4; i++) { const a = (i + 0.5) * Math.PI * 2 / (n * 4), r = (i % 4 < 2) ? r2 : r1; i ? g.lineTo(Math.cos(a) * r, Math.sin(a) * r) : g.moveTo(Math.cos(a) * r, Math.sin(a) * r); }
+  g.closePath();
+}
+function board(g, c) {
+  g.fillStyle = c; rr(g, -0.36, -0.3, 0.72, 0.6, 0.07); g.fill();
+  g.strokeStyle = '#f0c75e'; g.lineWidth = 0.035;
+  [[-0.3, -0.18, -0.12, -0.18], [-0.3, 0.18, -0.12, 0.18], [0.12, -0.18, 0.3, -0.18], [0.12, 0.18, 0.3, 0.18], [-0.3, 0, -0.12, 0], [0.12, 0, 0.3, 0]].forEach(([a, b, c2, d]) => { g.beginPath(); g.moveTo(a, b); g.lineTo(c2, d); g.stroke(); });
+  g.fillStyle = '#1d1f22'; rr(g, -0.13, -0.15, 0.26, 0.3, 0.03); g.fill();
+}
+function flask(g, c) {
+  const pts = [[-0.09, -0.38], [0.09, -0.38], [0.09, -0.1], [0.32, 0.33], [-0.32, 0.33], [-0.09, -0.1]];
+  g.fillStyle = 'rgba(235,242,248,.9)'; poly(g, pts); g.fill();
+  g.fillStyle = c; poly(g, [[-0.178, 0.06], [0.178, 0.06], [0.32, 0.33], [-0.32, 0.33]]); g.fill();
+  g.strokeStyle = '#4b5560'; g.lineWidth = 0.04; poly(g, pts); g.stroke();
+  g.fillStyle = '#8b6b4a'; g.fillRect(-0.12, -0.44, 0.24, 0.08);
+}
+function drawItem(g, k) {
+  const o = {'iron-ore': 1, 'copper-ore': 2, coal: 3, stone: 4}[k];
+  if (o) {
+    const c = OREC[o];
+    [[-0.17, 0.1, 0.19], [0.16, 0.13, 0.17], [0, -0.13, 0.19]].forEach(([x, y, r]) => {
+      g.fillStyle = c[1]; g.beginPath(); g.ellipse(x + 0.03, y + 0.04, r, r * 0.82, 0.3, 0, 7); g.fill();
+      g.fillStyle = c[0]; g.beginPath(); g.ellipse(x, y, r, r * 0.82, 0.3, 0, 7); g.fill();
+      g.fillStyle = c[2]; g.beginPath(); g.arc(x - r * 0.35, y - r * 0.32, r * 0.26, 0, 7); g.fill();
+    });
+    return;
+  }
+  switch (k) {
+    case 'iron': plate(g, '#c7d0da', '#7d8896'); break;
+    case 'copper': plate(g, '#ea965c', '#a45a2c'); break;
+    case 'steel': plate(g, '#8795a6', '#47515f'); g.strokeStyle = 'rgba(255,255,255,.35)'; g.lineWidth = 0.05; g.beginPath(); g.moveTo(-0.2, 0.1); g.lineTo(-0.05, -0.2); g.moveTo(0, 0.1); g.lineTo(0.15, -0.2); g.stroke(); break;
+    case 'brick':
+      g.fillStyle = '#e4c9a6'; rr(g, -0.38, -0.26, 0.76, 0.52, 0.05); g.fill();
+      g.fillStyle = '#b5523b';
+      [[-0.35, -0.23, 0.33], [0.02, -0.23, 0.33], [-0.35, 0.02, 0.15], [-0.16, 0.02, 0.33], [0.21, 0.02, 0.14]].forEach(([x, y, w2]) => { rr(g, x, y, w2, 0.21, 0.03); g.fill(); });
+      break;
+    case 'gear': g.fillStyle = '#9ea6ae'; gearPath(g, 0.26, 0.37, 8); g.fill(); g.strokeStyle = '#5f676f'; g.lineWidth = 0.035; g.stroke(); g.fillStyle = '#5f676f'; g.beginPath(); g.arc(0, 0, 0.1, 0, 7); g.fill(); break;
+    case 'pipe':
+      g.fillStyle = '#9aa2ab'; g.fillRect(-0.34, -0.13, 0.62, 0.26);
+      g.fillStyle = '#c3cad2'; g.fillRect(-0.34, -0.13, 0.62, 0.07);
+      g.fillStyle = '#7b838c'; g.beginPath(); g.ellipse(0.28, 0, 0.07, 0.16, 0, 0, 7); g.fill();
+      g.fillStyle = '#3b4148'; g.beginPath(); g.ellipse(0.28, 0, 0.04, 0.1, 0, 0, 7); g.fill();
+      break;
+    case 'wire':
+      g.strokeStyle = '#a45a2c'; g.lineWidth = 0.09;
+      for (let i = 0; i < 3; i++) { g.beginPath(); g.ellipse(-0.14 + i * 0.14, 0, 0.11, 0.26, 0.25, 0, 7); g.stroke(); }
+      g.strokeStyle = '#f0a066'; g.lineWidth = 0.045;
+      for (let i = 0; i < 3; i++) { g.beginPath(); g.ellipse(-0.14 + i * 0.14, 0, 0.11, 0.26, 0.25, 0, 7); g.stroke(); }
+      break;
+    case 'circuit': board(g, '#2f8f5a'); break;
+    case 'adv': board(g, '#b83a3a'); g.fillStyle = '#3b6fd1'; g.beginPath(); g.arc(0, 0, 0.05, 0, 7); g.fill(); break;
+    case 'engine':
+      g.fillStyle = '#5d6772'; rr(g, -0.34, -0.18, 0.62, 0.42, 0.06); g.fill();
+      g.fillStyle = '#8f99a4'; for (let i = 0; i < 3; i++) { rr(g, -0.3 + i * 0.19, -0.34, 0.15, 0.2, 0.03); g.fill(); }
+      g.fillStyle = '#e8912d'; g.beginPath(); g.arc(0.3, 0.04, 0.09, 0, 7); g.fill();
+      g.fillStyle = '#3c434b'; g.fillRect(-0.28, 0.04, 0.48, 0.05);
+      break;
+    case 'red': flask(g, '#d8443a'); break;
+    case 'green': flask(g, '#3fae52'); break;
+    case 'blue': flask(g, '#3f7fe0'); break;
+    case 'frame':
+      g.strokeStyle = '#5c646d'; g.lineWidth = 0.11; g.strokeRect(-0.3, -0.3, 0.6, 0.6);
+      g.beginPath(); g.moveTo(-0.3, -0.3); g.lineTo(0.3, 0.3); g.moveTo(0.3, -0.3); g.lineTo(-0.3, 0.3); g.stroke();
+      g.strokeStyle = '#c3cad2'; g.lineWidth = 0.06; g.strokeRect(-0.3, -0.3, 0.6, 0.6);
+      g.beginPath(); g.moveTo(-0.3, -0.3); g.lineTo(0.3, 0.3); g.moveTo(0.3, -0.3); g.lineTo(-0.3, 0.3); g.stroke();
+      break;
+    case 'part':
+      g.fillStyle = '#c8442f'; poly(g, [[-0.14, 0.12], [-0.27, 0.36], [-0.12, 0.3]]); g.fill(); poly(g, [[0.14, 0.12], [0.27, 0.36], [0.12, 0.3]]); g.fill();
+      g.fillStyle = '#eef1f4'; g.beginPath(); g.moveTo(0, -0.42); g.quadraticCurveTo(0.2, -0.2, 0.14, 0.3); g.lineTo(-0.14, 0.3); g.quadraticCurveTo(-0.2, -0.2, 0, -0.42); g.fill();
+      g.strokeStyle = '#7d8790'; g.lineWidth = 0.03; g.stroke();
+      g.fillStyle = '#c8442f'; g.beginPath(); g.moveTo(0, -0.42); g.quadraticCurveTo(0.09, -0.32, 0.12, -0.22); g.lineTo(-0.12, -0.22); g.quadraticCurveTo(-0.09, -0.32, 0, -0.42); g.fill();
+      g.fillStyle = '#3f7fe0'; g.beginPath(); g.arc(0, -0.06, 0.06, 0, 7); g.fill();
+      g.fillStyle = '#f0a040'; poly(g, [[-0.08, 0.3], [0.08, 0.3], [0, 0.44]]); g.fill();
+      break;
+  }
+}
+const itemSpr = k => spr('i' + k, 64, g => drawItem(g, k));
+
+function chev(g, x, y, a) { g.save(); g.translate(x, y); g.rotate(a); g.beginPath(); g.moveTo(-0.07, -0.16); g.lineTo(0.06, 0); g.lineTo(-0.07, 0.16); g.stroke(); g.restore(); }
+function ann(g, cx, cy, r0, r1) { g.beginPath(); g.arc(cx, cy, r1, Math.PI / 2, Math.PI); g.arc(cx, cy, r0, Math.PI, Math.PI / 2, true); g.closePath(); g.fill(); }
+// c: 0 straight, 1 corner fed from the left, 3 corner fed from the right; f: animation frame 0..7
+function beltSpr(c, f) {
+  return spr('b' + c + '_' + f, 128, g => {
+    if (c === 3) g.scale(1, -1);
+    const ph = f / 8;
+    g.strokeStyle = '#e3b04b'; g.lineWidth = 0.065;
+    if (!c) {
+      g.fillStyle = '#25282b'; g.fillRect(-0.5, -0.4, 1, 0.8);
+      g.fillStyle = '#3c4146'; g.fillRect(-0.5, -0.33, 1, 0.66);
+      for (let k = -1; k < 3; k++) chev(g, -0.5 + (k + ph) / 3 + 0.1, 0, 0);
+    } else {
+      g.fillStyle = '#25282b'; ann(g, 0.5, -0.5, 0.1, 0.9);
+      g.fillStyle = '#3c4146'; ann(g, 0.5, -0.5, 0.17, 0.83);
+      for (let k = -1; k < 3; k++) {
+        const u = (k + ph) / 3 + 0.1;
+        if (u < 0.02 || u > 0.98) continue;
+        const a = Math.PI - u * Math.PI / 2;
+        chev(g, 0.5 + 0.5 * Math.cos(a), -0.5 + 0.5 * Math.sin(a), Math.atan2(-Math.cos(a), Math.sin(a)));
+      }
+    }
+  });
+}
+function notch(g, a) {
+  g.save(); g.rotate(a || 0);
+  g.fillStyle = '#f6f3ea'; g.strokeStyle = 'rgba(0,0,0,.5)'; g.lineWidth = 0.03;
+  poly(g, [[0.49, 0], [0.33, -0.14], [0.33, 0.14]]); g.fill(); g.stroke();
+  g.restore();
+}
+function body(g, fill, edge, r) { rr(g, -0.44, -0.44, 0.88, 0.88, r == null ? 0.12 : r); g.fillStyle = fill; g.fill(); g.lineWidth = 0.05; g.strokeStyle = edge; g.stroke(); }
+function bolt(g, c, s) { g.save(); g.scale(s, s); g.fillStyle = c; poly(g, [[0.06, -0.4], [-0.2, 0.06], [-0.02, 0.06], [-0.08, 0.4], [0.2, -0.08], [0.02, -0.08]]); g.fill(); g.restore(); }
+function bSpr(t, v) {
+  return spr('B' + t + (v || ''), 128, g => {
+    switch (t) {
+      case 'miner':
+        body(g, '#c99a22', '#7d5f10');
+        g.fillStyle = '#3b3427'; rr(g, -0.3, -0.3, 0.6, 0.6, 0.1); g.fill();
+        g.fillStyle = '#7d5f10'; [[-0.36, -0.36], [0.36, -0.36], [-0.36, 0.36], [0.36, 0.36]].forEach(([x, y]) => { g.beginPath(); g.arc(x, y, 0.035, 0, 7); g.fill(); });
+        notch(g); break;
+      case 'furnace':
+        body(g, '#a3968a', '#665c52');
+        g.strokeStyle = 'rgba(80,70,60,.45)'; g.lineWidth = 0.025;
+        [-0.24, 0.24].forEach(y => { g.beginPath(); g.moveTo(-0.42, y); g.lineTo(0.42, y); g.stroke(); });
+        g.fillStyle = '#2b221d'; rr(g, -0.2, -0.17, 0.4, 0.34, 0.12); g.fill();
+        notch(g); break;
+      case 'efurnace':
+        body(g, '#c6ccd3', '#79828c');
+        g.fillStyle = '#22282e'; rr(g, -0.2, -0.17, 0.4, 0.34, 0.12); g.fill();
+        g.save(); g.translate(-0.3, -0.3); bolt(g, '#3f7fe0', 0.25); g.restore();
+        notch(g); break;
+      case 'asm':
+        body(g, '#7f91a5', '#4b5b6d');
+        g.fillStyle = '#5d6e81'; rr(g, -0.32, -0.32, 0.64, 0.64, 0.08); g.fill();
+        g.fillStyle = '#e8912d'; [[-0.38, -0.38], [0.38, -0.38], [-0.38, 0.38], [0.38, 0.38]].forEach(([x, y]) => { g.fillRect(x - 0.03, y - 0.03, 0.06, 0.06); });
+        notch(g); break;
+      case 'gen':
+        body(g, '#56656f', '#323d45', 0.2);
+        g.fillStyle = '#3d4952'; g.beginPath(); g.arc(0, 0, 0.3, 0, 7); g.fill();
+        bolt(g, '#857a4a', 0.75); break;
+      case 'ins':
+        g.fillStyle = '#3d4247'; rr(g, -0.3, -0.3, 0.6, 0.6, 0.1); g.fill();
+        g.strokeStyle = '#25282b'; g.lineWidth = 0.04; g.stroke();
+        g.strokeStyle = 'rgba(227,176,75,.6)'; g.lineWidth = 0.05;
+        g.beginPath(); g.moveTo(-0.26, 0.2); g.lineTo(0.26, 0.2); g.moveTo(-0.26, -0.2); g.lineTo(0.26, -0.2); g.stroke();
+        notch(g); break;
+      case 'splitter':
+        g.fillStyle = '#6d7884'; rr(g, -0.3, -0.38, 0.62, 0.76, 0.12); g.fill(); g.strokeStyle = '#3f4750'; g.lineWidth = 0.04; g.stroke();
+        g.strokeStyle = '#f6f3ea'; g.lineWidth = 0.06;
+        g.beginPath(); g.moveTo(-0.15, 0); g.lineTo(0.18, 0); g.moveTo(0, 0); g.lineTo(0, -0.22); g.moveTo(0, 0); g.lineTo(0, 0.22); g.stroke();
+        notch(g); notch(g, Math.PI / 2); notch(g, -Math.PI / 2); break;
+      case 'sorter':
+        g.fillStyle = '#7d6a94'; rr(g, -0.3, -0.38, 0.62, 0.76, 0.12); g.fill(); g.strokeStyle = '#4a3d5c'; g.lineWidth = 0.04; g.stroke();
+        notch(g); notch(g, v === 1 ? Math.PI / 2 : -Math.PI / 2); break;
+      case 'tunnel':
+        if (v === 'in') {
+          g.fillStyle = '#25282b'; g.fillRect(-0.5, -0.4, 0.6, 0.8); g.fillStyle = '#3c4146'; g.fillRect(-0.5, -0.33, 0.6, 0.66);
+          g.strokeStyle = '#e3b04b'; g.lineWidth = 0.065; chev(g, -0.3, 0, 0); chev(g, -0.05, 0, 0);
+          g.fillStyle = '#6b737c'; rr(g, 0.02, -0.44, 0.42, 0.88, 0.12); g.fill(); g.strokeStyle = '#40474f'; g.lineWidth = 0.04; g.stroke();
+          g.fillStyle = '#121416'; rr(g, 0.02, -0.3, 0.16, 0.6, 0.05); g.fill();
+        } else {
+          g.fillStyle = '#25282b'; g.fillRect(-0.1, -0.4, 0.6, 0.8); g.fillStyle = '#3c4146'; g.fillRect(-0.1, -0.33, 0.6, 0.66);
+          g.strokeStyle = '#e3b04b'; g.lineWidth = 0.065; chev(g, 0.12, 0, 0); chev(g, 0.37, 0, 0);
+          g.fillStyle = '#6b737c'; rr(g, -0.44, -0.44, 0.42, 0.88, 0.12); g.fill(); g.strokeStyle = '#40474f'; g.lineWidth = 0.04; g.stroke();
+          g.fillStyle = '#121416'; rr(g, -0.18, -0.3, 0.16, 0.6, 0.05); g.fill();
+        }
+        break;
+      case 'belt': g.drawImage(beltSpr(0, 2), -0.5, -0.5, 1, 1); break;
+      case 'hand':
+        g.fillStyle = '#f6f3ea'; g.strokeStyle = '#3c4146'; g.lineWidth = 0.05;
+        poly(g, [[-0.22, -0.36], [0.24, 0.06], [0.04, 0.08], [0.16, 0.34], [0.06, 0.39], [-0.06, 0.13], [-0.22, 0.27]]); g.fill(); g.stroke(); break;
+      case 'remove':
+        g.strokeStyle = '#d8443a'; g.lineWidth = 0.13;
+        g.beginPath(); g.moveTo(-0.25, -0.25); g.lineTo(0.25, 0.25); g.moveTo(0.25, -0.25); g.lineTo(-0.25, 0.25); g.stroke(); break;
+    }
+  });
+}
+function hubSpr() {
+  return spr('hub', 384, g => {
+    g.scale(1 / 3, 1 / 3);
+    rr(g, -1.45, -1.45, 2.9, 2.9, 0.25); g.fillStyle = '#3a3f46'; g.fill(); g.lineWidth = 0.08; g.strokeStyle = '#1d2024'; g.stroke();
+    g.save(); rr(g, -1.3, -1.3, 2.6, 2.6, 0.18); g.clip();
+    g.fillStyle = '#e8912d'; g.fillRect(-1.5, -1.5, 3, 3);
+    g.strokeStyle = '#26292d'; g.lineWidth = 0.14;
+    for (let k = -10; k < 10; k++) { g.beginPath(); g.moveTo(k * 0.4 - 1.5, -1.5); g.lineTo(k * 0.4 + 1.5, 1.5); g.stroke(); }
+    g.restore();
+    rr(g, -1.1, -1.1, 2.2, 2.2, 0.14); g.fillStyle = '#4a5059'; g.fill();
+    g.beginPath(); g.arc(0, 0, 0.8, 0, 7); g.fillStyle = '#2f343a'; g.fill(); g.strokeStyle = '#8b939c'; g.lineWidth = 0.05; g.stroke();
+    g.save(); g.scale(1.55, 1.55); drawItem(g, 'part'); g.restore();
+  });
+}
+const IMG = {};
+function dataImg(key, c) { return IMG[key] || (IMG[key] = c.toDataURL()); }
+const iImg = k => dataImg('i' + k, itemSpr(k));
+function bImg(t) {
+  if (t === 'hub') return dataImg('hub', hubSpr());
+  if (t === 'tunnel') return dataImg('Btunnel', bSpr('tunnel', 'in'));
+  if (t === 'sorter') return dataImg('Bsorter', bSpr('sorter', 1));
+  return dataImg('B' + t, bSpr(t));
+}
+
+/* ================= drawing: the world ================= */
+function rot(x, y, d) { return d === 0 ? [x, y] : d === 1 ? [-y, x] : d === 2 ? [-x, -y] : [y, -x]; }
+// where an item sits on a belt, relative to the tile centre
+function itemPos(b, s, p) {
+  if (b._c && s === (b.d + b._c) % 4) {
+    const a = Math.PI - p * Math.PI / 2;
+    let lx = 0.5 + 0.5 * Math.cos(a), ly = -0.5 + 0.5 * Math.sin(a);
+    if (b._c === 3) ly = -ly;
+    return rot(lx, ly, b.d);
+  }
+  if (p < 0.5) { const h = 0.5 - p; return [-DX[s] * h, -DY[s] * h]; }
+  const h = p - 0.5;
+  return [DX[b.d] * h, DY[b.d] * h];
+}
+function blit(g, img, x, y, s, d) {
+  if (!d) { g.drawImage(img, x, y, s, s); return; }
+  g.save(); g.translate(x + s / 2, y + s / 2); g.rotate(d * Math.PI / 2); g.drawImage(img, -s / 2, -s / 2, s, s); g.restore();
+}
+const BADGE = {nofuel: '#e0483c', lowpow: '#e0483c', full: '#e8a33a', norec: '#8a929a', nofilter: '#8a929a', noore: '#e0483c'};
+function badge(g, st, x, y, z) {
+  const c = BADGE[st];
+  if (!c || z < 16) return;
+  const r = z * 0.17, bx = x + z * 0.8, by = y + z * 0.2;
+  g.fillStyle = c; g.beginPath(); g.arc(bx, by, r, 0, 7); g.fill();
+  g.strokeStyle = 'rgba(0,0,0,.5)'; g.lineWidth = 1; g.stroke();
+  if (st === 'nofuel') { g.drawImage(itemSpr('coal'), bx - r * 0.8, by - r * 0.8, r * 1.6, r * 1.6); return; }
+  g.fillStyle = '#fff'; g.font = `700 ${Math.round(r * 1.4)}px system-ui,sans-serif`; g.textAlign = 'center'; g.textBaseline = 'middle';
+  g.fillText(st === 'lowpow' ? 'ϟ' : st === 'full' ? '!' : st === 'noore' ? '×' : '?', bx, by + r * 0.05);
+}
+function drawEnt(g, w, e, x, y, z, fr, ex) {
+  switch (e.t) {
+    case 'hub': g.drawImage(hubSpr(), x, y, z * 3, z * 3); return;
+    case 'miner': {
+      blit(g, bSpr('miner'), x, y, z, e.d);
+      g.save(); g.translate(x + z / 2, y + z / 2); g.rotate(e.st === 'work' ? (w.t + ex) * 4 : e.id);
+      g.fillStyle = '#9aa1a8'; g.beginPath(); g.arc(0, 0, z * 0.2, 0, 7); g.fill();
+      g.strokeStyle = '#4b5158'; g.lineWidth = Math.max(1, z * 0.05);
+      for (let k = 0; k < 3; k++) { const a = k * 2.094; g.beginPath(); g.moveTo(0, 0); g.lineTo(Math.cos(a) * z * 0.2, Math.sin(a) * z * 0.2); g.stroke(); }
+      g.restore();
+      break;
+    }
+    case 'furnace': case 'efurnace':
+      blit(g, bSpr(e.t), x, y, z, e.d);
+      if (e.busy) {
+        const gr = g.createRadialGradient(x + z / 2, y + z / 2, 0, x + z / 2, y + z / 2, z * 0.22);
+        gr.addColorStop(0, e.t === 'furnace' ? 'rgba(255,200,90,.95)' : 'rgba(150,200,255,.95)'); gr.addColorStop(1, 'rgba(255,120,30,0)');
+        g.fillStyle = gr; g.fillRect(x + z * 0.25, y + z * 0.25, z * 0.5, z * 0.5);
+      }
+      break;
+    case 'asm':
+      blit(g, bSpr('asm'), x, y, z, e.d);
+      if (e.r) g.drawImage(itemSpr(RC[e.r].out), x + z * 0.24, y + z * 0.24, z * 0.52, z * 0.52);
+      break;
+    case 'gen':
+      blit(g, bSpr('gen'), x, y, z, 0);
+      if (e.st === 'work') { g.save(); g.translate(x + z / 2, y + z / 2); g.scale(z, z); bolt(g, '#ffd23f', 0.75); g.restore(); }
+      break;
+    case 'ins': {
+      blit(g, bSpr('ins'), x, y, z, e.d);
+      const h = -0.36 + 0.72 * (e.hold ? Math.min(1, e.prog + (e.prog < 1 ? ex * INS * w.mod.belt : 0)) : 0);
+      const [hx, hy] = rot(h, 0, e.d);
+      g.strokeStyle = '#d9a62a'; g.lineWidth = Math.max(1.5, z * 0.09);
+      g.beginPath(); g.moveTo(x + z / 2, y + z / 2); g.lineTo(x + z * (0.5 + hx), y + z * (0.5 + hy)); g.stroke();
+      g.fillStyle = '#d9a62a'; g.beginPath(); g.arc(x + z / 2, y + z / 2, z * 0.09, 0, 7); g.fill();
+      if (e.hold) g.drawImage(itemSpr(e.hold), x + z * (0.5 + hx - 0.18), y + z * (0.5 + hy - 0.18), z * 0.36, z * 0.36);
+      if (e.f) g.drawImage(itemSpr(e.f), x + z * 0.02, y + z * 0.02, z * 0.28, z * 0.28);
+      break;
+    }
+    case 'splitter': blit(g, beltSpr(0, fr), x, y, z, e.d); blit(g, bSpr('splitter'), x, y, z, e.d); break;
+    case 'sorter':
+      blit(g, beltSpr(0, fr), x, y, z, e.d); blit(g, bSpr('sorter', e.side), x, y, z, e.d);
+      if (e.f) g.drawImage(itemSpr(e.f), x + z * 0.29, y + z * 0.29, z * 0.42, z * 0.42);
+      break;
+    case 'tunnel': blit(g, bSpr('tunnel', e.role), x, y, z, e.d); break;
+  }
+  if ((e.t === 'asm' || e.t === 'furnace' || e.t === 'efurnace') && e.busy && z >= 18) {
+    g.fillStyle = 'rgba(0,0,0,.5)'; g.fillRect(x + z * 0.16, y + z * 0.82, z * 0.68, Math.max(2, z * 0.06));
+    g.fillStyle = '#7fd66f'; g.fillRect(x + z * 0.16, y + z * 0.82, z * 0.68 * Math.min(1, e.prog), Math.max(2, z * 0.06));
+  }
+  const st = e.st === 'lowpow' || (POW[e.t] && e.st === 'work' && w.pr < 0.9) ? 'lowpow' : e.st;
+  badge(g, st, x, y, z);
+}
+// draw world w with the tile (cx, cy) at the centre of a vw x vh view, z pixels per tile; ex = seconds since the last tick
+function drawWorld(g, w, cx, cy, z, vw, vh, ex) {
+  if (w.dirty) rebuild(w);
+  const ox = vw / 2 - cx * z, oy = vh / 2 - cy * z;
+  g.fillStyle = '#2f3628'; g.fillRect(0, 0, vw, vh);
+  const x0 = Math.max(0, Math.floor(-ox / z)), x1 = Math.min(w.W - 1, Math.floor((vw - ox) / z));
+  const y0 = Math.max(0, Math.floor(-oy / z)), y1 = Math.min(w.H - 1, Math.floor((vh - oy) / z));
+  const X = x => Math.floor(ox + x * z), Y = y => Math.floor(oy + y * z);
+  for (let y = y0; y <= y1; y++) {
+    const py = Y(y), ph = Y(y + 1) - py;
+    for (let x = x0; x <= x1; x++) { const px = X(x); g.drawImage(groundSpr((hash2(x, y, 7) * 4) | 0, w.ore[y * w.W + x]), px, py, X(x + 1) - px, ph); }
+  }
+  if (z >= 20) {
+    g.strokeStyle = 'rgba(0,0,0,.13)'; g.lineWidth = 1; g.beginPath();
+    for (let x = x0; x <= x1 + 1; x++) { g.moveTo(X(x) + 0.5, Y(y0)); g.lineTo(X(x) + 0.5, Y(y1 + 1)); }
+    for (let y = y0; y <= y1 + 1; y++) { g.moveTo(X(x0), Y(y) + 0.5); g.lineTo(X(x1 + 1), Y(y) + 0.5); }
+    g.stroke();
+  }
+  const seen = new Set(), bl = [], ms = [];
+  for (let y = Math.max(0, y0 - 2); y <= y1; y++) for (let x = Math.max(0, x0 - 2); x <= x1; x++) {
+    const e = w.grid[y * w.W + x];
+    if (!e || seen.has(e)) continue;
+    seen.add(e); (e.t === 'belt' ? bl : ms).push(e);
+  }
+  const v = BELT * w.mod.belt, fr = Math.floor(((w.t + ex) * v * 3 % 1) * 8) % 8, vv = v * ex;
+  for (const b of bl) blit(g, beltSpr(b._c || 0, fr), X(b.x), Y(b.y), z, b.d);
+  const is = z * 0.4;
+  for (const b of bl) {
+    let lim = 1;
+    for (const o of b.it) {
+      const p = Math.min(o.p + vv, lim); lim = p - SP;
+      const [dx, dy] = itemPos(b, o.s, p);
+      g.drawImage(itemSpr(o.i), ox + (b.x + 0.5 + dx) * z - is / 2, oy + (b.y + 0.5 + dy) * z - is / 2, is, is);
+    }
+  }
+  for (const e of ms) drawEnt(g, w, e, X(e.x), Y(e.y), z, fr, ex);
+  return {ox, oy};
+}
+
+/* ================= game state ================= */
+const KEY = 'ore-to-orbit-v1', REC = 'ore-to-orbit-records-v1';
+let G = null, world = null;
+let rec = {best: 0, runs: 0};
+try { rec = Object.assign(rec, JSON.parse(localStorage.getItem(REC) || '{}')); } catch (e) {}
+const ui = {tool: 'hand', rot: 0, sheet: null, sel: null, hover: null, ask: null, tab: 'goal'};
+const rate = {bk: {}, sec: 0};
+
+function unlockSet(ms) {
+  const s = new Set(['belt', 'miner', 'furnace', 'iron', 'copper']);
+  for (let k = 0; k < ms && k < MS.length; k++) { (MS[k].b || []).forEach(x => s.add(x)); (MS[k].r || []).forEach(x => s.add(x)); }
+  return s;
+}
+function applyState() {
+  const r = G.rs;
+  world.mod = {mine: 1 + 0.25 * r.mine, smelt: 1 + 0.25 * r.smelt, craft: 1 + 0.25 * r.craft, belt: 1 + 0.2 * r.belt, power: 1 + 0.25 * r.power};
+  world.unl = unlockSet(G.ms);
+  world.deliver = deliver;
+  world.take = k => { if ((G.stock[k] || 0) > 0) { G.stock[k]--; return true; } return false; };
+}
+function deliver(k) {
+  G.stock[k] = (G.stock[k] || 0) + 1;
+  G.got[k] = (G.got[k] || 0) + 1;
+  G.all[k] = (G.all[k] || 0) + 1;
+  (rate.bk[k] || (rate.bk[k] = new Array(60).fill(0)))[rate.sec]++;
+}
+function rateSec() { const s = Math.floor(G.t) % 60; if (s !== rate.sec) { rate.sec = s; for (const k in rate.bk) rate.bk[k][s] = 0; } }
+const perMin = k => rate.bk[k] ? rate.bk[k].reduce((a, b) => a + b, 0) : 0;
+
+function newGame(seed) {
+  G = {v: 1, seed: seed || (Math.random() * 1e9) | 0, stock: {iron: 120, gear: 30, stone: 25}, got: {}, all: {}, ms: 0,
+    rs: {mine: 0, smelt: 0, craft: 0, belt: 0, power: 0}, t: 0, sp: 1, won: 0, launches: 0, hints: 1, lastRec: 'gear', cam: null, started: Date.now()};
+  world = genWorld(G.seed);
+  addEnt(world, mk('hub', HX, HY, 0));
+  applyState();
+  G.cam = {x: HX + 1.5, y: HY + 1.5, z: defaultZoom()};
+  rec.runs++;
+  save();
+}
+function save() {
+  if (!G) return;
+  G.ents = world.ents; G.nid = world.nid; G.saved = Date.now();
+  try {
+    localStorage.setItem(KEY, JSON.stringify(G, (k, v) => k[0] === '_' ? undefined : v));
+    localStorage.setItem(REC, JSON.stringify(rec));
+  } catch (e) {}
+  delete G.ents;
+}
+function loadGame() {
+  try { const s = JSON.parse(localStorage.getItem(KEY) || 'null'); if (s && s.v === 1 && s.ents) return s; } catch (e) {}
+  return null;
+}
+function startFrom(s) {
+  G = s;
+  world = genWorld(G.seed);
+  for (const e of G.ents) addEnt(world, e);
+  world.nid = Math.max(world.nid, G.nid || 1);
+  delete G.ents;
+  applyState();
+  if (!G.cam) G.cam = {x: HX + 1.5, y: HY + 1.5, z: defaultZoom()};
+}
+
+const afford = c => Object.keys(c).every(k => (G.stock[k] || 0) >= c[k]);
+function pay(c, sign) { for (const k in c) G.stock[k] = (G.stock[k] || 0) - c[k] * (sign || 1); }
+function missing(c) { const k = Object.keys(c).find(k => (G.stock[k] || 0) < c[k]); return k ? `Not enough ${IT[k].toLowerCase()}: it needs ${c[k]}, the hub has ${G.stock[k] || 0}.` : ''; }
+// everything inside a building, given back when it is removed
+function contents(e) {
+  const o = {}, add = (k, n) => { if (k && n > 0) o[k] = (o[k] || 0) + n; };
+  if (e.it) e.it.forEach(x => add(x.i, 1));
+  if (e.t === 'miner') add(ORE[world.ore[e.y * world.W + e.x]], e.on);
+  if (e.t === 'furnace' || e.t === 'efurnace') { add(e.ii, e.inN); add('coal', e.fuel); add(e.oi, e.on); if (e.busy && e.cr) add(Object.keys(RC[e.cr].in)[0], RC[e.cr].in[Object.keys(RC[e.cr].in)[0]]); }
+  if (e.t === 'asm') { for (const k in e.inv) add(k, e.inv[k]); if (e.r) { add(RC[e.r].out, e.on); if (e.busy) for (const k in RC[e.r].in) add(k, RC[e.r].in[k]); } }
+  if (e.t === 'ins') add(e.hold, 1);
+  if (e.buf) add(e.buf, 1);
+  if (e.q) e.q.forEach(x => add(x.i, 1));
+  if (e.t === 'gen') add('coal', e.fuel);
+  return o;
+}
+function removeEnt(e) {
+  if (e.t === 'hub') return;
+  pay(BD[e.t].cost, -1);
+  const c = contents(e);
+  for (const k in c) G.stock[k] = (G.stock[k] || 0) + c[k];
+  delEnt(world, e);
+  if (ui.sel === e.id) closeSheet();
+}
+function canPlace(t, x, y) {
+  if (x < 0 || y < 0 || x >= world.W || y >= world.H) return 'That is outside the map.';
+  const o = world.ore[y * world.W + x];
+  if (o === WATER) return 'You can’t build on water.';
+  if (t === 'miner' && !ORE[o]) return 'A miner has to stand on ore.';
+  return '';
+}
+function tunnelRole(x, y, d) {
+  for (let k = 1; k <= 5; k++) {
+    const t = at(world, x - DX[d] * k, y - DY[d] * k);
+    if (t && t.t === 'tunnel' && t.d === d) return t.role === 'in' && !t._out ? 'out' : 'in';
+  }
+  return 'in';
+}
+function build(t, x, y, d, quiet) {
+  const ex = at(world, x, y);
+  if (ex) {
+    if (ex.t === t && t !== 'tunnel') { ex.d = (ex.d + 1) % 4; world.dirty = true; return ex; }
+    if (ex.t !== 'belt' || t === 'belt') { if (!quiet && ex.t !== 'belt') select(ex); return null; }
+  }
+  const why = canPlace(t, x, y) || (afford(BD[t].cost) ? '' : missing(BD[t].cost));
+  if (why) { if (!quiet) toast(why); return null; }
+  if (ex) removeEnt(ex);
+  pay(BD[t].cost);
+  const e = mk(t, x, y, d);
+  if (t === 'asm' && G.lastRec && unlocked(world, G.lastRec) && RC[G.lastRec].m === 'a') e.r = G.lastRec;
+  if (t === 'tunnel') { if (world.dirty) rebuild(world); e.role = tunnelRole(x, y, d); }
+  addEnt(world, e);
+  return e;
+}
+
+/* ================= goals and research ================= */
+const goalMet = m => Object.keys(m.need).every(k => (G.got[k] || 0) >= m.need[k]);
+function checkGoal() {
+  const m = MS[G.ms];
+  if (!goalMet(m)) return;
+  if (m.fin) {
+    G.launches++; G.got = {};
+    const first = !G.won;
+    if (first) { G.won = G.t; if (!rec.best || G.t < rec.best) rec.best = G.t; }
+    openSheet({k: 'win', first});
+  } else {
+    G.ms++; G.got = {};
+    applyState(); renderBar();
+    openSheet({k: 'ms', done: G.ms - 1});
+  }
+  save();
+}
+function canResearch() { return unlocked(world, 'red'); }
+function buyResearch(k) {
+  const c = rcost(G.rs[k]);
+  if (!afford(c)) return;
+  pay(c); G.rs[k]++; applyState(); save();
+  toast(`${RS[k].n} is now level ${G.rs[k]}.`);
+  renderSheet();
+}
+
+/* ================= view ================= */
+const cv = $('#cv'), ctx = cv.getContext('2d');
+let dpr = 1, VW = 0, VH = 0;
+function defaultZoom() { return clamp(Math.round(Math.min(innerWidth, innerHeight) / 12), 28, 60); }
+function resize() {
+  dpr = Math.min(3, window.devicePixelRatio || 1); VW = innerWidth; VH = innerHeight;
+  cv.width = Math.round(VW * dpr); cv.height = Math.round(VH * dpr);
+}
+addEventListener('resize', resize);
+const minZ = () => Math.max(10, Math.sqrt(VW * VH / 3000));
+function clampCam() { const c = G.cam; c.z = clamp(c.z, minZ(), 110); c.x = clamp(c.x, 0, world.W); c.y = clamp(c.y, 0, world.H); }
+function toTile(px, py) { const c = G.cam; return [Math.floor(c.x + (px - VW / 2) / c.z), Math.floor(c.y + (py - VH / 2) / c.z)]; }
+function zoomAt(px, py, f) {
+  const c = G.cam, wx = c.x + (px - VW / 2) / c.z, wy = c.y + (py - VH / 2) / c.z;
+  c.z = clamp(c.z * f, minZ(), 110);
+  c.x = wx - (px - VW / 2) / c.z; c.y = wy - (py - VH / 2) / c.z;
+  clampCam();
+}
+
+let acc = 0, last = performance.now(), catching = false;
+function frame(now) {
+  const el = (now - last) / 1000; last = now;
+  if (!catching && G) {
+    if (el > 3) catchUp(el, el > 60);
+    else {
+      acc += Math.min(el, 0.25) * G.sp;
+      let n = 0;
+      while (acc >= TICK && n < 16) { tick(world, TICK); G.t += TICK; rateSec(); acc -= TICK; n++; }
+      if (n >= 16) acc = 0;
+      if (n) checkGoal();
+    }
+    draw();
+  }
+  requestAnimationFrame(frame);
+}
+function draw() {
+  const c = G.cam;
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.imageSmoothingEnabled = true;
+  const {ox, oy} = drawWorld(ctx, world, c.x, c.y, c.z, VW, VH, acc);
+  const z = c.z, X = x => Math.floor(ox + x * z), Y = y => Math.floor(oy + y * z);
+  // tunnel pairs while placing or looking at tunnels
+  const sel = ui.sel && world.ents.find(e => e.id === ui.sel);
+  if (ui.tool === 'tunnel' || (sel && sel.t === 'tunnel')) {
+    ctx.save(); ctx.setLineDash([z * 0.15, z * 0.12]); ctx.strokeStyle = 'rgba(255,255,255,.75)'; ctx.lineWidth = Math.max(2, z * 0.06);
+    for (const e of world.others) if (e.t === 'tunnel' && e.role === 'in') {
+      if (e._out) { ctx.beginPath(); ctx.moveTo(X(e.x) + z / 2, Y(e.y) + z / 2); ctx.lineTo(X(e._out.x) + z / 2, Y(e._out.y) + z / 2); ctx.stroke(); }
+      else { ctx.fillStyle = 'rgba(255,255,255,.12)'; for (let k = 1; k <= 5; k++) ctx.fillRect(X(e.x + DX[e.d] * k), Y(e.y + DY[e.d] * k), z, z); }
+    }
+    ctx.restore();
+  }
+  if (sel) {
+    const s = sel.t === 'hub' ? 3 : 1;
+    ctx.strokeStyle = '#fff'; ctx.lineWidth = 2.5; ctx.setLineDash([]);
+    rr(ctx, X(sel.x) - 2, Y(sel.y) - 2, z * s + 4, z * s + 4, 6); ctx.stroke();
+  }
+  // the building under the mouse, before it is placed
+  const h = ui.hover;
+  if (h && BD[ui.tool] && !gest) {
+    const [x, y] = h, ok = !canPlace(ui.tool, x, y) && afford(BD[ui.tool].cost) && (!at(world, x, y) || at(world, x, y).t === 'belt');
+    ctx.globalAlpha = 0.6;
+    const t = ui.tool, img = t === 'belt' ? beltSpr(0, 0) : t === 'tunnel' ? bSpr('tunnel', tunnelRole(x, y, ui.rot)) : t === 'sorter' ? bSpr('sorter', 1) : bSpr(t);
+    blit(ctx, img, X(x), Y(y), z, t === 'gen' ? 0 : ui.rot);
+    ctx.globalAlpha = 1;
+    if (!ok) { ctx.fillStyle = 'rgba(220,50,40,.35)'; ctx.fillRect(X(x), Y(y), z, z); }
+  }
+}
+
+let catchSt = null;
+function catchUp(sec, report) {
+  sec = Math.min(sec, 7200);
+  if (sec < 1) return;
+  catching = true;
+  const before = Object.assign({}, G.all), ms0 = G.ms;
+  let steps = Math.floor(sec / 0.25);
+  const total = steps, box = $('#catch');
+  const run = () => {
+    const n = Math.min(steps, 500);
+    for (let i = 0; i < n; i++) { tick(world, 0.25); G.t += 0.25; if (i % 20 === 0) checkGoalQuiet(); }
+    steps -= n;
+    if (total > 2000) { box.hidden = false; box.textContent = `Running the factory while you were away… ${Math.round(100 - steps / total * 100)}%`; }
+    if (steps > 0) { setTimeout(run, 0); return; }
+    box.hidden = true; catching = false; last = performance.now(); acc = 0;
+    checkGoal();
+    if (report) {
+      const got = {};
+      for (const k in G.all) { const d = G.all[k] - (before[k] || 0); if (d > 0) got[k] = d; }
+      if (Object.keys(got).length || G.ms > ms0) openSheet({k: 'away', sec, got, ms: G.ms - ms0});
+    }
+    save();
+  };
+  run();
+}
+function checkGoalQuiet() {
+  const m = MS[G.ms];
+  if (!m.fin && goalMet(m)) { G.ms++; G.got = {}; applyState(); renderBar(); }
+}
+
+/* ================= input ================= */
+const P = new Map();
+let gest = null;
+function step(tx, ty) {
+  // walk one tile at a time towards (tx, ty) so drawn belt lines have no gaps
+  while (gest.lx !== tx || gest.ly !== ty) {
+    const dx = tx - gest.lx, dy = ty - gest.ly;
+    let d;
+    if (Math.abs(dx) >= Math.abs(dy)) d = dx > 0 ? 0 : 2; else d = dy > 0 ? 1 : 3;
+    const nx = gest.lx + DX[d], ny = gest.ly + DY[d];
+    if (ui.tool === 'belt') {
+      const pb = gest.prev;
+      if (pb && pb.t === 'belt') { pb.d = d; world.dirty = true; }
+      const e = at(world, nx, ny);
+      if (e && e.t === 'belt') { e.d = d; world.dirty = true; gest.prev = e; }
+      else if (!e) { gest.prev = build('belt', nx, ny, d, true); if (!gest.prev && !gest.warned) { gest.warned = 1; toast(canPlace('belt', nx, ny) || missing(BD.belt.cost)); } }
+      else gest.prev = null;
+      ui.rot = d;
+    } else if (ui.tool === 'remove') {
+      const e = at(world, nx, ny);
+      if (e) removeEnt(e);
+    }
+    gest.lx = nx; gest.ly = ny;
+  }
+}
+function startDraw() {
+  const [x, y] = toTile(gest.sx, gest.sy);
+  gest.m = 'draw'; gest.lx = x; gest.ly = y; gest.prev = null;
+  if (ui.tool === 'belt') {
+    const e = at(world, x, y);
+    gest.prev = e && e.t === 'belt' ? e : !e ? build('belt', x, y, ui.rot, true) : null;
+  } else { const e = at(world, x, y); if (e) removeEnt(e); }
+}
+cv.addEventListener('pointerdown', ev => {
+  if (catching) return;
+  cv.setPointerCapture(ev.pointerId);
+  P.set(ev.pointerId, {x: ev.clientX, y: ev.clientY});
+  if (P.size === 1) gest = {m: 'wait', sx: ev.clientX, sy: ev.clientY, px: ev.clientX, py: ev.clientY, btn: ev.button, mouse: ev.pointerType === 'mouse'};
+  else if (P.size === 2) {
+    const [a, b] = [...P.values()];
+    gest = {m: 'pinch', d0: Math.hypot(a.x - b.x, a.y - b.y) || 1, z0: G.cam.z, mx: (a.x + b.x) / 2, my: (a.y + b.y) / 2};
+  }
+});
+cv.addEventListener('pointermove', ev => {
+  if (ev.pointerType === 'mouse') ui.hover = toTile(ev.clientX, ev.clientY);
+  if (!P.has(ev.pointerId) || !gest) return;
+  P.set(ev.pointerId, {x: ev.clientX, y: ev.clientY});
+  if (gest.m === 'pinch') {
+    if (P.size < 2) return;
+    const [a, b] = [...P.values()], mx = (a.x + b.x) / 2, my = (a.y + b.y) / 2;
+    const c = G.cam;
+    c.x -= (mx - gest.mx) / c.z; c.y -= (my - gest.my) / c.z;
+    zoomAt(mx, my, gest.z0 * Math.hypot(a.x - b.x, a.y - b.y) / gest.d0 / c.z);
+    gest.mx = mx; gest.my = my;
+    return;
+  }
+  if (gest.m === 'wait' && Math.hypot(ev.clientX - gest.sx, ev.clientY - gest.sy) > 8) {
+    const drawTool = ui.tool === 'belt' || ui.tool === 'remove';
+    if (drawTool && gest.btn === 0) startDraw(); else gest.m = 'pan';
+  }
+  if (gest.m === 'pan') {
+    G.cam.x -= (ev.clientX - gest.px) / G.cam.z; G.cam.y -= (ev.clientY - gest.py) / G.cam.z; clampCam();
+  } else if (gest.m === 'draw') {
+    const [x, y] = toTile(ev.clientX, ev.clientY);
+    step(x, y);
+  }
+  gest.px = ev.clientX; gest.py = ev.clientY;
+});
+function endPointer(ev) {
+  if (!P.has(ev.pointerId)) return;
+  P.delete(ev.pointerId);
+  if (!gest) return;
+  if (gest.m === 'wait' && P.size === 0 && ev.type === 'pointerup') { const [x, y] = toTile(gest.sx, gest.sy); tap(x, y, gest.btn); }
+  if (gest.m === 'draw') save();
+  if (gest.m === 'pinch') gest = P.size ? {m: 'none'} : null;
+  else if (!P.size) gest = null;
+}
+cv.addEventListener('pointerup', endPointer);
+cv.addEventListener('pointercancel', endPointer);
+cv.addEventListener('pointerleave', () => { ui.hover = null; });
+cv.addEventListener('contextmenu', ev => ev.preventDefault());
+cv.addEventListener('wheel', ev => { ev.preventDefault(); zoomAt(ev.clientX, ev.clientY, Math.exp(-ev.deltaY * 0.0015)); }, {passive: false});
+function tap(x, y, btn) {
+  const e = at(world, x, y);
+  if (btn === 2) { setTool('hand'); return; }
+  if (ui.tool === 'hand') {
+    if (e) select(e);
+    else {
+      closeSheet();
+      const o = x >= 0 && y >= 0 && x < world.W && y < world.H ? world.ore[y * world.W + x] : 0;
+      if (o) toast(o === WATER ? 'Water. Nothing can be built here.' : `This tile has ${ORE_N[o]}. Put a miner on it to mine it.`);
+    }
+  } else if (ui.tool === 'remove') { if (e && e.t !== 'hub') { removeEnt(e); save(); } }
+  else { build(ui.tool, x, y, ui.rot); save(); renderStrip(); }
+}
+addEventListener('keydown', ev => {
+  if (ev.target.closest && ev.target.closest('input,textarea') || ui.ask) return;
+  const k = ev.key.toLowerCase();
+  if (k === 'escape') { if (ui.sheet) closeSheet(); else setTool('hand'); }
+  else if (k === 'r') {
+    const s = ui.sel && world.ents.find(e => e.id === ui.sel);
+    if (s && ui.tool === 'hand') rotateEnt(s); else { ui.rot = (ui.rot + (ev.shiftKey ? 3 : 1)) % 4; renderStrip(); }
+  }
+  else if (k === 'x' || k === 'delete') setTool('remove');
+  else if (k === 'q') {
+    const e = ui.hover && at(world, ui.hover[0], ui.hover[1]);
+    if (e && e.t !== 'hub') { ui.rot = e.d; setTool(e.t); if (e.t === 'asm' && e.r) G.lastRec = e.r; } else setTool('hand');
+  }
+  else if (/^[0-9]$/.test(k)) { const list = toolList(), t = list[k === '0' ? 9 : +k - 1]; if (t) setTool(t); }
+});
+
+/* ================= interface ================= */
+let toastT = 0;
+function toast(s) { const t = $('#toast'); t.textContent = s; t.hidden = false; clearTimeout(toastT); toastT = setTimeout(() => { t.hidden = true; }, 2800); }
+function toolList() { return ['hand', 'remove', ...TOOLS.filter(t => unlocked(world, t))]; }
+function setTool(t) {
+  ui.tool = ui.tool === t && t !== 'hand' ? 'hand' : t;
+  if (ui.tool !== 'hand' && ui.sheet && ui.sheet.k === 'ent') closeSheet();
+  renderBar();
+}
+function renderBar() {
+  $('#bar').innerHTML = toolList().map((t, i) => `<button class="tool${ui.tool === t ? ' on' : ''}${i === 1 ? ' sep' : ''}" data-tool="${t}" title="${TN[t]}"><img src="${bImg(t)}" alt=""><span>${TN[t]}</span></button>`).join('');
+  renderStrip();
+}
+const ARW = ['→', '↓', '←', '↑'];
+function costHtml(c, times) {
+  return `<span class="cost">${Object.keys(c).map(k => { const n = c[k] * (times || 1), have = G.stock[k] || 0; return `<span class="${have < n ? 'no' : ''}" title="${IT[k]}"><img src="${iImg(k)}" alt="${IT[k]}">${n}<small class="muted">/${fmt(have)}</small></span>`; }).join('')}</span>`;
+}
+function renderStrip() {
+  const s = $('#strip'), t = ui.tool;
+  if (t === 'hand') { s.hidden = true; return; }
+  s.hidden = false;
+  if (t === 'remove') { s.innerHTML = `<div class="sinfo"><b>Remove</b><div class="tip">Tap or drag over buildings to remove them. Their cost and everything inside goes back to the hub.</div></div>`; return; }
+  let tip = BD[t].tip;
+  if (t === 'tunnel') tip = 'Place the entrance, then the exit up to four tiles ahead in the same direction. Belts can cross over the gap.';
+  s.innerHTML = `<div class="sinfo"><b>${BD[t].n}</b><span id="scost">${costHtml(BD[t].cost)}</span><div class="tip">${tip}</div></div>${t === 'gen' ? '' : `<button class="btn" data-act="rot" aria-label="Rotate">${ARW[ui.rot]} Turn</button>`}`;
+}
+$('#bar').addEventListener('click', ev => { const b = ev.target.closest('[data-tool]'); if (b) setTool(b.dataset.tool); });
+$('#strip').addEventListener('click', ev => { if (ev.target.closest('[data-act="rot"]')) { ui.rot = (ui.rot + 1) % 4; renderStrip(); } });
+
+function hud() {
+  const m = MS[G.ms];
+  $('#gt').innerHTML = `<span>${m.fin ? (G.launches ? `Rocket ${G.launches + 1}` : `Goal ${G.ms + 1} of ${MS.length}: the rocket`) : `Goal ${G.ms + 1} of ${MS.length}`}</span><span>Hub ›</span>`;
+  $('#gchips').innerHTML = Object.keys(m.need).map(k => { const n = m.need[k], g = Math.min(G.got[k] || 0, n); return `<span class="gc${g >= n ? ' ok' : ''}" title="${IT[k]}"><img src="${iImg(k)}" alt="${IT[k]}">${g}/${n}</span>`; }).join('');
+  const used = Math.round(world.demS), cap = Math.round(world.cap);
+  $('#pwt').textContent = `ϟ ${used} / ${cap} kW`;
+  $('#pwb').style.width = Math.min(100, used / Math.max(1, cap) * 100) + '%';
+  $('#pow').classList.toggle('low', world.pr < 0.95);
+  $('#spd').textContent = '×' + G.sp;
+  const hint = $('#hint'), show = G.hints && !ui.sheet;
+  hint.hidden = !show;
+  if (show) {
+    const t = hintText();
+    if ($('#hintt').textContent !== t) { $('#hintt').textContent = t; hint.classList.remove('min'); }
+    hint.style.top = Math.round($('#top').getBoundingClientRect().bottom + 6) + 'px';
+  }
+  const sc = $('#scost');
+  if (sc && BD[ui.tool]) sc.innerHTML = costHtml(BD[ui.tool].cost);
+}
+function hintText() {
+  if (G.ms === 0) {
+    const es = world.ents, oreAt = e => world.ore[e.y * world.W + e.x];
+    const miners = es.filter(e => e.t === 'miner');
+    if (!miners.some(e => oreAt(e) === 1)) return 'Choose Miner below and tap a tile of iron ore (the blue-grey stones). The white arrow shows where the ore comes out; tap the miner again to turn it.';
+    if (!es.some(e => e.t === 'furnace')) return 'Choose Furnace and put it where the miner’s arrow points, or at the end of a belt from the miner. It turns iron ore into iron plates.';
+    if (!miners.some(e => oreAt(e) === 3)) return 'Furnaces burn coal. Put a miner on coal (the black stones) and bring the coal into the furnace from another side, directly or with a belt.';
+    if (!(G.got.iron > 0)) return 'Draw a belt from the furnace’s arrow to the hub, the big building in the middle: choose Belt and drag your finger along the way.';
+    return 'Iron plates are reaching the hub. Deliver 30 to finish the first goal. Tap the hub or the goal card to see what it unlocks.';
+  }
+  return MS[G.ms].hint;
+}
+$('#goal').onclick = () => openSheet({k: 'hub'});
+$('#pow').onclick = () => toast(world.pr < 0.95
+  ? `Your machines want ${Math.round(world.demS)} kW but there is only ${Math.round(world.cap)} kW, so they all run slower. Add generators fed with coal.`
+  : `Machines use ${Math.round(world.demS)} kW of ${Math.round(world.cap)} kW. The hub gives ${Math.round(world.hubPow * world.mod.power)} kW; each generator with coal adds ${Math.round(GEN * world.mod.power)} kW.`);
+$('#spd').onclick = () => { G.sp = G.sp === 1 ? 2 : G.sp === 2 ? 4 : 1; hud(); };
+$('#menu').onclick = () => openSheet({k: 'menu'});
+$('#hint').onclick = ev => { if (!ev.target.closest('#hintx')) $('#hint').classList.toggle('min'); };
+$('#hintx').onclick = () => { G.hints = 0; hud(); toast('Hints are off. You can turn them back on in the menu.'); };
+$('#zin').onclick = () => zoomAt(VW / 2, VH / 2, 1.25);
+$('#zout').onclick = () => zoomAt(VW / 2, VH / 2, 0.8);
+$('#zhome').onclick = () => { G.cam.x = HX + 1.5; G.cam.y = HY + 1.5; };
+
+function ask(text, yes, fn) { ui.ask = {text, yes, fn}; renderAsk(); }
+function renderAsk() {
+  const a = $('#ask');
+  if (!ui.ask) { a.hidden = true; a.innerHTML = ''; return; }
+  a.hidden = false;
+  a.innerHTML = `<div class="sheet-bg"><div class="dlg" role="dialog" aria-modal="true"><p>${esc(ui.ask.text)}</p><div class="row end"><button class="btn" id="askno">Cancel</button><button class="btn pri" id="askyes">${esc(ui.ask.yes)}</button></div></div></div>`;
+  $('#askno').onclick = () => { ui.ask = null; renderAsk(); };
+  $('#askyes').onclick = () => { const f = ui.ask.fn; ui.ask = null; renderAsk(); f(); };
+}
+
+/* ----- sheets ----- */
+function select(e) {
+  if (e.t === 'hub') { openSheet({k: 'hub'}); ui.sel = e.id; return; }
+  ui.sel = e.id;
+  openSheet({k: 'ent', id: e.id});
+  // keep the building visible above the sheet on a phone
+  if (VW < 900) { const c = G.cam, sy = VH / 2 + (e.y + 0.5 - c.y) * c.z; if (sy > VH * 0.3) c.y = e.y + 0.5 - (VH * 0.3 - VH / 2) / c.z; }
+}
+function openSheet(s) { ui.sheet = s; if (s.k !== 'ent' && s.k !== 'hub') ui.sel = null; renderSheet(); }
+function closeSheet() { ui.sheet = null; ui.sel = null; renderSheet(); }
+function rotateEnt(e) { e.d = (e.d + 1) % 4; world.dirty = true; save(); }
+const STN = {work: 'Working', noin: 'Waiting for input', full: 'Output blocked', lowpow: 'Short of power', nofuel: 'Out of coal', norec: 'Choose a recipe', noore: 'No ore under it', idle: 'Ready', nofilter: 'Choose what to take from the hub'};
+function statusHtml(e) {
+  let st = e.st || 'idle', s = STN[st] || '';
+  if (st === 'work' && POW[e.t] && world.pr < 0.9) { st = 'lowpow'; s = `Working at ${Math.round(world.pr * 100)}% speed: short of power`; }
+  if (e.t === 'asm' && st === 'noin' && e.miss) s = `Waiting for ${IT[e.miss].toLowerCase()}`;
+  if (e.t === 'gen') s = st === 'nofuel' ? 'Out of coal' : st === 'work' ? 'Giving power' : 'Ready, nothing needs its power yet';
+  if (e.t === 'tunnel') s = e.role === 'in' ? (e._out ? `Entrance, the exit is ${e._len} tiles ahead` : 'Entrance without an exit: place one up to four tiles ahead') : (e._in ? 'Exit' : 'Exit without an entrance behind it');
+  if (e.t === 'belt' || e.t === 'splitter' || e.t === 'sorter') s = '';
+  const cls = st === 'work' ? 'work' : st === 'nofuel' || st === 'lowpow' || st === 'noore' ? 'bad' : st === 'full' || st === 'norec' || st === 'nofilter' ? 'warn' : '';
+  return s ? `<span class="stat ${cls}">${s}</span>` : '';
+}
+const inv = o => `<div class="inv">${Object.keys(o).map(k => `<span title="${IT[k]}"><img src="${iImg(k)}" alt="">${IT[k]} <b>${fmt(o[k])}</b></span>`).join('') || '<span class="muted">Empty</span>'}</div>`;
+function recIn(r) { return Object.keys(r.in).map(k => `${r.in[k]}<img src="${iImg(k)}" alt="${IT[k]}">`).join(' '); }
+function entLive(e) {
+  const w = world;
+  let h = `<div class="small">${statusHtml(e)}</div>`;
+  switch (e.t) {
+    case 'belt': {
+      const v = BELT * w.mod.belt;
+      h += `<p class="small muted">Moves ${num(v)} tiles a second and carries up to ${num(v / SP)} items a second. Belts merge when one runs into the side of another.</p>`;
+      break;
+    }
+    case 'miner': {
+      const o = ORE[w.ore[e.y * w.W + e.x]];
+      h += `<p class="small">Mines ${num(0.5 * w.mod.mine)} ${o ? IT[o].toLowerCase() : 'ore'} a second and uses ${POW.miner} kW. Ore comes out on the arrow side, onto a belt or straight into a machine.</p>`;
+      break;
+    }
+    case 'furnace': case 'efurnace': {
+      const el = e.t === 'efurnace', sp = (el ? 2 : 1) * w.mod.smelt;
+      h += `<div class="lbl">Inside</div>${inv(Object.assign({}, e.inN ? {[e.ii]: e.inN} : {}, !el ? {coal: e.fuel} : {}, e.on ? {[e.oi]: e.on} : {}))}`;
+      h += `<p class="small">Makes ${num(sp / 1.6)} iron or copper plates a second${unlocked(w, 'brick') ? `, ${num(sp / 3.2)} bricks from 2 stone each` : ''}${unlocked(w, 'steel') ? `, or ${num(sp / 8)} steel from 5 iron plates each` : ''}. ${el ? `Uses ${POW.efurnace} kW.` : 'One coal lasts for 8 plates. Bring coal from a different side than the ore, or on the same belt in small amounts.'}</p>`;
+      break;
+    }
+    case 'asm': {
+      const r = RC[e.r];
+      if (r) {
+        const per = w.mod.craft / r.t;
+        h += `<div class="lbl">Inside</div>${inv(Object.assign(Object.fromEntries(Object.keys(r.in).map(k => [k, e.inv[k] || 0])), e.on ? {[r.out]: e.on} : {}))}`;
+        const ic = k => `<img class="ii" src="${iImg(k)}" alt="${IT[k]}" title="${IT[k]}">`;
+        h += `<p class="small">Each second at full speed it makes ${num(per * r.n)} ${ic(r.out)} and uses ${Object.keys(r.in).map(k => `${num(per * r.in[k])} ${ic(k)}`).join(' ')}. Inputs can come in from any side except the arrow side. It uses ${POW.asm} kW while working.</p>`;
+      }
+      break;
+    }
+    case 'ins':
+      h += `<p class="small">Takes items from the tile behind it and puts them on the tile its arrow points to, about ${num(INS * w.mod.belt)} a second. It only picks up what the next building can take, so it works from a mixed belt. From the hub it takes the item you choose below.</p>`;
+      if (e.hold) h += inv({[e.hold]: 1});
+      break;
+    case 'splitter': h += `<p class="small">Takes items from the tile behind it and hands them out in turn to the left, ahead and right. If one way is blocked or empty, the others get more.</p>`; break;
+    case 'sorter': h += `<p class="small">Takes items from behind. The item you choose goes out to the ${e.side === 1 ? 'right' : 'left'}; everything else carries on ahead.</p>`; break;
+    case 'tunnel': h += `<p class="small">A belt under the ground. Items go in at the entrance and come out of the exit in the same direction, up to four tiles further on.</p>`; break;
+    case 'gen': h += `<div class="lbl">Coal</div>${inv({coal: e.fuel})}<p class="small">Gives up to ${Math.round(GEN * w.mod.power)} kW while it has coal. At full load one coal lasts ${num(COAL_KJ / GEN / w.mod.power)} s. Coal can come from any side.</p>`; break;
+  }
+  return h;
+}
+function filterGrid(e, act) {
+  const list = IORDER.filter(k => Object.values(ORE).includes(k) || (RC[k] && unlocked(world, k)));
+  return `<div class="flt"><button data-act="${act}" data-k="" class="${!e.f ? 'on' : ''}">Any</button>${list.map(k => `<button data-act="${act}" data-k="${k}" class="${e.f === k ? 'on' : ''}" title="${IT[k]}"><img src="${iImg(k)}" alt="${IT[k]}"></button>`).join('')}</div>`;
+}
+function entSheet(e) {
+  let h = `<div class="sh-h"><img src="${bImg(e.t === 'tunnel' ? 'tunnel' : e.t)}" alt=""><div class="t"><b>${BD[e.t].n}</b></div><button class="x" data-act="close" aria-label="Close">×</button></div>`;
+  if (e.t === 'asm') {
+    h += `<div class="lbl">Recipe</div><div class="recs">${Object.keys(RC).filter(k => RC[k].m === 'a' && unlocked(world, k)).map(k => `<button class="rec${e.r === k ? ' on' : ''}" data-act="rec" data-k="${k}"><img src="${iImg(RC[k].out)}" alt=""><span>${IT[RC[k].out]}${RC[k].n > 1 ? ' ×' + RC[k].n : ''}<small>${recIn(RC[k])}</small></span></button>`).join('')}</div>`;
+  }
+  if (e.t === 'sorter') {
+    h += `<div class="lbl">Item that turns off</div>${filterGrid(e, 'flt')}<div class="lbl">It turns to the</div><div class="row"><button class="btn sm${e.side === 3 ? ' pri' : ''}" data-act="side" data-k="3">Left</button><button class="btn sm${e.side === 1 ? ' pri' : ''}" data-act="side" data-k="1">Right</button></div>`;
+  }
+  if (e.t === 'ins') h += `<div class="lbl">Only move</div>${filterGrid(e, 'flt')}`;
+  h += `<div id="live" class="mt">${entLive(e)}</div>`;
+  h += `<div class="row mt">${e.t !== 'gen' ? '<button class="btn" data-act="erot">↻ Turn</button>' : ''}<button class="btn bad" data-act="erem">Remove</button></div>`;
+  return h;
+}
+function hubSheet() {
+  const tab = ui.tab;
+  let h = `<div class="sh-h"><img src="${bImg('hub')}" alt=""><div class="t"><b>Hub</b><div class="small muted">Everything delivered here is stored and pays for buildings.</div></div><button class="x" data-act="close" aria-label="Close">×</button></div>`;
+  h += `<div class="tabs"><button data-act="tab" data-k="goal" class="${tab === 'goal' ? 'on' : ''}">Goal</button><button data-act="tab" data-k="res" class="${tab === 'res' ? 'on' : ''}">Research</button><button data-act="tab" data-k="stock" class="${tab === 'stock' ? 'on' : ''}">Stock</button></div>`;
+  if (tab === 'goal') {
+    const m = MS[G.ms];
+    h += `<div id="live">${goalLive()}</div>`;
+    if (!m.fin) h += `<div class="lbl">Finishing it unlocks</div>${unlockHtml(G.ms)}`;
+    h += `<p class="small">${esc(hintText())}</p>`;
+    if (G.ms > 0) h += `<div class="lbl">Done</div><div class="small muted">${MS.slice(0, G.ms).map((x, i) => `Goal ${i + 1}: ${Object.keys(x.need).map(k => `${x.need[k]} ${IT[k].toLowerCase()}`).join(', ')}`).join('<br>')}</div>`;
+  } else if (tab === 'res') {
+    if (!canResearch()) h += `<p>Research opens once you can make red science, after goal 3. Science packs delivered to the hub are spent here on upgrades for the whole factory.</p>`;
+    else h += Object.keys(RS).map(k => {
+      const L = G.rs[k], c = rcost(L), lock = Object.keys(c).find(x => !unlocked(world, x));
+      return `<div class="rs"><div class="t"><b>${RS[k].n}</b> <span class="muted small">level ${L}</span><div class="small muted">${RS[k].d}</div><div class="small">${costHtml(c)}</div>${lock ? `<div class="small muted">Needs ${IT[lock].toLowerCase()}, which a later goal unlocks.</div>` : ''}</div><button class="btn pri sm" data-buy="${k}" data-act="buy" data-k="${k}"${afford(c) && !lock ? '' : ' disabled'}>Research</button></div>`;
+    }).join('');
+  } else h += `<div id="live">${stockLive()}</div>`;
+  return h;
+}
+function goalLive() {
+  const m = MS[G.ms];
+  let h = `<b>${m.fin ? (G.launches ? `Rocket ${G.launches + 1}` : 'Last goal: launch the rocket') : `Goal ${G.ms + 1} of ${MS.length}`}</b>`;
+  h += Object.keys(m.need).map(k => { const n = m.need[k], g = Math.min(G.got[k] || 0, n), pm = perMin(k); return `<div class="need"><img src="${iImg(k)}" alt=""><div class="nb"><div class="row" style="justify-content:space-between"><span>${IT[k]}</span><span class="small"><b>${g}</b> / ${n}${pm ? ` <span class="muted">· ${pm} a minute</span>` : ''}</span></div><div class="pbar${g >= n ? ' ok' : ''}"><i style="width:${g / n * 100}%"></i></div></div></div>`; }).join('');
+  return h;
+}
+function unlockHtml(ms) {
+  const m = MS[ms];
+  return `<div class="unl">${(m.b || []).map(t => `<span><img src="${bImg(t)}" alt="">${BD[t].n}</span>`).join('')}${(m.r || []).map(r => `<span><img src="${iImg(RC[r].out)}" alt="">${IT[RC[r].out]}</span>`).join('')}${ms === 2 ? '<span>Research</span>' : ''}</div>`;
+}
+function stockLive() {
+  const ks = IORDER.filter(k => (G.stock[k] || 0) > 0 || perMin(k));
+  if (!ks.length) return '<p class="muted">The hub is empty.</p>';
+  return `<div class="stock">${ks.map(k => `<div><img src="${iImg(k)}" alt=""><span><b>${fmt(G.stock[k] || 0)}</b> <small>${IT[k]}${perMin(k) ? ` · +${perMin(k)} a minute` : ''}</small></span></div>`).join('')}</div>`;
+}
+function menuSheet() {
+  return `<div class="sh-h"><div class="t"><b>Ore to Orbit</b><div class="small muted">Played ${fmtT(G.t)}${G.won ? ` · rocket launched after ${fmtT(G.won)}` : ''}${rec.best ? ` · best launch ${fmtT(rec.best)}` : ''}</div></div><button class="x" data-act="close" aria-label="Close">×</button></div>
+  <div class="row"><button class="btn pri" data-act="help">How to play</button><button class="btn" data-act="hints">${G.hints ? 'Hide hints' : 'Show hints'}</button><button class="btn" data-act="new">New map</button></div>
+  <p class="small muted mt">The game saves in this browser. While the page is closed the factory keeps running for up to two hours. The speed button at the top runs the game two or four times faster.</p>
+  <p class="small muted">On a computer: drag with the right mouse button to move the map, use the wheel to zoom, R to turn, Q to copy the building under the mouse, X to remove and Esc to go back to looking.</p>`;
+}
+function msSheet(s) {
+  const m = MS[s.done], nx = MS[G.ms];
+  return `<div class="sh-h"><div class="t"><b>Goal ${s.done + 1} done</b></div><button class="x" data-act="close" aria-label="Close">×</button></div>
+  <div class="lbl">Unlocked</div>${unlockHtml(s.done)}
+  <div class="lbl">Next goal</div><div class="unl">${Object.keys(nx.need).map(k => `<span><img src="${iImg(k)}" alt="">${nx.need[k]} ${IT[k]}</span>`).join('')}</div>
+  <p class="small">${esc(nx.hint || '')}</p><div class="row end"><button class="btn pri" data-act="close">Continue</button></div>`;
+}
+function winSheet(s) {
+  return `<div class="sh-h"><img src="${iImg('part')}" alt=""><div class="t"><b>${s.first ? 'The rocket has launched' : `Rocket ${G.launches} launched`}</b></div><button class="x" data-act="close" aria-label="Close">×</button></div>
+  <p>${s.first ? `You built a factory from a few iron plates to a rocket in ${fmtT(G.won)} of play.${rec.best === G.won ? ' That is your best time.' : ` Your best time is ${fmtT(rec.best)}.`}` : 'Another 100 rocket parts are on their way to orbit.'}</p>
+  <p class="small muted">You can keep building: research has no top level, and every 100 rocket parts launch another rocket. A new map from the menu starts again from the beginning.</p>
+  <div class="row end"><button class="btn pri" data-act="close">Keep building</button></div>`;
+}
+function awaySheet(s) {
+  return `<div class="sh-h"><div class="t"><b>While you were away</b><div class="small muted">The factory ran for ${fmtT(s.sec)}${s.sec >= 7200 ? ', the most it runs without you' : ''}.</div></div><button class="x" data-act="close" aria-label="Close">×</button></div>
+  ${Object.keys(s.got).length ? `<div class="lbl">Delivered to the hub</div>${inv(s.got)}` : ''}${s.ms ? `<p>You finished ${s.ms === 1 ? 'a goal' : s.ms + ' goals'}.</p>` : ''}
+  <div class="row end mt"><button class="btn pri" data-act="close">Continue</button></div>`;
+}
+
+/* ----- how to play, with small working factories ----- */
+const DEMOS = {
+  mine: {W: 7, H: 3, ore: [[0, 0, 1], [0, 1, 1], [0, 2, 1], [1, 0, 1], [1, 2, 1]], hub: [4, 0], ents: [['miner', 0, 1, 0], ['belt', 1, 1, 0], ['belt', 2, 1, 0], ['belt', 3, 1, 0], ['miner', 1, 0, 1], ['miner', 1, 2, 3]]},
+  smelt: {W: 8, H: 3, ore: [[0, 1, 1], [0, 0, 1], [0, 2, 1], [2, 2, 3], [1, 2, 3]], hub: [5, 0], ents: [['miner', 0, 1, 0], ['belt', 1, 1, 0], ['furnace', 2, 1, 0], ['miner', 2, 2, 3], ['belt', 3, 1, 0], ['belt', 4, 1, 0]]},
+  asm: {W: 7, H: 3, ore: [[0, 1, 1], [0, 0, 3], [1, 2, 3]], hub: [4, 0], ents: [['miner', 0, 1, 0], ['furnace', 1, 1, 0], ['miner', 1, 2, 3], ['asm', 2, 1, 0, {r: 'gear'}], ['belt', 3, 1, 0], ['miner', 0, 0, 0], ['gen', 1, 0, 0]], hubPow: 160},
+  ins: {W: 8, H: 4, ore: [[0, 0, 1], [1, 1, 3]], hub: [5, 0], ents: [['miner', 0, 0, 0], ['belt', 1, 0, 0], ['belt', 2, 0, 0], ['belt', 3, 0, 0], ['belt', 4, 0, 0], ['miner', 1, 1, 3], ['ins', 2, 1, 1], ['ins', 3, 1, 1], ['furnace', 2, 2, 1], ['furnace', 3, 2, 1], ['belt', 2, 3, 0], ['belt', 3, 3, 0], ['belt', 4, 3, 3], ['belt', 4, 2, 0]]},
+  split: {W: 7, H: 3, ore: [[0, 1, 2], [1, 0, 2], [1, 2, 2]], hub: [4, 0], ents: [['miner', 0, 1, 0], ['miner', 1, 0, 1], ['miner', 1, 2, 3], ['belt', 1, 1, 0], ['splitter', 2, 1, 0], ['belt', 2, 0, 0], ['belt', 3, 0, 0], ['belt', 3, 1, 0], ['belt', 2, 2, 0], ['belt', 3, 2, 0]]},
+  sort: {W: 8, H: 4, ore: [[0, 1, 1], [1, 0, 3]], hub: [5, 0], ents: [['miner', 0, 1, 0], ['miner', 1, 0, 1], ['belt', 1, 1, 0], ['sorter', 2, 1, 0, {f: 'coal', side: 1}], ['belt', 3, 1, 0], ['belt', 4, 1, 0], ['belt', 2, 2, 1], ['belt', 2, 3, 0], ['belt', 3, 3, 0], ['belt', 4, 3, 3], ['belt', 4, 2, 0]]},
+  tunnel: {W: 9, H: 4, ore: [[0, 1, 1], [3, 0, 3]], hub: [6, 0], ents: [['miner', 0, 1, 0], ['belt', 1, 1, 0], ['tunnel', 2, 1, 0, {role: 'in'}], ['tunnel', 4, 1, 0, {role: 'out'}], ['belt', 5, 1, 0], ['miner', 3, 0, 1], ['belt', 3, 1, 1], ['belt', 3, 2, 1], ['gen', 3, 3, 0]], hubPow: 0}
+};
+function demoWorld(s) {
+  const w = makeWorld(s.W, s.H);
+  for (const [x, y, o] of s.ore) w.ore[y * s.W + x] = o;
+  if (s.hub) addEnt(w, mk('hub', s.hub[0], s.hub[1], 0));
+  for (const [t, x, y, d, ex] of s.ents) addEnt(w, Object.assign(mk(t, x, y, d), ex || {}));
+  w.hubPow = s.hubPow == null ? 1e5 : s.hubPow;
+  w.mod.mine = 1.6; w.mod.smelt = 1.6; w.mod.craft = 1.6;
+  if (s.ents.some(e => e[0] === 'gen')) for (const e of w.ents) if (e.t === 'gen') e.fuel = 2;
+  for (let i = 0; i < 90; i++) tick(w, TICK);
+  return w;
+}
+let demoRun = null;
+function helpSheet() {
+  const L = (o, n) => `<span><img src="${dataImg('g0_' + o, groundSpr(0, o))}" alt="">${n}</span>`;
+  const D = k => `<canvas data-demo="${k}" style="aspect-ratio:${DEMOS[k].W}/${DEMOS[k].H}"></canvas>`;
+  return `<div class="help"><div class="sh-h"><div class="t"><b>How to play</b></div><button class="x" data-act="close" aria-label="Close">×</button></div>
+  <p>You start with a hub in the middle of the map and a few materials. Each goal asks you to deliver items to the hub, and finishing it unlocks new buildings and recipes. The goal card at the top shows how far you are. The last goal is 100 rocket parts.</p>
+  <p>Buildings are paid for with items from the hub, shown next to the building when you pick it. Removing a building gives back its cost and everything inside it, so you can rebuild freely.</p>
+  <div class="legend">${L(1, 'Iron ore')}${L(2, 'Copper ore')}${L(3, 'Coal')}${L(4, 'Stone')}${L(5, 'Water')}</div>
+  <h3>Mining and belts</h3>${D('mine')}
+  <p>A miner stands on an ore tile and puts the ore out on the side its white arrow points to. Belts carry items the way their stripes move. A belt that runs into the side of another belt joins it, as the two miners at the top and bottom do here. Whatever reaches the hub is delivered. With the Belt tool, drag your finger to draw a line; it follows your corners.</p>
+  <h3>Smelting</h3>${D('smelt')}
+  <p>A furnace turns iron ore into iron plates and copper ore into copper plates. It also burns coal, one piece for every eight plates. Bring the coal in from another side, like the coal miner under the furnace here. If coal and ore share one belt and there is too much coal, the coal blocks the ore.</p>
+  <h3>Assemblers and power</h3>${D('asm')}
+  <p>An assembler makes the recipe you choose, here gears from iron plates. It takes its inputs from any side except the arrow side and puts the result out on the arrow side: onto a belt, or straight into the next building, as the furnace hands its plates to the assembler. Miners, assemblers and inserters use electricity. The hub gives 400 kW and a generator fed with coal adds 600 kW. When the factory needs more power than there is, every machine slows down; the power meter at the top turns red.</p>
+  <h3>Inserters</h3>${D('ins')}
+  <p>An inserter lifts items from the tile behind it to the tile in front. It only picks up what the next building can use, so one belt with ore and coal can run past a row of furnaces. An inserter next to the hub can take a chosen item out of the hub’s stock.</p>
+  <h3>Splitters</h3>${D('split')}
+  <p>A splitter takes items from behind and hands them out in turn to the left, ahead and to the right. It can feed buildings on its sides directly, so a line of splitters can supply a whole column of furnaces.</p>
+  <h3>Sorters</h3>${D('sort')}
+  <p>A sorter lets everything through ahead, except the item you choose, which turns off to one side. Here it takes the coal off a mixed belt and onto a line of its own.</p>
+  <h3>Tunnels</h3>${D('tunnel')}
+  <p>A tunnel carries a belt underground for up to four tiles, so two lines can cross. Place the entrance first and then the exit ahead of it, facing the same way.</p>
+  <h3>Research and controls</h3>
+  <p>Once you make red science, the hub’s Research tab spends science packs on faster miners, furnaces, assemblers and belts, and on more power. Later levels also need green and blue science.</p>
+  <p>Drag the map to move it and pinch to zoom. Tap a building with Look to see what it is doing, change its recipe, turn it or remove it. With a building tool, tapping one of the same kind turns it. A red badge on a building means it has no coal or not enough power; a yellow one means its output is blocked.</p>
+  <div class="row end"><button class="btn pri" data-act="close">Start building</button></div></div>`;
+}
+function startDemos() {
+  stopDemos();
+  const list = [...document.querySelectorAll('canvas[data-demo]')].map(c => ({c, w: demoWorld(DEMOS[c.dataset.demo])}));
+  let t0 = performance.now(), acc2 = 0;
+  const loop = now => {
+    if (!demoRun) return;
+    acc2 += Math.min(0.1, (now - t0) / 1000); t0 = now;
+    while (acc2 >= TICK) { for (const d of list) tick(d.w, TICK); acc2 -= TICK; }
+    for (const d of list) {
+      const r = d.c.getBoundingClientRect();
+      if (r.bottom < 0 || r.top > innerHeight || !r.width) continue;
+      const px = Math.round(r.width * dpr), py = Math.round(r.height * dpr);
+      if (d.c.width !== px || d.c.height !== py) { d.c.width = px; d.c.height = py; }
+      const g = d.c.getContext('2d'), z = r.width / d.w.W;
+      g.setTransform(dpr, 0, 0, dpr, 0, 0);
+      drawWorld(g, d.w, d.w.W / 2, d.w.H / 2, z, r.width, r.height, acc2);
+    }
+    demoRun = requestAnimationFrame(loop);
+  };
+  demoRun = requestAnimationFrame(loop);
+}
+function stopDemos() { if (demoRun) cancelAnimationFrame(demoRun); demoRun = null; }
+
+function renderSheet() {
+  const el = $('#sheet'), s = ui.sheet;
+  document.body.classList.toggle('nosheet', !s);
+  stopDemos();
+  if (!s) { el.hidden = true; el.innerHTML = ''; hud(); return; }
+  let h = '';
+  if (s.k === 'ent') { const e = world.ents.find(x => x.id === s.id); if (!e) { closeSheet(); return; } h = entSheet(e); }
+  else if (s.k === 'hub') h = hubSheet();
+  else if (s.k === 'menu') h = menuSheet();
+  else if (s.k === 'help') h = helpSheet();
+  else if (s.k === 'ms') h = msSheet(s);
+  else if (s.k === 'win') h = winSheet(s);
+  else if (s.k === 'away') h = awaySheet(s);
+  el.innerHTML = h; el.hidden = false;
+  el.classList.toggle('tall', s.k === 'help');
+  if (s.k === 'help') { el.scrollTop = 0; startDemos(); }
+  hud();
+}
+function liveSheet() {
+  const s = ui.sheet, l = $('#live');
+  if (!s) return;
+  if (s.k === 'ent' && l) { const e = world.ents.find(x => x.id === s.id); if (e) l.innerHTML = entLive(e); }
+  if (s.k === 'hub') {
+    if (l) l.innerHTML = ui.tab === 'goal' ? goalLive() : stockLive();
+    document.querySelectorAll('[data-buy]').forEach(b => { const c = rcost(G.rs[b.dataset.buy]); b.disabled = !afford(c) || Object.keys(c).some(x => !unlocked(world, x)); });
+  }
+}
+$('#sheet').addEventListener('click', ev => {
+  const b = ev.target.closest('[data-act]');
+  if (!b) return;
+  const a = b.dataset.act, k = b.dataset.k, s = ui.sheet;
+  const e = s && s.k === 'ent' ? world.ents.find(x => x.id === s.id) : null;
+  if (a === 'close') { closeSheet(); if (!rec.seenHelp) { rec.seenHelp = 1; save(); } }
+  else if (a === 'tab') { ui.tab = k; renderSheet(); }
+  else if (a === 'buy') buyResearch(k);
+  else if (a === 'help') openSheet({k: 'help'});
+  else if (a === 'hints') { G.hints = G.hints ? 0 : 1; renderSheet(); }
+  else if (a === 'new') ask('Start again on a new map? This factory and its progress will be lost.', 'New map', () => { newGame(); ui.tool = 'hand'; renderBar(); closeSheet(); });
+  else if (e && a === 'rec') {
+    if (e.r === k) return;
+    const c = contents(e);
+    for (const x in c) G.stock[x] = (G.stock[x] || 0) + c[x];
+    Object.assign(e, {r: k, inv: {}, busy: 0, prog: 0, on: 0});
+    G.lastRec = k; save(); renderSheet();
+  }
+  else if (e && a === 'flt') { e.f = k || null; save(); renderSheet(); }
+  else if (e && a === 'side') { e.side = +k; world.dirty = true; save(); renderSheet(); }
+  else if (e && a === 'erot') rotateEnt(e);
+  else if (e && a === 'erem') { removeEnt(e); save(); }
+});
+
+/* ================= start ================= */
+resize();
+const saved = loadGame();
+if (saved) {
+  startFrom(saved);
+  const away = (Date.now() - (saved.saved || Date.now())) / 1000;
+  if (away > 5) catchUp(away, away > 60);
+} else {
+  newGame();
+  ui.sheet = {k: 'help'};
+}
+renderBar();
+renderSheet();
+setInterval(() => { if (!catching) { hud(); liveSheet(); } }, 400);
+setInterval(() => { if (!catching) save(); }, 10000);
+document.addEventListener('visibilitychange', () => { if (document.hidden) save(); });
+addEventListener('pagehide', save);
+requestAnimationFrame(t => { last = t; frame(t); });
+</script>
+</body>
+</html>
