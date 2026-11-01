@@ -350,7 +350,7 @@ const ITEMS = [
   {id: 'lantern', e: '🏮', name: 'Lantern', r: 'C', desc: 'Fog no longer hides your score.', stat: {fogProof: 1}},
   // breaking and slots
   {id: 'wormbin', e: '🪱', name: 'Worm Bin', r: 'R', desc: 'When another item breaks: +15 maximum energy and +3 gold.', onBreak: (c, it) => { it.n = (it.n || 0) + 15; c.gold(3); }, statFn: it => ({maxE: it.n || 0})},
-  {id: 'shed', e: '🛖', name: 'Bigger Shed', r: 'M', desc: '+1 item slot.', stat: {slots: 1}},
+  {id: 'shed', e: '🛖', name: 'Bigger Shed', r: 'M', upgrade: true, desc: '+1 item slot for the rest of the run. It doesn’t take a slot itself.', eat: c => { c.st.slotBonus = (c.st.slotBonus || 0) + 1; }},
   {id: 'raffle', e: '🎟️', name: 'Raffle Ticket', r: 'U', ticket: true, desc: 'When bought, it draws a random item. It might be a pest.'},
   // pests
   {id: 'bindweed', e: '🌾', name: 'Bindweed', r: 'X', desc: 'One more weed in your garden each day. Getting rid of it costs 3 gold.', stat: {weeds: 1}},
@@ -382,10 +382,12 @@ let rec = {best: 0, runs: 0, titles: {}};
 try { rec = Object.assign(rec, JSON.parse(localStorage.getItem(REC) || '{}')); } catch (e) {}
 try { st = JSON.parse(localStorage.getItem(KEY) || 'null'); } catch (e) {}
 if (st && st.v !== 2) st = null;   // runs saved by the first version used different rules
+// the shed used to be an item in a slot; it is now a permanent upgrade
+if (st && st.items.some(i => i.id === 'shed')) { st.slotBonus = (st.slotBonus || 0) + st.items.filter(i => i.id === 'shed').length; st.items = st.items.filter(i => i.id !== 'shed'); }
 function save() { try { localStorage.setItem(KEY, JSON.stringify(st)); localStorage.setItem(REC, JSON.stringify(rec)); } catch (e) {} }
 
 function stats(s) {
-  const o = {targetMul: 1, dmgMul: 1, maxE: 0, slots: 5, foodDisc: 0, freeReroll: 0, fogProof: 0, fairDmgMul: 1, weeds: 0};
+  const o = {targetMul: 1, dmgMul: 1, maxE: 0, slots: 5 + (s.slotBonus || 0), foodDisc: 0, freeReroll: 0, fogProof: 0, fairDmgMul: 1, weeds: 0};
   for (const it of s.items) {
     const def = ITEM[it.id];
     for (const src of [def.stat, def.statFn && def.statFn(it)]) {
@@ -553,6 +555,7 @@ function harvest() {
   const day = st.dayState, d = st.day, s = stats(st);
   const res = harvestCalc(day, day.g);
   res.best = day.best; res.target = day.target; res.target0 = day.target0;
+  res.solverGrid = day.bestGrid.slice();
   if (res.score > day.best) { day.best = res.score; day.bestGrid = day.g.slice(); res.beat = true; }
   res.reached = res.harvest >= day.target;
   res.won = !!day.fair && res.reached;
@@ -618,7 +621,7 @@ function odds(v) {
 }
 function toolPool(rar, s) {
   const own = new Set(s.items.map(i => i.id));
-  return ITEMS.filter(i => i.r === rar && !i.food && !own.has(i.id) && (!i.need || TILES[i.need].from <= s.day + 5)).map(i => i.id);
+  return ITEMS.filter(i => i.r === rar && !i.food && !own.has(i.id) && (!i.need || TILES[i.need].from <= s.day + 5) && !(i.id === 'shed' && stats(s).slots >= 8)).map(i => i.id);
 }
 function foodPool(rar) { return ITEMS.filter(i => i.r === rar && i.food).map(i => i.id); }
 function rollOffer(r, v) {
@@ -656,7 +659,7 @@ function buy(k) {
   const id = st.shop.offers[k]; if (!id) return;
   const def = ITEM[id], p = priceOf(id);
   if (st.gold < p) return;
-  if (!def.food && !def.ticket && st.items.length >= stats(st).slots) { toast('Your shed is full. Sell an item first.'); return; }
+  if (!def.food && !def.ticket && !def.upgrade && st.items.length >= stats(st).slots) { toast('Your shed is full. Sell an item first.'); return; }
   st.gold -= p; st.shop.offers[k] = null;
   const log = [], c = ctx(rngFor(st.seed, 'buy', st.visits, k, st.shop.rolls), log);
   if (def.food) { def.eat(c); toast(def.e + ' ' + def.name + ': ' + (log.join(', ') || 'done')); }
@@ -665,12 +668,13 @@ function buy(k) {
     const pool = rar === 'X' ? ['bindweed', 'rat'].filter(x => !st.items.some(i => i.id === x)) : toolPool(rar, st);
     const got = pool.length ? pick(r, pool) : 'rat';
     gainItem(got); toast('🎟️ The raffle gave you ' + ITEM[got].e + ' ' + ITEM[got].name);
-  } else gainItem(id);
+  } else { gainItem(id); if (def.upgrade) toast(def.e + ' ' + def.name + ': you now have ' + stats(st).slots + ' item slots'); }
   save(); render();
 }
 function gainItem(id, log) {
   if (!id) return;
-  if (st.items.length >= stats(st).slots && !ITEM[id].stat?.slots) { st.pending = id; return; }
+  if (ITEM[id].upgrade) { ITEM[id].eat(ctx(null, log)); if (log) log.push('got ' + ITEM[id].e + ' ' + ITEM[id].name); return; }
+  if (st.items.length >= stats(st).slots) { st.pending = id; return; }
   st.items.push({id, n: 0});
   if (log) log.push('got ' + ITEM[id].e + ' ' + ITEM[id].name);
 }
@@ -845,14 +849,14 @@ function resultView() {
     <p>${day.fair ? (res.won ? 'You won the fair. Choose a prize next.' : 'Not enough for the fair.') : res.reached ? 'Target reached.' : 'Short of the target by ' + (res.target - res.harvest) + '.'}${res.dmg ? ' You lose ' + res.dmg + ' energy.' : ' No energy lost.'}</p>`;
   const lines = [];
   const pts = res.parts.filter(p => p.pts != null), more = res.parts.filter(p => p.pts == null);
-  lines.push(`Your garden scored ${res.score} points${pts.length ? ', including ' + pts.map(p => partName(p) + ' ' + partText(p)).join(', ') : ''}. The best layout the game found scores ${res.best}${res.beat ? ', and you beat it' : res.perfect ? ', and you matched it' : ''}.`);
+  lines.push(`Your garden scored ${res.score} points${pts.length ? ', including ' + pts.map(p => partName(p) + ' ' + partText(p)).join(', ') : ''}. The best layout the game found scores ${res.best}${res.beat ? ', so you beat it by ' + (res.score - res.best) : res.perfect ? ', and you matched it' : ''}.`);
   if (more.length) lines.push(`Harvest: ${res.score} from the garden, ` + more.map(p => partName(p) + ' ' + partText(p)).join(', ') + ` = ${res.harvest}.`);
   if (res.target0 > res.target) lines.push(`👒 Straw Hat lowered the target from ${res.target0} to ${res.target}.`);
   lines.push(`Gold +${res.gold}: ` + res.goldParts.map(([w, n]) => n + ' for ' + w).join(', ') + '.');
   const next = isMarket(d) && !res.won ? 'Go to the market' : res.won ? 'Choose a prize' : 'Next day';
   return `<div class="top"><h1>Day ${d} harvest</h1></div>${hud()}
     <div class="card" style="text-align:center">${head}</div>
-    <div class="res"><div><h3>Your garden</h3>${miniGrid(day.D, day.g)}</div><div><h3>Best layout found</h3>${miniGrid(day.D, day.bestGrid)}</div></div>
+    <div class="res"><div><h3>Your garden · ${res.score}</h3>${miniGrid(day.D, day.g)}</div><div><h3>Game’s best · ${res.best}</h3>${miniGrid(day.D, res.solverGrid || day.bestGrid)}</div></div>
     <div class="card">${lines.concat(res.log).map(l => `<div class="log">${esc(l)}</div>`).join('')}</div>
     ${st.milestone ? `<div class="card" style="border-color:var(--accent)"><h2>Summer is over: you made it through 30 days</h2><p>That completes the run, and you’ve earned the title <b>Gardener</b>. You can keep going into autumn. From here the targets grow by 3% a day and missing them costs more energy, so the question is how far your items can carry you. Day 100 is the top title.</p></div>` : ''}
     <div class="row c"><button class="btn pri big" id="next">${next}</button></div>`;
@@ -861,8 +865,8 @@ function marketView() {
   const sh = st.shop, s = stats(st);
   const offers = sh.offers.map((id, k) => {
     if (!id) return '<div class="offer empty">sold</div>';
-    const def = ITEM[id], p = priceOf(id), full = !def.food && !def.ticket && st.items.length >= s.slots;
-    return `<div class="offer"><span class="oe">${def.e}</span><span class="on">${esc(def.name)}</span><span class="rar rar-${def.r}">${RARITY[def.r]}${def.food ? ' food' : ''}</span><span class="od">${esc(def.desc)}</span>
+    const def = ITEM[id], p = priceOf(id), full = !def.food && !def.ticket && !def.upgrade && st.items.length >= s.slots;
+    return `<div class="offer"><span class="oe">${def.e}</span><span class="on">${esc(def.name)}</span><span class="rar rar-${def.r}">${RARITY[def.r]}${def.food ? ' food' : def.upgrade ? ' upgrade' : ''}</span><span class="od">${esc(def.desc)}</span>
       <button class="btn sm pri" data-buy="${k}" ${st.gold < p ? 'disabled' : ''}>${full ? 'Shed full · ' : 'Buy · '}${p} gold</button></div>`;
   }).join('');
   const nightLog = st.nightLog && st.nightLog.length ? `<div class="banner small">Overnight: ${esc(st.nightLog.join(', '))}</div>` : '';
