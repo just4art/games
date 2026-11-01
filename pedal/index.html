@@ -1,0 +1,1066 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Pedal Post</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Marcellus&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#e6ebe4; --surface:#fbf8f1; --surface2:#eef2ea; --text:#1f2a1d; --muted:#5f6b5a; --line:#cfd8c8;
+  --map:#cfdcc4; --road:#fbf8f1; --hill:#d4a35e; --accent:#c9822a; --bad:#b8323f; --good:#2c7a4b; --sky:#2f6fa8;
+  --shadow:0 6px 18px rgba(31,42,29,.12);
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#121a14; --surface:#1b251d; --surface2:#233026; --text:#ecebd9; --muted:#a4ad9b; --line:#334235;
+    --map:#24312a; --road:#55665a; --hill:#9a7440; --accent:#e9a64a; --bad:#ef6b77; --good:#6cd398; --sky:#7fb1e6;
+    --shadow:0 6px 18px rgba(0,0,0,.35);
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#121a14; --surface:#1b251d; --surface2:#233026; --text:#ecebd9; --muted:#a4ad9b; --line:#334235;
+  --map:#24312a; --road:#55665a; --hill:#9a7440; --accent:#e9a64a; --bad:#ef6b77; --good:#6cd398; --sky:#7fb1e6;
+  --shadow:0 6px 18px rgba(0,0,0,.35);
+  color-scheme:dark;
+}
+body[data-season="autumn"]{--accent:#c2562b}
+body[data-season="winter"]{--accent:#4f7fbf}
+body[data-season="spring"]{--accent:#b04f8f}
+*,*::before,*::after{box-sizing:border-box}
+html{height:100%}
+body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;font-size:15px;line-height:1.45;min-height:100%;-webkit-tap-highlight-color:transparent}
+h1,h2,h3{font-family:Marcellus,Georgia,serif;font-weight:400;margin:0}
+h1{font-size:26px}
+h2{font-size:20px}
+h3{font-size:15px;margin:12px 0 4px;color:var(--accent)}
+p{margin:6px 0}
+button{font:inherit;color:inherit}
+button:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.app{max-width:560px;margin:0 auto;padding:12px 16px 40px}
+.top{display:flex;align-items:baseline;justify-content:space-between;gap:8px}
+.muted{color:var(--muted)}
+.small{font-size:12.5px}
+.hud{display:grid;grid-template-columns:1.3fr 1fr 1fr;gap:6px;margin:10px 0 8px}
+.chip{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:5px 8px;text-align:center;font-size:12px;color:var(--muted)}
+.chip b{display:block;font-size:16px;color:var(--text);font-variant-numeric:tabular-nums}
+.bar{height:5px;background:var(--line);border-radius:3px;margin-top:3px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--good);transition:width .3s}
+.bar.low i{background:var(--bad)}
+.banner{background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--accent);border-radius:12px;padding:8px 12px;margin:0 0 8px;font-size:14px}
+.banner b{color:var(--accent)}
+.goal{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:8px 12px;margin:0 0 10px}
+.goal .gl{display:flex;justify-content:space-between;font-size:14px}
+.goal .gl b{font-size:18px;font-variant-numeric:tabular-nums}
+.goal .bar{height:8px;margin:5px 0 4px}
+.goal .bar i{background:var(--accent)}
+.goal.ok .bar i{background:var(--good)}
+.goal.ok .gl span:first-child b{color:var(--good)}
+.town{display:block;width:min(100%,440px);margin:0 auto;background:var(--map);border-radius:16px;box-shadow:var(--shadow);touch-action:manipulation;user-select:none;-webkit-user-select:none}
+.town .st{stroke:var(--road);stroke-width:9;stroke-linecap:round}
+.town .st.hill{stroke:var(--hill)}
+.town .wk{stroke:var(--road);stroke-width:2;stroke-dasharray:2 5;opacity:.7}
+.town .route{fill:none;stroke:var(--sky);stroke-width:5;stroke-linecap:round;stroke-linejoin:round;opacity:.9}
+.town .best{stroke:var(--good)}
+.town .dot{fill:var(--line)}
+.town .em{font-size:22px;text-anchor:middle;dominant-baseline:central}
+.town .sm{font-size:13px}
+.town .cost{font-size:10px;font-weight:700;text-anchor:middle;dominant-baseline:central;fill:#fff}
+.town .costbg{fill:var(--hill)}
+.town .lbl{font-size:10.5px;font-weight:700;text-anchor:middle;dominant-baseline:central;fill:var(--text)}
+.town .lblbg{fill:var(--surface);stroke:var(--line)}
+.town .far{fill:var(--sky)}
+.town .farbg{fill:var(--surface);stroke:var(--sky)}
+.town .hit{fill:transparent;cursor:pointer}
+.town .off{opacity:.3}
+.town .tick{font-size:16px}
+.hint{text-align:center;font-size:13.5px;margin:8px 0 0;color:var(--muted)}
+.bag{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin:10px 0 4px}
+.pc{display:flex;align-items:center;gap:4px;border:1.5px solid var(--accent);background:var(--surface);border-radius:12px;padding:4px 9px;font-size:18px;cursor:pointer}
+.pc span{font-size:12.5px;font-weight:700;color:var(--text);font-variant-numeric:tabular-nums}
+.pc.out{border:1.5px dashed var(--line);opacity:.55}
+.pc.done{border-color:var(--good);background:color-mix(in srgb,var(--good) 12%,var(--surface))}
+.pc.late{border-color:var(--line);opacity:.5}
+.pc:disabled{cursor:default}
+.row{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.row.c{justify-content:center}
+.btn{border:1.5px solid var(--line);background:var(--surface);border-radius:12px;padding:8px 14px;cursor:pointer;font-weight:600}
+.btn.pri{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn.sm{padding:5px 10px;font-size:13px;border-radius:10px}
+.btn:disabled{opacity:.45;cursor:default}
+.btn.big{padding:11px 22px;font-size:16px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin:10px 0}
+.rules{display:grid;gap:3px;font-size:13px}
+.rules div{display:flex;gap:8px}
+.rules .e{width:22px;text-align:center;flex:none}
+.tag{font-size:12px;background:var(--surface2);border:1px solid var(--line);border-radius:6px;padding:0 4px}
+.ilist{display:grid;gap:6px}
+.irow{display:flex;align-items:center;gap:10px;border:1px solid var(--line);background:var(--surface2);border-radius:10px;padding:6px 10px;font-size:13.5px;text-align:left;width:100%}
+button.irow{cursor:pointer}
+.irow .ie{font-size:22px;flex:none}
+.irow .it{flex:1;display:flex;flex-direction:column;min-width:0}
+.irow .iv{flex:none;text-align:right;font-size:13.5px;font-variant-numeric:tabular-nums}
+.irow .iv small{display:block;font-size:11px;color:var(--muted)}
+.irow.empty{border-style:dashed;background:transparent;color:var(--muted);justify-content:center}
+.offers{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.offer{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:10px;display:flex;flex-direction:column;gap:4px;min-height:150px}
+.offer .oe{font-size:28px}
+.offer .on{font-weight:700}
+.offer .od{font-size:12.5px;color:var(--muted);flex:1}
+.offer.empty{align-items:center;justify-content:center;color:var(--muted);border-style:dashed}
+.rar{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.04em}
+.rar-C{color:var(--muted)} .rar-U{color:var(--good)} .rar-R{color:var(--sky)} .rar-M{color:var(--accent)} .rar-X{color:var(--bad)}
+.log{font-size:13px;padding:4px 0;border-bottom:1px dashed var(--line)}
+.log:last-child{border-bottom:none}
+.res{display:grid;grid-template-columns:1fr 1fr;gap:10px;align-items:start}
+.res .town{border-radius:10px;box-shadow:none}
+.big-num{font-size:34px;font-family:Marcellus,Georgia,serif;font-variant-numeric:tabular-nums}
+.good{color:var(--good)} .bad{color:var(--bad)}
+.titles{display:grid;grid-template-columns:auto 1fr auto;gap:2px 10px;font-size:13.5px}
+.help ol{margin:4px 0 6px;padding-left:20px}
+.help li{margin:3px 0}
+.tip{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);background:var(--text);color:var(--bg);padding:8px 14px;border-radius:12px;font-size:13.5px;max-width:min(92vw,480px);z-index:30;box-shadow:var(--shadow)}
+input[type=text]{font:inherit;border:1.5px solid var(--line);background:var(--surface);color:var(--text);border-radius:10px;padding:7px 10px;width:150px}
+footer{margin-top:24px;font-size:12px;color:var(--muted);text-align:center}
+@media (prefers-reduced-motion: reduce){.bar i{transition:none}}
+</style>
+</head>
+<body>
+<div class="app" id="app"></div>
+<script>
+'use strict';
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;'}[c]));
+
+/* ---------------- seeded randomness ---------------- */
+function seedOf(str) {
+  let h = 1779033703 ^ str.length;
+  for (let i = 0; i < str.length; i++) { h = Math.imul(h ^ str.charCodeAt(i), 3432918353); h = h << 13 | h >>> 19; }
+  h = Math.imul(h ^ h >>> 16, 2246822507); h = Math.imul(h ^ h >>> 13, 3266489909);
+  return (h ^ h >>> 16) >>> 0;
+}
+function rngFor(...parts) {
+  let a = seedOf(parts.join(':'));
+  return function () {
+    a |= 0; a = a + 0x6D2B79F5 | 0;
+    let t = Math.imul(a ^ a >>> 15, 1 | a);
+    t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+    return ((t ^ t >>> 14) >>> 0) / 4294967296;
+  };
+}
+const pick = (r, a) => a[Math.floor(r() * a.length)];
+function wpick(r, entries) {
+  let tot = 0; for (const [, w] of entries) tot += w;
+  let x = r() * tot;
+  for (const [v, w] of entries) { if ((x -= w) < 0) return v; }
+  return entries[entries.length - 1][0];
+}
+function shuffle(r, a) { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(r() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+
+/* ---------------- deliveries and rules ---------------- */
+const PT = {
+  parcel:  {e: '📦', name: 'Parcel', from: 1, w: 3},
+  letter:  {e: '💌', name: 'Letter', from: 1, w: 2},
+  express: {e: '⚡', name: 'Express', from: 3, w: 1.6},
+  meal:    {e: '🍕', name: 'Hot meal', from: 6, w: 1.5},
+  box:     {e: '🎁', name: 'Big box', from: 11, w: 1.1}
+};
+const unlocked = d => Object.keys(PT).filter(t => PT[t].from <= d);
+function baseRules() {
+  return {
+    moves: 0, cap: 4, hill: 2, works: 0, boxSize: 2,
+    add: {parcel: 0, letter: 0, express: 0, meal: 0, box: 0},
+    mult: {parcel: 1, letter: 1, express: 1, meal: 1, box: 1},
+    late: 2, dl: 0, cool: 1, bell: 0, stars: 0, home: 0, rain: false
+  };
+}
+const sizeOf = (p, R) => p.type === 'letter' ? 0 : p.type === 'box' ? R.boxSize : 1;
+/* points for delivering p at move t as the k-th delivery of the day */
+function parcelValue(p, t, k, R) {
+  let v;
+  if (p.type === 'express') v = t <= p.dl + R.dl ? p.pts + R.add.express : R.late;
+  else if (p.type === 'meal') v = Math.max(2, p.pts + R.add.meal - Math.floor(t / (2 * R.cool)));
+  else v = p.pts + R.add[p.type];
+  v *= R.mult[p.type];
+  if (R.bell && k === 1) v *= 2;
+  if (R.stars && k % 3 === 0) v += R.stars;
+  return v;
+}
+
+/* ---------------- the town: a grid of corners joined by streets ---------------- */
+const ek = (a, b) => a < b ? a + '-' + b : b + '-' + a;
+const NBR = {};
+function nbrs(W, H) {
+  const key = W + 'x' + H; if (NBR[key]) return NBR[key];
+  const a = [];
+  for (let i = 0; i < W * H; i++) {
+    const x = i % W, y = (i - x) / W, l = [];
+    if (x > 0) l.push(i - 1); if (x < W - 1) l.push(i + 1); if (y > 0) l.push(i - W); if (y < H - 1) l.push(i + W);
+    a.push(l);
+  }
+  return NBR[key] = a;
+}
+function cost(day, a, b, R) { const t = day.E[ek(a, b)]; return t === 's' ? 1 : t === 'h' ? R.hill : R.works || Infinity; }
+function connected(W, H, E) {
+  const seen = new Set([0]), q = [0], nb = nbrs(W, H);
+  while (q.length) { const u = q.pop(); for (const v of nb[u]) if (!seen.has(v) && E[ek(u, v)] !== 'w') { seen.add(v); q.push(v); } }
+  return seen.size === W * H;
+}
+function allDist(day, R) {
+  const N = day.W * day.H, nb = nbrs(day.W, day.H), out = [];
+  for (let s = 0; s < N; s++) {
+    const d = new Array(N).fill(Infinity), done = new Array(N).fill(false); d[s] = 0;
+    for (;;) {
+      let u = -1; for (let i = 0; i < N; i++) if (!done[i] && d[i] < Infinity && (u < 0 || d[i] < d[u])) u = i;
+      if (u < 0) break; done[u] = true;
+      for (const v of nb[u]) { const c = d[u] + cost(day, u, v, R); if (c < d[v]) d[v] = c; }
+    }
+    out.push(d);
+  }
+  return out;
+}
+/* shortest ride between two corners; among equal ones, the one that passes the most houses in `want` */
+function ridePath(day, R, from, to, want) {
+  const N = day.W * day.H, nb = nbrs(day.W, day.H);
+  const dist = new Array(N).fill(Infinity), gain = new Array(N).fill(0), prev = new Array(N).fill(-1), done = new Array(N).fill(false);
+  dist[from] = 0;
+  for (;;) {
+    let u = -1;
+    for (let i = 0; i < N; i++) if (!done[i] && dist[i] < Infinity && (u < 0 || dist[i] < dist[u] || dist[i] === dist[u] && gain[i] > gain[u])) u = i;
+    if (u < 0) break; done[u] = true; if (u === to) break;
+    for (const v of nb[u]) {
+      if (done[v]) continue;
+      const d2 = dist[u] + cost(day, u, v, R), g2 = gain[u] + (want.has(v) ? 1 : 0);
+      if (d2 < dist[v] || d2 === dist[v] && g2 > gain[v]) { dist[v] = d2; gain[v] = g2; prev[v] = u; }
+    }
+  }
+  if (dist[to] === Infinity) return null;
+  const path = [to]; while (path[0] !== from) path.unshift(prev[path[0]]);
+  return {path, cost: dist[to]};
+}
+
+function dayShape(d) {
+  if (d <= 4) return {W: 5, H: 5, n: 5};
+  if (d <= 12) return {W: 5, H: 6, n: 7};
+  if (d <= 22) return {W: 6, H: 6, n: 8};
+  if (d <= 30) return {W: 6, H: 7, n: 9};
+  if (d <= 60) return {W: 6, H: 7, n: 10};
+  return {W: 7, H: 7, n: 11};
+}
+function makeTown(d, r, fair) {
+  const S = dayShape(d), W = S.W, H = S.H, N = W * H, E = {}, pairs = [];
+  for (let i = 0; i < N; i++) for (const j of nbrs(W, H)[i]) if (j > i) { pairs.push(ek(i, j)); E[ek(i, j)] = 's'; }
+  shuffle(r, pairs);
+  let works = Math.min(9, 1 + Math.floor(d / 6) + (d > 30 ? Math.floor((d - 30) / 15) : 0)) + (fair === 'marathon' ? 4 : 0);
+  const hills = d < 3 ? 0 : Math.round(pairs.length * Math.min(0.25, 0.08 + d * 0.005));
+  let k = 0;
+  for (; k < pairs.length && works > 0; k++) { E[pairs[k]] = 'w'; if (connected(W, H, E)) works--; else E[pairs[k]] = 's'; }
+  for (let h = 0; k < pairs.length && h < hills; k++, h++) E[pairs[k]] = 'h';
+  const nodes = shuffle(r, [...Array(N).keys()]);
+  const types = unlocked(d).map(t => [t, PT[t].w]), parcels = [];
+  for (let q = 1; q <= S.n; q++) {
+    const type = wpick(r, types);
+    const pts = type === 'parcel' ? 2 + Math.floor(r() * 3) : type === 'letter' ? 1 : type === 'express' ? 5 : type === 'meal' ? 8 : 6 + Math.floor(r() * 3);
+    parcels.push({type, at: nodes[q], pts});
+  }
+  return {W, H, E, depot: nodes[0], parcels};
+}
+
+/* fewest moves to visit every house: sets how many moves a day has */
+function tourAll(day, D) {
+  const P = day.parcels, n = P.length, M = 1 << n, dp = new Float64Array(M * n).fill(Infinity);
+  for (let j = 0; j < n; j++) dp[(1 << j) * n + j] = D[day.depot][P[j].at];
+  for (let m = 1; m < M; m++) for (let l = 0; l < n; l++) {
+    const v = dp[m * n + l]; if (v === Infinity) continue;
+    for (let j = 0; j < n; j++) if (!(m >> j & 1)) { const i = (m | 1 << j) * n + j, c = v + D[P[l].at][P[j].at]; if (c < dp[i]) dp[i] = c; }
+  }
+  let best = Infinity; for (let l = 0; l < n; l++) best = Math.min(best, dp[(M - 1) * n + l]);
+  return best;
+}
+
+/* The best plan from a position: dynamic programming over which deliveries are done, the last stop and the time.
+   It is exact, so the "best route" really is the best. */
+function plan(day, R, D, from, t0, cand, k0, bagFixed) {
+  const P = day.parcels, n = cand.length, T = budgetOf(day, R) - t0;
+  if (T < 0) return {score: 0, order: [], home: false};
+  const L = n + 1, nodeOf = j => j === n ? from : P[cand[j]].at;
+  const dd = [], toHome = [];
+  for (let a = 0; a < L; a++) { dd.push([]); for (let b = 0; b < L; b++) dd[a].push(D[nodeOf(a)][nodeOf(b)]); toHome.push(D[nodeOf(a)][day.depot]); }
+  const size = cand.map(i => sizeOf(P[i], R)), M = 1 << n, T1 = T + 1;
+  const sizeM = new Int16Array(M), pop = new Int8Array(M);
+  for (let m = 1; m < M; m++) { const low = 31 - Math.clz32(m & -m); sizeM[m] = sizeM[m & (m - 1)] + size[low]; pop[m] = pop[m & (m - 1)] + 1; }
+  const val = new Float32Array(M * L * T1).fill(-1), par = new Int32Array(M * L * T1).fill(-1);
+  const at = (m, l, t) => (m * L + l) * T1 + t;
+  val[at(0, n, 0)] = 0;
+  let best = -1, bestI = -1, bestHome = false;
+  for (let m = 0; m < M; m++) {
+    const k = k0 + pop[m] + 1;
+    for (let l = 0; l < L; l++) {
+      if (m === 0 ? l !== n : !(m >> l & 1)) continue;
+      for (let t = 0; t <= T; t++) {
+        const i = at(m, l, t), v = val[i]; if (v < 0) continue;
+        let fin = v, home = false;
+        if (R.home && (m || k0) && t + toHome[l] <= T) { fin += R.home; home = true; }
+        if (fin > best) { best = fin; bestI = i; bestHome = home; }
+        for (let j = 0; j < n; j++) {
+          if (m >> j & 1) continue;
+          if (!bagFixed && sizeM[m] + size[j] > R.cap) continue;
+          const t2 = t + dd[l][j]; if (t2 > T) continue;
+          const v2 = v + parcelValue(P[cand[j]], t0 + t2, k, R), i2 = at(m | 1 << j, j, t2);
+          if (v2 > val[i2]) { val[i2] = v2; par[i2] = i; }
+        }
+      }
+    }
+  }
+  const order = [];
+  for (let i = bestI; i >= 0; i = par[i]) { const l = Math.floor(i / T1) % L; if (l !== n) order.unshift(cand[l]); }
+  return {score: Math.max(0, best), order, home: bestHome};
+}
+const budgetOf = (day, R) => day.moves + R.moves;
+
+/* what a ride along `route` delivers */
+function simulate(day, R, route) {
+  const P = day.parcels, bag = new Set(day.bag), done = new Set(), del = [];
+  let t = 0, pts = 0;
+  for (let s = 1; s < route.length; s++) {
+    t += cost(day, route[s - 1], route[s], R);
+    P.forEach((p, i) => {
+      if (p.at !== route[s] || !bag.has(i) || done.has(i)) return;
+      done.add(i); const v = parcelValue(p, t, del.length + 1, R); del.push({i, t, v}); pts += v;
+    });
+  }
+  const end = route[route.length - 1], home = R.home && del.length && end === day.depot ? R.home : 0;
+  return {t, at: end, del, done, pts, home, points: pts + home};
+}
+function planRoute(day, R, pl, from) {
+  const stops = pl.order.map(i => day.parcels[i].at).concat(pl.home ? [day.depot] : []);
+  const route = [from];
+  stops.forEach((s, k) => { const r = ridePath(day, R, route[route.length - 1], s, new Set(stops.slice(k))); if (r) route.push(...r.path.slice(1)); });
+  return route;
+}
+
+/* ---------------- days, weather and big days ---------------- */
+const WEATHER = {
+  rain: {e: '🌧️', name: 'Rain', desc: 'Hills cost 1 more move.', apply: R => { R.hill += 1; R.rain = true; }},
+  wind: {e: '🌬️', name: 'Tailwind', desc: 'You get 2 more moves today.', apply: R => { R.moves += 2; }},
+  rush: {e: '🚦', name: 'Rush hour', need: 'express', desc: 'Express deadlines are 2 moves earlier.', apply: R => { R.dl -= 2; }}
+};
+const FAIRS = [
+  {id: 'valentine', name: 'Valentine’s Day', desc: 'Letters score ×4.', apply: R => { R.mult.letter *= 4; }},
+  {id: 'friday', name: 'Black Friday', desc: 'Parcels are worth 2 more.', apply: R => { R.add.parcel += 2; }},
+  {id: 'marathon', name: 'City marathon', desc: 'Four more streets are closed for the race.', apply: () => {}},
+  {id: 'express', name: 'Express week', need: 'express', desc: 'Express deliveries score double.', apply: R => { R.mult.express *= 2; }},
+  {id: 'pizza', name: 'Pizza night', need: 'meal', desc: 'Hot meals score double.', apply: R => { R.mult.meal *= 2; }},
+  {id: 'moving', name: 'Moving day', need: 'box', desc: 'Big boxes score double.', apply: R => { R.mult.box *= 2; }}
+];
+const isFair = d => d % 5 === 0;
+const isMarket = d => d <= 30 ? (d % 5 === 2 || d % 5 === 4) : d % 5 === 4;
+/* the day's target, as a share of the best route with no items: the first four days are easier, it passes 100% around day 7 and doubles by day 30 */
+function quota(d) { const q = d <= 4 ? 0.75 : d <= 30 ? 0.85 * Math.pow(2 / 0.85, (d - 1) / 29) : 2 * Math.pow(1.04, d - 30); return isFair(d) ? q * 1.2 : q; }
+function dmgScale(d) { return d <= 30 ? 0.8 + 0.5 * (d - 1) / 29 : 1.3 * Math.pow(1.02, d - 30); }
+function season(d) { return d <= 30 ? 'summer' : d <= 60 ? 'autumn' : d <= 90 ? 'winter' : 'spring'; }
+const SEASON_NAME = {summer: 'Summer', autumn: 'Autumn', winter: 'Winter', spring: 'Spring'};
+const TITLES = [[10, 'Paper round'], [20, 'Courier'], [30, 'Senior courier'], [50, 'Route master'], [75, 'Knows every street'], [100, 'Legendary courier']];
+function titleFor(days) { let t = 'New rider'; for (const [n, name] of TITLES) if (days >= n) t = name; return t; }
+
+/* ---------------- items ---------------- */
+const PRICE = {C: 4, U: 7, R: 12, M: 20, X: 0};
+const RARITY = {C: 'Common', U: 'Uncommon', R: 'Rare', M: 'Mythic', X: 'Pest'};
+const ITEMS = [
+  // income
+  {id: 'tipjar', e: '🫙', name: 'Tip Jar', r: 'C', desc: '+1 gold each night.', night: c => c.gold(1)},
+  {id: 'piggy', e: '🐷', name: 'Piggy Bank', r: 'U', desc: '+2 gold each night.', night: c => c.gold(2)},
+  {id: 'ledger', e: '📒', name: 'Account Book', r: 'R', desc: '+3 gold each night.', night: c => c.gold(3)},
+  {id: 'pot', e: '🏺', name: 'Savings Tin', r: 'U', desc: 'Each night, 10% interest on your gold (at most +5).', night: c => c.gold(Math.min(5, Math.floor(c.st.gold * 0.1)))},
+  {id: 'clock', e: '🕰️', name: 'Old Clock', r: 'C', desc: 'Sells for 1 more gold for each night you keep it.', night: (c, it) => { it.n = (it.n || 0) + 1; }, sellBonus: it => it.n || 0},
+  {id: 'album', e: '📮', name: 'Stamp Album', r: 'U', desc: 'Sells for 1 more gold for every letter you deliver.', after: (c, res, it) => { it.n = (it.n || 0) + (res.count.letter || 0); }, sellBonus: it => it.n || 0},
+  {id: 'clover', e: '🍀', name: 'Four-leaf Clover', r: 'C', desc: 'Each night, a 1 in 4 chance of +4 gold.', night: c => { if (c.r() < 0.25) c.gold(4); }},
+  {id: 'purse', e: '👛', name: 'Bonus Envelope', r: 'U', desc: '+6 gold when you win a big day.', fairWin: c => c.gold(6)},
+  {id: 'lunch', e: '🍱', name: 'Lunchbox', r: 'C', desc: 'Food costs 1 gold less.', stat: {foodDisc: 1}},
+  {id: 'dice', e: '🎲', name: 'Lucky Dice', r: 'U', desc: 'Your first reroll at each market is free.', stat: {freeReroll: 1}},
+  // the ride
+  {id: 'ebike', e: '🔋', name: 'E-bike Battery', r: 'R', route: true, note: '+3 moves', desc: '+3 moves each day.', rules: R => { R.moves += 3; }},
+  {id: 'gears', e: '⚙️', name: 'Better Gears', r: 'U', route: true, note: 'hills −1', desc: 'Hills cost 1 move less.', rules: R => { R.hill = Math.max(1, R.hill - 1); }},
+  {id: 'raincoat', e: '🧥', name: 'Raincoat', r: 'C', route: true, note: 'dry', desc: 'Rain doesn’t make hills harder.', rules: R => { if (R.rain) R.hill -= 1; }},
+  {id: 'rack', e: '🧺', name: 'Front Basket', r: 'U', route: true, note: 'bag +1', desc: 'Your bag holds 1 more.', rules: R => { R.cap += 1; }},
+  {id: 'panniers', e: '🎒', name: 'Panniers', r: 'R', route: true, note: 'bag +2', desc: 'Your bag holds 2 more.', rules: R => { R.cap += 2; }},
+  {id: 'vest', e: '🦺', name: 'Hi-vis Vest', r: 'U', route: true, note: 'roadworks open', desc: 'You can ride through roadworks. They cost 3 moves.', rules: R => { R.works = 3; }},
+  {id: 'trolley', e: '🛒', name: 'Hand Trolley', r: 'U', need: 'box', route: true, note: 'boxes 1 space', desc: 'Big boxes take 1 space.', rules: R => { R.boxSize = 1; }},
+  // points
+  {id: 'postcards', e: '🖼️', name: 'Postcards', r: 'C', desc: 'Letters are worth 2 more.', rules: R => { R.add.letter += 2; }},
+  {id: 'wrap', e: '🎀', name: 'Gift Wrap', r: 'C', desc: 'Parcels are worth 1 more.', rules: R => { R.add.parcel += 1; }},
+  {id: 'stopwatch', e: '⏱️', name: 'Stopwatch', r: 'U', need: 'express', desc: 'Express deadlines are 3 moves later.', rules: R => { R.dl += 3; }},
+  {id: 'rocket', e: '🚀', name: 'Rocket Sticker', r: 'R', need: 'express', desc: 'Express deliveries score double.', rules: R => { R.mult.express *= 2; }},
+  {id: 'coolbox', e: '🧊', name: 'Thermal Bag', r: 'U', need: 'meal', desc: 'Hot meals lose value half as fast.', rules: R => { R.cool *= 2; }},
+  {id: 'bell', e: '🔔', name: 'Bike Bell', r: 'C', desc: 'Your first delivery each day scores double.', rules: R => { R.bell = 1; }},
+  {id: 'stars', e: '⭐', name: 'Five Stars', r: 'R', desc: 'Every third delivery scores 4 more.', rules: R => { R.stars += 4; }},
+  {id: 'kettle', e: '🏠', name: 'Kettle at Home', r: 'C', desc: '+4 points if you end the shift back at the post office.', rules: R => { R.home += 4; }},
+  {id: 'horn', e: '📯', name: 'Post Horn', r: 'M', desc: 'Every kind of delivery is worth 1 more.', rules: R => { for (const t in R.add) R.add[t] += 1; R.late += 1; }},
+  // takings
+  {id: 'pouch', e: '👝', name: 'Tips Pouch', r: 'C', desc: '+4 takings each day.', bonus: () => ({add: 4})},
+  {id: 'regulars', e: '🗞️', name: 'Regular Customers', r: 'C', desc: '+1 takings for each letter you deliver.', bonus: (c, res) => ({add: res.count.letter || 0})},
+  {id: 'loyalty', e: '💳', name: 'Loyalty Card', r: 'R', desc: '+1 takings for every night you have owned it.', night: (c, it) => { it.n = (it.n || 0) + 1; }, bonus: (c, res, it) => ({add: it.n || 0})},
+  {id: 'moped', e: '🛵', name: 'Rented Moped', r: 'R', desc: 'Takings ×1.5. Each night there is a 1 in 10 chance it has to go back.', bonus: () => ({mul: 1.5}), night: (c, it) => { if (c.r() < 0.1) c.breakItem(it, 'had to go back'); }},
+  {id: 'trophy', e: '🏆', name: 'Trophy Shelf', r: 'R', desc: 'Takings +10% for each big day you have won.', bonus: c => ({mul: 1 + 0.1 * c.st.fairsWon})},
+  {id: 'sash', e: '🎗️', name: 'Big-day Sash', r: 'U', desc: 'Takings ×1.3 on big days.', bonus: c => ({mul: c.day.fair ? 1.3 : 1})},
+  {id: 'eye', e: '💎', name: 'Perfect Route', r: 'R', desc: 'Takings ×1.4 on days you match the best route. You find out when you end the shift.', bonus: (c, res) => ({mul: res.perfect ? 1.4 : 1, secret: true})},
+  // energy
+  {id: 'cap', e: '🧢', name: 'Cap', r: 'C', desc: 'Daily targets are 6% lower.', stat: {targetMul: 0.94}},
+  {id: 'sunscreen', e: '🧴', name: 'Sunscreen', r: 'U', desc: 'Missing a target costs 30% less energy.', stat: {dmgMul: 0.7}},
+  {id: 'thermos', e: '🫖', name: 'Thermos', r: 'C', desc: '+5 energy each night.', night: c => c.heal(5)},
+  {id: 'hammock', e: '🌴', name: 'Hammock', r: 'U', desc: '+25 energy when you win a big day.', fairWin: c => c.heal(25)},
+  {id: 'watch', e: '⌚', name: 'Fitness Watch', r: 'U', desc: '+25 maximum energy.', stat: {maxE: 25}},
+  {id: 'helmet', e: '🪖', name: 'Helmet', r: 'U', desc: 'If your energy would drop to 0, keep 1 instead. Then it breaks.', save: (c, it) => { c.st.energy = 1; c.breakItem(it, 'saved you'); return true; }},
+  {id: 'firstaid', e: '🩹', name: 'First-aid Kit', r: 'R', desc: 'If your energy would drop to 0, go back to 50 instead. Then it breaks.', save: (c, it) => { c.st.energy = 50; c.breakItem(it, 'saved you'); return true; }},
+  {id: 'mattress', e: '🛏️', name: 'Good Mattress', r: 'R', desc: 'Losing a big day costs half as much energy.', stat: {fairDmgMul: 0.5}},
+  // hints
+  {id: 'notebook', e: '📓', name: 'Notebook', r: 'C', desc: '+1 peek on big days.', start: c => { if (c.day.fair) c.charge('peek', 1); }},
+  {id: 'owl', e: '🦉', name: 'Night Owl', r: 'U', desc: '+1 use of Distances each day.', start: c => c.charge('map', 1)},
+  {id: 'radio', e: '📻', name: 'Traffic Report', r: 'U', desc: 'Shows the best possible score every day.', start: c => { c.day.measured = true; }},
+  {id: 'crystal', e: '🔮', name: 'Crystal Ball', r: 'R', desc: '+1 peek each day.', start: c => c.charge('peek', 1)},
+  // breaking and slots
+  {id: 'scrap', e: '🧰', name: 'Scrap Box', r: 'R', desc: 'When another item breaks: +15 maximum energy and +3 gold.', onBreak: (c, it) => { it.n = (it.n || 0) + 15; c.gold(3); }, statFn: it => ({maxE: it.n || 0})},
+  {id: 'locker', e: '🗄️', name: 'Bigger Locker', r: 'M', upgrade: true, desc: '+1 item slot for the rest of the run. It doesn’t take a slot itself.', eat: c => { c.st.slotBonus = (c.st.slotBonus || 0) + 1; }},
+  {id: 'raffle', e: '🎟️', name: 'Raffle Ticket', r: 'U', ticket: true, desc: 'When bought, it draws a random item. It might be a pest.'},
+  // pests
+  {id: 'puncture', e: '🛞', name: 'Slow Puncture', r: 'X', route: true, note: '−2 moves', desc: '−2 moves each day. Getting rid of it costs 3 gold.', rules: R => { R.moves -= 2; }},
+  {id: 'fine', e: '🧾', name: 'Parking Fine', r: 'X', desc: '−1 gold each night. Getting rid of it costs 3 gold.', night: c => c.gold(-1)},
+  // food: used straight away, doesn't need a slot
+  {id: 'apple', e: '🍎', name: 'Apple', r: 'C', food: true, desc: '+20 energy.', eat: c => c.heal(20)},
+  {id: 'pie', e: '🥧', name: 'Plum Pie', r: 'U', food: true, desc: '+45 energy.', eat: c => c.heal(45)},
+  {id: 'nuts', e: '🥜', name: 'Trail Mix', r: 'U', food: true, desc: '+10 maximum energy, and +10 energy.', eat: c => { c.st.maxBonus += 10; c.heal(10); }},
+  {id: 'cake', e: '🎂', name: 'Birthday Cake', r: 'M', food: true, desc: '+20 maximum energy, then full energy.', eat: c => { c.st.maxBonus += 20; c.st.energy = maxEnergy(c.st); }},
+  {id: 'coffee', e: '☕', name: 'Coffee', r: 'C', food: true, desc: '+1 peek.', eat: c => c.charge('peek', 1)},
+  {id: 'tea', e: '🍵', name: 'Mint Tea', r: 'C', food: true, desc: '+2 uses of Distances.', eat: c => c.charge('map', 2)},
+  {id: 'lemonade', e: '🍋', name: 'Lemonade', r: 'C', food: true, desc: '+2 measures.', eat: c => c.charge('measure', 2)},
+  {id: 'choc', e: '🍫', name: 'Chocolate', r: 'R', food: true, desc: '+3 peeks.', eat: c => c.charge('peek', 3)},
+  {id: 'bag', e: '🎁', name: 'Mystery Bag', r: 'C', food: true, desc: '0, 2, 4 or 7 gold.', eat: c => c.gold(pick(c.r, [0, 2, 4, 7]))},
+  {id: 'drink', e: '🥤', name: 'Energy Drink', r: 'C', food: true, desc: 'Either +2 peeks or −15 energy.', eat: c => { if (c.r() < 0.5) c.charge('peek', 2); else c.heal(-15); }},
+  {id: 'sweets', e: '🍬', name: 'Lucky Sweets', r: 'U', food: true, desc: 'Your next big-day takings ×1.5.', eat: c => { c.st.temp.sweets = (c.st.temp.sweets || 1) * 1.5; }},
+  {id: 'tonic', e: '🧪', name: 'Training Plan', r: 'R', food: true, desc: 'Takings +10% for the rest of the run.', eat: c => { c.st.permMul += 0.1; }},
+  {id: 'beans', e: '🫘', name: 'Magic Beans', r: 'R', food: true, desc: 'Breaks 2 of your items at random and gives you a random Mythic item.', eat: c => {
+    for (let k = 0; k < 2 && c.st.items.length; k++) c.breakItem(pick(c.r, c.st.items), 'was eaten by the beanstalk');
+    c.gain(pick(c.r, toolPool('M', c.st)));
+  }}
+];
+const ITEM = Object.fromEntries(ITEMS.map(i => [i.id, i]));
+
+/* ---------------- run state ---------------- */
+const KEY = 'pedal-post-v1', REC = 'pedal-post-records-v1';
+let st = null, ui = {tip: ''};
+let rec = {best: 0, runs: 0, titles: {}};
+try { rec = Object.assign(rec, JSON.parse(localStorage.getItem(REC) || '{}')); } catch (e) {}
+try { st = JSON.parse(localStorage.getItem(KEY) || 'null'); } catch (e) {}
+function save() { try { localStorage.setItem(KEY, JSON.stringify(st)); localStorage.setItem(REC, JSON.stringify(rec)); } catch (e) {} }
+
+function stats(s) {
+  const o = {targetMul: 1, dmgMul: 1, maxE: 0, slots: 5 + (s.slotBonus || 0), foodDisc: 0, freeReroll: 0, fairDmgMul: 1};
+  for (const it of s.items) {
+    const def = ITEM[it.id];
+    for (const src of [def.stat, def.statFn && def.statFn(it)]) {
+      if (!src) continue;
+      for (const k in src) { if (/Mul$/.test(k)) o[k] *= src[k]; else o[k] += src[k]; }
+    }
+  }
+  return o;
+}
+const maxEnergy = s => 100 + stats(s).maxE + s.maxBonus;
+/* today's rules; `except` leaves one item out, to work out what that item adds */
+function rulesFor(s, day, withItems, except) {
+  const R = baseRules();
+  if (day.weather) WEATHER[day.weather].apply(R);
+  if (day.fair) FAIRS.find(f => f.id === day.fair).apply(R);
+  if (withItems) for (const it of s.items) { const def = ITEM[it.id]; if (def.rules && it !== except) def.rules(R); }
+  return R;
+}
+function newRun(seed) {
+  seed = seed || Math.random().toString(36).slice(2, 8);
+  st = {v: 1, seed, day: 1, energy: 100, maxBonus: 0, gold: 6, items: [], charges: {peek: 1, measure: 1, map: 1},
+    fairsWon: 0, visits: 0, permMul: 1, temp: {}, total: 0, phase: 'day', pending: null, shop: null, reward: null, result: null, milestone: false};
+  rec.runs++;
+  startDay();
+}
+
+/* c.it is the item whose hook is running: its name goes in the log, and what it earns is added to its totals */
+function ctx(r, log) {
+  const tag = text => (c.it ? ITEM[c.it.id].e + ' ' + ITEM[c.it.id].name + ': ' : c.who ? c.who + ': ' : '') + text;
+  const c = {
+    st, day: st.dayState, r, it: null, who: '',
+    gold(n) { if (!n) return; st.gold = Math.max(0, st.gold + n); if (c.it) c.it.g = (c.it.g || 0) + n; log && log.push(tag((n > 0 ? '+' : '') + n + ' gold')); },
+    heal(n) {
+      const m = maxEnergy(st), was = st.energy; st.energy = Math.max(0, Math.min(m, st.energy + n));
+      if (c.it) c.it.en = (c.it.en || 0) + st.energy - was;
+      log && log.push(tag((n > 0 ? '+' : '') + n + ' energy'));
+    },
+    charge(k, n) { st.charges[k] = (st.charges[k] || 0) + n; c.note('+' + n + ' ' + SPELL[k].name.toLowerCase()); log && log.push(tag('+' + n + ' ' + SPELL[k].name.toLowerCase())); },
+    note(text) { if (c.it && st.dayState && st.phase === 'day') (st.dayState.notes = st.dayState.notes || {})[c.it.id] = text; },
+    breakItem(it, why) {
+      const i = st.items.indexOf(it); if (i < 0) return;
+      st.items.splice(i, 1);
+      if (log) log.push(ITEM[it.id].e + ' ' + ITEM[it.id].name + ' ' + (why || 'broke'));
+      const was = c.it;
+      for (const o of st.items.slice()) { const d = ITEM[o.id]; if (d.onBreak) { c.it = o; d.onBreak(c, o); } }
+      c.it = was;
+    },
+    gain(id) { gainItem(id, log); }
+  };
+  return c;
+}
+const SPELL = {
+  peek: {e: '🔍', name: 'Peek', desc: 'Packs your bag the best way if you haven’t set off, then rides to the next stop on the best route from where you are.'},
+  measure: {e: '📏', name: 'Measure', desc: 'Shows the best possible score for today.'},
+  map: {e: '🧭', name: 'Distances', desc: 'For the rest of the day, shows how many moves each delivery is from where you are.'}
+};
+function each(hook, c, ...args) {
+  for (const it of st.items.slice()) { const d = ITEM[it.id]; if (d[hook] && st.items.includes(it)) { c.it = it; d[hook](c, ...args, it); c.it = null; } }
+}
+
+function defaultBag(day, R) {
+  const P = day.parcels, order = P.map((p, i) => i).sort((a, b) => P[b].pts - P[a].pts), bag = [];
+  let used = 0;
+  for (const i of order) { const sz = sizeOf(P[i], R); if (used + sz <= R.cap) { bag.push(i); used += sz; } }
+  return bag.sort((a, b) => a - b);
+}
+function startDay() {
+  const d = st.day, r = rngFor(st.seed, 'day', d), s = stats(st);
+  const fair = isFair(d) ? pick(r, FAIRS.filter(f => !f.need || PT[f.need].from <= d)).id : null;
+  const weather = !fair && d >= 3 && r() < 0.3 ? pick(r, Object.keys(WEATHER).filter(w => !WEATHER[w].need || PT[WEATHER[w].need].from <= d)) : null;
+  const town = makeTown(d, r, fair);
+  const day = Object.assign(town, {weather, fair, route: [town.depot], taps: [], bag: [], measured: false, mapOn: false, notes: {}});
+  st.dayState = day; st.phase = 'day';
+  // deadlines and the length of the day come from the plain rules
+  const R0 = rulesFor(st, day, false), D0 = allDist(day, R0);
+  for (const p of day.parcels) if (p.type === 'express') p.dl = D0[day.depot][p.at] + 2 + Math.floor(r() * 4);
+  day.moves = Math.max(6, Math.round(tourAll(day, D0) * 0.72));
+  const log = [];
+  each('start', ctx(rngFor(st.seed, 'start', d), log));
+  day.startLog = log;
+  const R = rulesFor(st, day, true), all = day.parcels.map((p, i) => i);
+  const best = plan(day, R, allDist(day, R), day.depot, 0, all, 0, false);
+  day.best = best.score; day.bestRoute = planRoute(day, R, best, day.depot);
+  day.bestBag = all.filter(i => best.order.includes(i) || day.parcels[i].type === 'letter');
+  // the target comes from the best route with no items, so whatever your items add helps you reach it
+  day.base = plan(day, R0, D0, day.depot, 0, all, 0, false).score;
+  day.target0 = Math.max(4, Math.ceil(day.base * quota(d)));
+  day.target = Math.max(4, Math.ceil(day.target0 * s.targetMul));
+  day.bag = defaultBag(day, R);
+  save();
+}
+
+/* ---------------- riding ---------------- */
+function bagSpace(day, R) { return day.bag.reduce((a, i) => a + sizeOf(day.parcels[i], R), 0); }
+function toggleBag(i) {
+  const day = st.dayState, R = rulesFor(st, day, true), p = day.parcels[i];
+  if (day.route.length > 1) { toast('You’ve set off, so your bag is packed. Undo back to the post office to change it.'); return; }
+  if (p.type === 'letter') { toast('Letters take no space, so they always come along.'); return; }
+  const k = day.bag.indexOf(i);
+  if (k >= 0) day.bag.splice(k, 1);
+  else if (bagSpace(day, R) + sizeOf(p, R) > R.cap) { toast('Your bag is full (' + R.cap + ' spaces). Take something out first.'); return; }
+  else day.bag.push(i);
+  save(); render();
+}
+function tapNode(n) {
+  const day = st.dayState, R = rulesFor(st, day, true), sim = simulate(day, R, day.route);
+  if (n === sim.at) return;
+  const want = new Set(day.bag.filter(i => !sim.done.has(i)).map(i => day.parcels[i].at));
+  const r = ridePath(day, R, sim.at, n, want);
+  if (!r) { toast('There’s no way through to there.'); return; }
+  const left = budgetOf(day, R) - sim.t;
+  if (r.cost > left) { toast('That ride takes ' + r.cost + ' moves and you have ' + left + ' left.'); return; }
+  day.taps.push(day.route.length); day.route.push(...r.path.slice(1));
+  save(); render();
+}
+function undo() { const day = st.dayState; if (!day.taps.length) return; day.route.length = day.taps.pop(); save(); render(); }
+function restartRoute() { const day = st.dayState; day.route = [day.depot]; day.taps = []; save(); render(); }
+function castPeek() {
+  const day = st.dayState, R = rulesFor(st, day, true);
+  if (!st.charges.peek) return;
+  const sim = simulate(day, R, day.route), fixed = day.route.length > 1;
+  const cand = fixed ? day.bag.filter(i => !sim.done.has(i)) : day.parcels.map((p, i) => i);
+  const pl = plan(day, R, allDist(day, R), sim.at, sim.t, cand, sim.del.length, fixed);
+  if (!pl.order.length && !(pl.home && sim.at !== day.depot)) { toast('There’s nothing more to gain from here. End the shift.'); return; }
+  if (!fixed) day.bag = day.parcels.map((p, i) => i).filter(i => pl.order.includes(i) || day.parcels[i].type === 'letter');
+  const route = planRoute(day, R, pl, sim.at);
+  // ride as far as the next delivery (or home)
+  const stops = new Set(pl.order.map(i => day.parcels[i].at));
+  let end = route.length - 1;
+  for (let k = 1; k < route.length; k++) if (stops.has(route[k])) { end = k; break; }
+  day.taps.push(day.route.length); day.route.push(...route.slice(1, end + 1));
+  st.charges.peek--; save(); render();
+}
+function castMeasure() { const day = st.dayState; if (!st.charges.measure || day.measured) return; st.charges.measure--; day.measured = true; save(); render(); }
+function castMap() { const day = st.dayState; if (!st.charges.map || day.mapOn) return; st.charges.map--; day.mapOn = true; save(); render(); }
+
+/* What a route takes in today and where each part comes from. `live` is the preview while you ride. */
+function takingsCalc(day, route, live) {
+  const R = rulesFor(st, day, true), sim = simulate(day, R, route), count = {};
+  for (const x of sim.del) { const t = day.parcels[x.i].type; count[t] = (count[t] || 0) + 1; }
+  const res = {points: sim.points, sim, count, perfect: sim.points >= day.best, parts: []}, c = {st, day};
+  for (const it of st.items) {
+    const def = ITEM[it.id]; if (!def.rules || def.route) continue;
+    const v = sim.points - simulate(day, rulesFor(st, day, true, it), route).points;
+    if (v) res.parts.push({it, pts: v});
+  }
+  let v = sim.points; const muls = [];
+  for (const it of st.items) {
+    const def = ITEM[it.id]; if (!def.bonus) continue;
+    const b = def.bonus(c, res, it);
+    if (b.add) { v += b.add; res.parts.push({it, add: b.add}); }
+    if (b.mul && b.mul !== 1 && !(live && b.secret)) muls.push({it, mul: b.mul});
+  }
+  if (st.permMul > 1) muls.push({name: '🧪 Training Plan', mul: st.permMul});
+  if (day.fair && st.temp.sweets) muls.push({name: '🍬 Lucky Sweets', mul: st.temp.sweets});
+  for (const m of muls) { const gain = v > 0 ? v * (m.mul - 1) : 0; v += gain; res.parts.push({it: m.it, name: m.name, mul: m.mul, add: Math.round(gain)}); }
+  res.takings = Math.max(0, Math.round(v));
+  return res;
+}
+const partName = p => p.it ? ITEM[p.it.id].e + ' ' + ITEM[p.it.id].name : p.name;
+const partText = p => p.pts != null ? (p.pts > 0 ? '+' : '') + p.pts + ' points' : p.mul ? '×' + Math.round(p.mul * 100) / 100 + ' (+' + p.add + ')' : '+' + p.add;
+function missCost(day, now) {
+  const s = stats(st);
+  if (now >= day.target) return 0;
+  return Math.round((5 + 80 * (1 - now / day.target)) * dmgScale(st.day) * (day.fair ? 1.6 * s.fairDmgMul : 1) * s.dmgMul);
+}
+
+function endShift() {
+  const day = st.dayState, d = st.day, s = stats(st);
+  const res = takingsCalc(day, day.route);
+  res.best = day.best; res.target = day.target; res.target0 = day.target0; res.bestRoute = day.bestRoute;
+  if (res.points > day.best) { day.best = res.points; res.beat = true; }
+  res.reached = res.takings >= day.target;
+  res.won = !!day.fair && res.reached;
+  const log = [], c = ctx(rngFor(st.seed, 'end', d), log);
+  for (const p of res.parts) if (p.it) p.it.h = (p.it.h || 0) + (p.pts || p.add || 0);
+  each('after', c, res);
+  if (day.fair) delete st.temp.sweets;
+
+  const gp = [['the day', 1]];
+  if (res.reached) gp.push(['reaching the target', 2]);
+  const over = res.reached ? Math.min(2, Math.floor((res.takings / day.target - 1) / 0.25 + 1e-9)) : 0;
+  if (over) gp.push(['beating the target by ' + over * 25 + '% or more', over]);
+  if (res.perfect) gp.push(['matching the best route', 2]);
+  if (res.won) gp.push(['winning the big day', 4]);
+  res.goldParts = gp; res.gold = gp.reduce((a, x) => a + x[1], 0);
+
+  res.dmg = 0;
+  if (!res.reached) {
+    const raw = (5 + 80 * (1 - res.takings / day.target)) * dmgScale(d) * (day.fair ? 1.6 : 1);
+    res.dmg = Math.round(raw * s.dmgMul * (day.fair ? s.fairDmgMul : 1));
+    const savers = st.items.filter(it => ITEM[it.id].stat && (ITEM[it.id].stat.dmgMul || (day.fair && ITEM[it.id].stat.fairDmgMul)));
+    if (Math.round(raw) > res.dmg) log.push(savers.map(it => ITEM[it.id].e + ' ' + ITEM[it.id].name).join(' and ') + ' saved you ' + (Math.round(raw) - res.dmg) + ' energy');
+  }
+  st.gold += res.gold; st.total += res.takings;
+  st.energy -= res.dmg;
+  if (res.won) { st.fairsWon++; each('fairWin', c); }
+  if (st.energy <= 0) {
+    for (const it of st.items.slice()) { const def = ITEM[it.id]; if (def.save && def.save(c, it)) break; }
+  }
+  res.log = log;
+  st.result = res;
+  st.phase = st.energy <= 0 ? 'over' : 'result';
+  if (st.phase === 'over') endRun();
+  else if (d === 30) st.milestone = true;
+  save(); render(); window.scrollTo(0, 0);
+}
+function endRun() {
+  const days = st.day - 1;
+  rec.best = Math.max(rec.best, days);
+  for (const [n, name] of TITLES) if (days >= n) rec.titles[name] = (rec.titles[name] || 0) + 1;
+}
+function nextAfterResult() {
+  const d = st.day, log = [];
+  st.milestone = false;
+  const c = ctx(rngFor(st.seed, 'night', d), log);
+  c.who = 'A night’s rest'; c.heal(3); c.who = '';
+  each('night', c);
+  st.nightLog = log;
+  rec.best = Math.max(rec.best, d);
+  if (st.result.won) { openReward(); return; }
+  afterReward();
+}
+function afterReward() {
+  if (isMarket(st.day)) openMarket();
+  else { st.day++; startDay(); }
+  save(); render(); window.scrollTo(0, 0);
+}
+
+/* ---------------- market ---------------- */
+function odds(v) {
+  const R = Math.min(30, Math.max(0, (v - 2) * 4)), M = Math.min(4, Math.max(0, (v - 5) * 0.5)), U = Math.min(55, 15 + v * 6);
+  return [['C', 100 - U - R - M], ['U', U], ['R', R], ['M', M]];
+}
+function toolPool(rar, s) {
+  const own = new Set(s.items.map(i => i.id));
+  return ITEMS.filter(i => i.r === rar && !i.food && !own.has(i.id) && (!i.need || PT[i.need].from <= s.day + 5) && !(i.upgrade && stats(s).slots >= 8)).map(i => i.id);
+}
+function foodPool(rar) { return ITEMS.filter(i => i.r === rar && i.food).map(i => i.id); }
+function rollOffer(r, v) {
+  for (let k = 0; k < 20; k++) {
+    const rar = wpick(r, odds(v));
+    const pool = r() < 0.35 ? foodPool(rar) : toolPool(rar, st);
+    const id = pool.length ? pick(r, pool) : null;
+    if (id && !(st.shop && st.shop.offers.includes(id))) return id;
+  }
+  return 'apple';
+}
+function priceOf(id) {
+  const def = ITEM[id]; let p = PRICE[def.r];
+  if (def.food) p = Math.max(1, Math.ceil(p * 0.6) - stats(st).foodDisc);
+  return p;
+}
+const sellValue = it => { const def = ITEM[it.id]; if (def.r === 'X') return -3; return Math.floor(PRICE[def.r] / 2) + (def.sellBonus ? def.sellBonus(it) : 0); };
+function openMarket() {
+  st.visits++;
+  const r = rngFor(st.seed, 'market', st.visits);
+  st.shop = {offers: [], reroll: stats(st).freeReroll ? 0 : 1, rolls: 0};
+  for (let k = 0; k < 4; k++) st.shop.offers.push(rollOffer(r, st.visits));
+  st.phase = 'market';
+}
+function reroll() {
+  const sh = st.shop; if (st.gold < sh.reroll) return;
+  st.gold -= sh.reroll; sh.rolls++;
+  sh.reroll = sh.rolls === 1 && stats(st).freeReroll ? 1 : sh.reroll + 1;
+  const r = rngFor(st.seed, 'market', st.visits, 'roll', sh.rolls);
+  sh.offers = [];
+  for (let k = 0; k < 4; k++) sh.offers.push(rollOffer(r, st.visits));
+  save(); render();
+}
+function buy(k) {
+  const id = st.shop.offers[k]; if (!id) return;
+  const def = ITEM[id], p = priceOf(id);
+  if (st.gold < p) return;
+  if (!def.food && !def.ticket && !def.upgrade && st.items.length >= stats(st).slots) { toast('All your slots are full. Sell an item first.'); return; }
+  st.gold -= p; st.shop.offers[k] = null;
+  const log = [], c = ctx(rngFor(st.seed, 'buy', st.visits, k, st.shop.rolls), log);
+  if (def.food) { def.eat(c); toast(def.e + ' ' + def.name + ': ' + (log.join(', ') || 'done')); }
+  else if (def.ticket) {
+    const r = c.r, rar = wpick(r, [['C', 30], ['U', 30], ['R', 20], ['M', 5], ['X', 15]]);
+    const pool = rar === 'X' ? ['puncture', 'fine'].filter(x => !st.items.some(i => i.id === x)) : toolPool(rar, st);
+    const got = pool.length ? pick(r, pool) : 'fine';
+    gainItem(got); toast('🎟️ The raffle gave you ' + ITEM[got].e + ' ' + ITEM[got].name);
+  } else { gainItem(id); if (def.upgrade) toast(def.e + ' ' + def.name + ': you now have ' + stats(st).slots + ' item slots'); }
+  save(); render();
+}
+function gainItem(id, log) {
+  if (!id) return;
+  if (ITEM[id].upgrade) { ITEM[id].eat(ctx(null, log)); if (log) log.push('got ' + ITEM[id].e + ' ' + ITEM[id].name); return; }
+  if (st.items.length >= stats(st).slots) { st.pending = id; return; }
+  st.items.push({id, n: 0});
+  if (log) log.push('got ' + ITEM[id].e + ' ' + ITEM[id].name);
+}
+function sell(i) {
+  const it = st.items[i], v = sellValue(it);
+  if (st.gold + v < 0) { toast('You need 3 gold to get rid of a pest.'); return; }
+  st.items.splice(i, 1); st.gold += v;
+  if (st.pending && st.items.length < stats(st).slots) { st.items.push({id: st.pending, n: 0}); st.pending = null; }
+  if (st.phase === 'full' && !st.pending) { afterReward(); return; }
+  save(); render();
+}
+
+/* ---------------- big-day prize ---------------- */
+function openReward() {
+  const r = rngFor(st.seed, 'reward', st.day), picks = [];
+  for (let k = 0; k < 20 && picks.length < 3; k++) {
+    const rar = wpick(r, odds(st.visits + 3));
+    const pool = toolPool(rar, st).filter(x => !picks.includes(x));
+    if (pool.length) picks.push(pick(r, pool));
+  }
+  st.reward = picks; st.phase = 'reward'; save(); render();
+}
+function takeReward(id) {
+  if (id) gainItem(id); else st.gold += 8;
+  st.reward = null;
+  if (st.pending) { st.phase = 'full'; save(); render(); return; }
+  afterReward();
+}
+
+/* ---------------- rendering ---------------- */
+function toast(msg) { ui.tip = msg; render(); clearTimeout(toast.t); toast.t = setTimeout(() => { ui.tip = ''; render(); }, 2800); }
+function hud() {
+  const m = maxEnergy(st), low = st.energy < m * 0.3;
+  const d = st.day, next = Math.ceil(d / 5) * 5;
+  return `<div class="hud">
+    <div class="chip">Energy<b>${st.energy} / ${m}</b><div class="bar${low ? ' low' : ''}"><i style="width:${Math.max(0, 100 * st.energy / m)}%"></i></div></div>
+    <div class="chip">Gold<b>${st.gold}</b></div>
+    <div class="chip">${isFair(d) ? 'Today' : 'Next big day'}<b>${isFair(d) ? 'Big day' : 'Day ' + next}</b></div>
+  </div>`;
+}
+/* short label for a delivery: its points now, plus the deadline for express */
+function parcelLabel(p, R) {
+  const v = parcelValue(p, 0, 2, R);
+  if (p.type === 'express') return v + ' by ' + (p.dl + R.dl);
+  if (p.type === 'meal') return v + '↓';
+  if (p.type === 'box' && R.boxSize > 1) return v + ' (2)';
+  return String(v);
+}
+function townSvg(day, R, route, o) {
+  o = o || {};
+  const sp = 60, pad = 30, W = day.W, H = day.H;
+  const X = i => pad + (i % W) * sp, Y = i => pad + Math.floor(i / W) * sp;
+  const w = pad * 2 + (W - 1) * sp, h = pad * 2 + (H - 1) * sp, out = [];
+  for (const k in day.E) {
+    const [a, b] = k.split('-').map(Number), t = day.E[k], mx = (X(a) + X(b)) / 2, my = (Y(a) + Y(b)) / 2;
+    if (t === 'w') {
+      if (R.works) out.push(`<line x1="${X(a)}" y1="${Y(a)}" x2="${X(b)}" y2="${Y(b)}" class="st hill"/>`);
+      else out.push(`<line x1="${X(a)}" y1="${Y(a)}" x2="${X(b)}" y2="${Y(b)}" class="wk"/>`);
+      out.push(`<text x="${mx}" y="${my}" class="em sm">🚧</text>`);
+    } else out.push(`<line x1="${X(a)}" y1="${Y(a)}" x2="${X(b)}" y2="${Y(b)}" class="st${t === 'h' ? ' hill' : ''}"/>`);
+    if (t === 'h' && !o.mini) out.push(`<circle cx="${mx}" cy="${my}" r="7" class="costbg"/><text x="${mx}" y="${my}" class="cost">${R.hill}</text>`);
+  }
+  if (o.best && o.best.length > 1) out.push(`<polyline points="${o.best.map(i => X(i) + ',' + Y(i)).join(' ')}" class="route best"/>`);
+  if (route && route.length > 1) out.push(`<polyline points="${route.map(i => X(i) + ',' + Y(i)).join(' ')}" class="route"/>`);
+  for (let i = 0; i < W * H; i++) out.push(`<circle cx="${X(i)}" cy="${Y(i)}" r="3" class="dot"/>`);
+  out.push(`<text x="${X(day.depot)}" y="${Y(day.depot)}" class="em">🏤</text>`);
+  const sim = o.sim, bag = new Set(day.bag);
+  day.parcels.forEach((p, i) => {
+    const x = X(p.at), y = Y(p.at), done = sim && sim.done.has(i);
+    out.push(`<text x="${x}" y="${y}" class="em${!bag.has(i) && !done ? ' off' : ''}">${done ? '✅' : PT[p.type].e}</text>`);
+    if (!o.mini && !done) {
+      const lab = parcelLabel(p, R), lw = 8 + lab.length * 6;
+      out.push(`<g class="${bag.has(i) ? '' : 'off'}"><rect x="${x - lw / 2}" y="${y + 11}" width="${lw}" height="14" rx="7" class="lblbg"/><text x="${x}" y="${y + 18}" class="lbl">${esc(lab)}</text></g>`);
+    }
+    if (o.dist && !done && bag.has(i) && o.dist[p.at] < Infinity) {
+      const lab = '→' + o.dist[p.at], lw = 8 + lab.length * 6;
+      out.push(`<rect x="${x - lw / 2}" y="${y - 27}" width="${lw}" height="14" rx="7" class="farbg"/><text x="${x}" y="${y - 20}" class="lbl far">${lab}</text>`);
+    }
+  });
+  if (o.bike != null) out.push(`<text x="${X(o.bike) - 15}" y="${Y(o.bike) - 15}" class="em sm">🚲</text>`);
+  if (o.tap) for (let i = 0; i < W * H; i++) out.push(`<circle cx="${X(i)}" cy="${Y(i)}" r="27" class="hit" data-n="${i}"/>`);
+  return `<svg class="town" viewBox="0 0 ${w} ${h}" role="img" aria-label="Town map">${out.join('')}</svg>`;
+}
+function itemTotals(it) {
+  const a = [];
+  if (it.h) a.push((it.h > 0 ? '+' : '') + it.h + ' takings');
+  if (it.g) a.push((it.g > 0 ? '+' : '') + it.g + ' gold');
+  if (it.en) a.push('+' + it.en + ' energy');
+  return a.length ? 'So far: ' + a.join(', ') + '.' : '';
+}
+/* your items as a list with what each one does; `live` maps an item to what it adds today */
+function itemsHtml(selling, live) {
+  const s = stats(st), out = st.items.map((it, i) => {
+    const def = ITEM[it.id], tot = itemTotals(it);
+    const extra = def.sellBonus ? ' Sells for ' + sellValue(it) + ' now.' : def.statFn && it.n ? ' Now +' + it.n + ' maximum energy.' : '';
+    const right = selling ? `<b>${sellValue(it) < 0 ? 'pay 3' : 'sell ' + sellValue(it)}</b>`
+      : live && live.get(it) ? `<b class="good">${esc(live.get(it))}</b><small>today</small>` : '';
+    const tag = selling ? 'button' : 'div';
+    return `<${tag} class="irow" data-item="${i}"><span class="ie">${def.e}</span><span class="it"><b>${esc(def.name)}</b><span class="small muted">${esc(def.desc + extra)}${tot ? ' ' + esc(tot) : ''}</span></span><span class="iv">${right}</span></${tag}>`;
+  });
+  for (let k = st.items.length; k < s.slots; k++) out.push('<div class="irow empty">Empty slot</div>');
+  return `<div class="ilist">${out.join('')}</div>`;
+}
+function bindItems() {
+  $$('[data-item]').forEach(b => b.onclick = () => {
+    const it = st.items[+b.dataset.item], def = ITEM[it.id];
+    if (confirm((sellValue(it) < 0 ? 'Pay 3 gold to get rid of ' : 'Sell ') + def.name + (sellValue(it) >= 0 ? ' for ' + sellValue(it) + ' gold' : '') + '?')) sell(+b.dataset.item);
+  });
+}
+function ruleLines(R, types, day) {
+  const L = {}, plus = (t, extra) => (R.add[t] ? ', +' + R.add[t] : '') + (extra || '') + (R.mult[t] !== 1 ? ', then ×' + R.mult[t] : '');
+  L.parcel = 'the number on it (2 to 4)' + plus('parcel') + '. Takes 1 space.';
+  L.letter = '1 point' + plus('letter') + '. Takes no space, so letters always come along.';
+  L.express = '5 points' + plus('express') + ' if it arrives by the move on its label' + (R.dl ? ' (' + (R.dl > 0 ? '+' : '') + R.dl + ' today)' : '') + ', otherwise ' + R.late + '. Takes 1 space.';
+  L.meal = '8 points' + plus('meal') + ', minus 1 for every ' + 2 * R.cool + ' moves since you set off (never below 2). Takes 1 space.';
+  L.box = 'the number on it (6 to 8)' + plus('box') + '. Takes ' + R.boxSize + ' space' + (R.boxSize > 1 ? 's' : '') + '.';
+  L.streets = 'A street costs 1 move, a hill costs ' + R.hill + '. Roadworks 🚧 ' + (R.works ? 'cost ' + R.works + '.' : 'are closed.');
+  L.bag = 'Your bag holds ' + R.cap + ' spaces.';
+  L.moves = 'You have ' + budgetOf(day, R) + ' moves today.';
+  if (R.bell) L.bell = 'Your first delivery scores double.';
+  if (R.stars) L.stars = 'Every third delivery scores ' + R.stars + ' more.';
+  if (R.home) L.home = '+' + R.home + ' points if you end the shift at the post office.';
+  for (const t in PT) if (!types.includes(t)) delete L[t];
+  return L;
+}
+function rulesHtml(R, day) {
+  const types = unlocked(st.day), now = ruleLines(R, types, day), changed = {};
+  for (const it of st.items) {
+    if (!ITEM[it.id].rules) continue;
+    const other = ruleLines(rulesFor(st, day, true, it), types, day);
+    for (const k of new Set(Object.keys(now).concat(Object.keys(other)))) if (now[k] !== other[k]) (changed[k] = changed[k] || []).push(ITEM[it.id].e);
+  }
+  const tags = k => changed[k] ? ` <span class="tag" title="changed by your items">${changed[k].join('')}</span>` : '';
+  const icon = {streets: '🛣️', bag: '👜', moves: '🚲', bell: '🔔', stars: '⭐', home: '🏤'};
+  const name = {streets: 'Streets', bag: 'Bag', moves: 'Moves', bell: 'First delivery', stars: 'Every third delivery', home: 'Ending at home'};
+  return `<div class="rules">${Object.keys(now).map(k => `<div><span class="e">${PT[k] ? PT[k].e : icon[k]}</span><span><b>${PT[k] ? PT[k].name : name[k]}</b>${tags(k)}: ${now[k]}</span></div>`).join('')}</div>
+    <p class="small muted" style="margin-top:6px">Moves are counted from when you leave the post office.${Object.keys(changed).length ? ' The icons after a name show which of your items changed that rule.' : ''}</p>`;
+}
+function helpCard() {
+  return `<div class="card help"><h3 style="margin-top:0">How to play</h3>
+    <ol>
+      <li>The map is the town. You start at the post office 🏤, and each icon is a house waiting for a delivery. The number under it is what it’s worth.</li>
+      <li>Before you set off, pack your bag: tap the deliveries under the map to put them in or take them out. Faded ones stay behind.</li>
+      <li>Tap any corner of the map to ride there by the shortest way. Anything in your bag for a house you pass is delivered. Each street costs moves, and you only have so many.</li>
+      <li>Press <b>End shift</b> when you’re done. Your takings need to reach the target.</li>
+    </ol>
+    <p>If you miss the target you lose energy, and the run ends when your energy runs out. Targets grow every day, so after the first couple of weeks you need items from the market to keep up. Undo and Restart are free, so try routes out.</p>
+    <div class="row"><button class="btn sm pri" id="gotit">Got it</button></div></div>`;
+}
+function dayView() {
+  const day = st.dayState, d = st.day, R = rulesFor(st, day, true), s = stats(st);
+  const T = takingsCalc(day, day.route, true), sim = T.sim, B = budgetOf(day, R), left = B - sim.t;
+  const setOff = day.route.length > 1;
+  let banner = '';
+  if (day.fair) { const f = FAIRS.find(x => x.id === day.fair); banner = `<div class="banner">🎪 <b>${f.name}</b>. ${f.desc} The target is higher today. Reach it to win a prize; missing it costs more energy than usual.</div>`; }
+  else if (day.weather) { const w = WEATHER[day.weather]; banner = `<div class="banner">${w.e} <b>${w.name}</b>. ${w.desc}</div>`; }
+  const morning = (st.nightLog || []).concat(day.startLog || []);
+  if (morning.length) banner += `<div class="banner small">Since yesterday: ${esc(morning.join(' · '))}</div>`;
+
+  const live = new Map();
+  for (const it of st.items) if (day.notes && day.notes[it.id]) live.set(it, day.notes[it.id]);
+  for (const it of st.items) if (ITEM[it.id].note) live.set(it, ITEM[it.id].note);
+  for (const p of T.parts) if (p.it) live.set(p.it, partText(p));
+  for (const it of st.items) {
+    if (it.id === 'eye') live.set(it, '×1.4 if best');
+    if (it.id === 'cap' && day.target0 > day.target) live.set(it, 'target −' + (day.target0 - day.target));
+  }
+  const reached = T.takings >= day.target, cost = missCost(day, T.takings);
+  const bits = [`deliveries ${sim.pts}`].concat(sim.home ? ['🏤 +' + sim.home] : [], T.parts.filter(p => p.pts == null).map(p => (p.it ? ITEM[p.it.id].e : p.name.split(' ')[0]) + ' ' + (p.mul ? '×' + Math.round(p.mul * 100) / 100 : '+' + p.add)));
+  const goal = `<div class="goal${reached ? ' ok' : ''}">
+      <div class="gl"><span>Takings <b>${T.takings}</b></span><span>Moves left <b>${left}</b></span><span>Target <b>${day.target}</b>${day.target0 > day.target ? ' <span class="small muted">(🧢 −' + (day.target0 - day.target) + ')</span>' : ''}</span></div>
+      <div class="bar"><i style="width:${Math.min(100, 100 * T.takings / day.target)}%"></i></div>
+      <div class="small muted">${esc(bits.join(' · ')) + (bits.length > 1 ? ' = ' + T.takings : '')}. ${reached ? 'Target reached.' : 'Ending now would cost ' + cost + ' energy.'}${day.measured ? ' Best possible today: ' + day.best + ' points.' : ''}</div>
+    </div>`;
+  const hint = !setOff ? 'Pack your bag below, then tap a corner of the map to ride there.'
+    : left > 0 ? 'Tap a corner to ride there by the shortest way. Undo takes back the last ride.' : 'You’re out of moves. End the shift to collect your takings.';
+  const dist = day.mapOn ? allDist(day, R)[sim.at] : null;
+  const space = bagSpace(day, R);
+  const chips = day.parcels.map((p, i) => {
+    const done = sim.done.has(i), inBag = day.bag.includes(i);
+    const cls = done ? 'done' : inBag ? '' : 'out';
+    return `<button class="pc ${cls}" data-p="${i}" ${done ? 'disabled' : ''} title="${PT[p.type].name}">${done ? '✅' : PT[p.type].e}<span>${esc(parcelLabel(p, R))}</span></button>`;
+  }).join('');
+  const spells = Object.keys(SPELL).map(k => {
+    const used = (k === 'measure' && day.measured) || (k === 'map' && day.mapOn);
+    return `<button class="btn sm" data-spell="${k}" title="${esc(SPELL[k].desc)}" ${!st.charges[k] || used ? 'disabled' : ''}>${SPELL[k].e} ${SPELL[k].name} ×${st.charges[k] || 0}</button>`;
+  }).join('');
+  const showHelp = ui.help || (!rec.seenHelp && d <= 2);
+  return `<div class="top"><h1>Day ${d}</h1><span class="muted">${SEASON_NAME[season(d)]} · <button class="btn sm" id="help">How to play</button> <button class="btn sm" id="menu">Menu</button></span></div>
+    ${hud()}${showHelp ? helpCard() : ''}${banner}${goal}
+    ${townSvg(day, R, day.route, {sim, bike: sim.at, tap: true, dist})}
+    <p class="hint">${hint}</p>
+    <div class="bag">${chips}</div>
+    <p class="small muted" style="text-align:center;margin:2px 0 0">Bag ${space} / ${R.cap} spaces${setOff ? ' · packed' : ' · tap to pack or unpack'}</p>
+    <div class="row c" style="margin-top:8px">${spells}</div>
+    <p class="small muted" style="text-align:center;margin:4px 0 0">🔍 Peek packs your bag the best way (before you set off) and rides to the next stop on the best route. 📏 Measure shows the best possible score. 🧭 Distances shows how many moves each delivery is from you.</p>
+    <div class="row c" style="margin-top:10px"><button class="btn" id="undo" ${day.taps.length ? '' : 'disabled'}>Undo</button><button class="btn" id="restart" ${day.taps.length ? '' : 'disabled'}>Restart</button><button class="btn pri big" id="end">End shift</button></div>
+    <div class="card"><h3 style="margin-top:0">Rules today</h3>${rulesHtml(R, day)}</div>
+    <div class="card"><h3 style="margin-top:0">Your items</h3>${st.items.length ? '' : '<p class="small muted">None yet. The market opens after day 2.</p>'}${itemsHtml(false, live)}</div>`;
+}
+function resultView() {
+  const res = st.result, day = st.dayState, d = st.day, R = rulesFor(st, day, true);
+  const head = `<div class="big-num ${res.reached ? 'good' : 'bad'}">${res.takings} / ${res.target}</div>
+    <p>${day.fair ? (res.won ? 'You won the big day. Choose a prize next.' : 'Not enough for the big day.') : res.reached ? 'Target reached.' : 'Short of the target by ' + (res.target - res.takings) + '.'}${res.dmg ? ' You lose ' + res.dmg + ' energy.' : ' No energy lost.'}</p>`;
+  const lines = [];
+  const pts = res.parts.filter(p => p.pts != null), more = res.parts.filter(p => p.pts == null);
+  lines.push(`You delivered ${res.sim.del.length} of ${day.parcels.length} for ${res.points} points${res.sim.home ? ' (including +' + res.sim.home + ' for ending at the post office)' : ''}${pts.length ? ', including ' + pts.map(p => partName(p) + ' ' + partText(p)).join(', ') : ''}. The best route scores ${res.best}${res.beat ? ', so you beat it by ' + (res.points - res.best) : res.perfect ? ', and you matched it' : ''}.`);
+  if (more.length) lines.push(`Takings: ${res.points} from deliveries, ` + more.map(p => partName(p) + ' ' + partText(p)).join(', ') + ` = ${res.takings}.`);
+  if (res.target0 > res.target) lines.push(`🧢 Cap lowered the target from ${res.target0} to ${res.target}.`);
+  lines.push(`Gold +${res.gold}: ` + res.goldParts.map(([w, n]) => n + ' for ' + w).join(', ') + '.');
+  const next = isMarket(d) && !res.won ? 'Go to the market' : res.won ? 'Choose a prize' : 'Next day';
+  const bestDay = Object.assign({}, day, {bag: day.bestBag}), bestSim = simulate(bestDay, R, res.bestRoute);
+  return `<div class="top"><h1>Day ${d} takings</h1></div>${hud()}
+    <div class="card" style="text-align:center">${head}</div>
+    <div class="res"><div><h3>Your route · ${res.points}</h3>${townSvg(day, R, day.route, {sim: res.sim, mini: true})}</div><div><h3>Best route · ${res.best}</h3>${townSvg(bestDay, R, null, {sim: bestSim, mini: true, best: res.bestRoute})}</div></div>
+    <div class="card">${lines.concat(res.log).map(l => `<div class="log">${esc(l)}</div>`).join('')}</div>
+    ${st.milestone ? `<div class="card" style="border-color:var(--accent)"><h2>Summer is over: you made it through 30 days</h2><p>That completes the run, and you’ve earned the title <b>Senior courier</b>. You can keep going into autumn. From here the targets grow by 4% a day and missing them costs more energy, so the question is how far your items can carry you. Day 100 is the top title, and the run goes on after it for as long as you last.</p></div>` : ''}
+    <div class="row c"><button class="btn pri big" id="next">${next}</button></div>`;
+}
+function marketView() {
+  const sh = st.shop, s = stats(st);
+  const offers = sh.offers.map((id, k) => {
+    if (!id) return '<div class="offer empty">sold</div>';
+    const def = ITEM[id], p = priceOf(id), full = !def.food && !def.ticket && !def.upgrade && st.items.length >= s.slots;
+    return `<div class="offer"><span class="oe">${def.e}</span><span class="on">${esc(def.name)}</span><span class="rar rar-${def.r}">${RARITY[def.r]}${def.food ? ' food' : def.upgrade ? ' upgrade' : ''}</span><span class="od">${esc(def.desc)}</span>
+      <button class="btn sm pri" data-buy="${k}" ${st.gold < p ? 'disabled' : ''}>${full ? 'Slots full · ' : 'Buy · '}${p} gold</button></div>`;
+  }).join('');
+  const nightLog = st.nightLog && st.nightLog.length ? `<div class="banner small">Overnight: ${esc(st.nightLog.join(' · '))}</div>` : '';
+  const nextOpen = (() => { for (let x = st.day + 1; x < st.day + 12; x++) if (isMarket(x)) return x; return '?'; })();
+  const nextFair = Math.ceil((st.day + 1) / 5) * 5;
+  return `<div class="top"><h1>Evening market</h1><span class="muted">after day ${st.day}</span></div>${hud()}${nightLog}
+    <p class="small muted">Food is used straight away. Everything else takes one of your ${s.slots} slots. The market opens next after day ${nextOpen}, and the next big day is day ${nextFair}.</p>
+    <div class="offers">${offers}</div>
+    <div class="row c" style="margin:10px 0"><button class="btn" id="reroll" ${st.gold < sh.reroll ? 'disabled' : ''}>Reroll · ${sh.reroll ? sh.reroll + ' gold' : 'free'}</button><button class="btn pri" id="leave">Start day ${st.day + 1}</button></div>
+    <div class="card"><h3 style="margin-top:0">Your items <span class="small muted">tap to sell</span></h3>${itemsHtml(true)}${st.pending ? `<p class="bad small">No room for ${ITEM[st.pending].e} ${esc(ITEM[st.pending].name)}. Sell something to make room, or it’s lost when you leave.</p>` : ''}</div>`;
+}
+function rewardView() {
+  return `<div class="top"><h1>Big-day prize</h1></div>${hud()}
+    <p>Choose one item, or take 8 gold.</p>
+    <div class="offers">${st.reward.map(id => { const def = ITEM[id]; return `<div class="offer"><span class="oe">${def.e}</span><span class="on">${esc(def.name)}</span><span class="rar rar-${def.r}">${RARITY[def.r]}${def.upgrade ? ' upgrade' : ''}</span><span class="od">${esc(def.desc)}</span><button class="btn sm pri" data-take="${id}">Take</button></div>`; }).join('')}
+    <div class="offer"><span class="oe">💰</span><span class="on">8 gold</span><span class="od">Save it for the market.</span><button class="btn sm pri" data-take="">Take</button></div></div>
+    <div class="card"><h3 style="margin-top:0">Your items</h3>${itemsHtml(false)}</div>`;
+}
+function fullView() {
+  return `<div class="top"><h1>No room</h1></div>${hud()}
+    <p>All your slots are full, so there’s no room for ${ITEM[st.pending].e} <b>${esc(ITEM[st.pending].name)}</b> (${esc(ITEM[st.pending].desc)}). Sell an item to make room, or let it go.</p>
+    <div class="card">${itemsHtml(true)}</div>
+    <div class="row c"><button class="btn" id="letgo">Let it go</button></div>`;
+}
+function overView() {
+  const days = st.day - 1, title = titleFor(days);
+  return `<div class="top"><h1>The bike is back in the shed</h1></div>
+    <div class="card" style="text-align:center"><div class="big-num">${days} day${days === 1 ? '' : 's'}</div><p>Title: <b>${title}</b></p>
+    <p class="small muted">Big days won ${st.fairsWon} · total takings ${st.total} · seed ${esc(st.seed)}</p></div>
+    ${st.result ? `<div class="card">${[`On day ${st.day} your takings were ${st.result.takings} against a target of ${st.result.target}, and you lost ${st.result.dmg} energy.`].concat(st.result.log).map(l => `<div class="log">${esc(l)}</div>`).join('')}</div>` : ''}
+    <div class="row c"><button class="btn pri big" id="again">New run</button><button class="btn" id="same">Replay this seed</button></div>`;
+}
+function titleView() {
+  const has = st && st.phase !== 'over';
+  return `<div style="text-align:center;padding:30px 0 10px"><div style="font-size:54px">🚲📦💌</div><h1 style="font-size:34px">Pedal Post</h1>
+    <p class="muted">A route puzzle with a run, a market and big days. Plan each day’s deliveries as well as you can, build up your items, and see how many days you last.</p></div>
+    <div class="row c">${has ? `<button class="btn pri big" id="cont">Continue day ${st.day}</button>` : ''}<button class="btn ${has ? '' : 'pri '}big" id="new">New run</button></div>
+    <div class="row c" style="margin-top:10px"><input type="text" id="seed" placeholder="seed (optional)"><button class="btn sm" id="seeded">Start with seed</button></div>
+    <div class="card"><h3 style="margin-top:0">How it works</h3>
+      <p>Each day you get a small town, a bag and a number of moves. Pack the deliveries that fit in your bag, then tap the map to ride. Every house you pass gets its delivery. Parcels are worth their number, letters take no space, express deliveries have a deadline, hot meals cool down as you ride, and big boxes take two spaces.</p>
+      <p>Every day has a target. If your takings miss it you lose energy, more the further short you are, and the run ends when your energy runs out. The targets grow faster than a perfect route can keep up with, so you need items.</p>
+      <p>Items give you more moves or bag space, make deliveries worth more, multiply your takings or protect your energy. You can only buy them at the market, which opens on some evenings, usually twice between big days. Every fifth day is a big day with its own rule and a higher target: win it for a prize.</p>
+      <p>Day 30 completes the run. After that it keeps getting harder, and day 100 is the top title.</p></div>
+    <div class="card"><h3 style="margin-top:0">Your records</h3><p>Longest run: <b>${rec.best} days</b> · runs started: ${rec.runs}</p>
+      <div class="titles">${TITLES.map(([n, name]) => `<span>${rec.titles[name] ? '✓' : '·'}</span><span>${name}</span><span class="muted">day ${n}</span>`).join('')}</div></div>
+    <footer>Inspired by the run structure of GeoGuessr’s HorrorGuessr mode. No sign-in, progress is saved in this browser.</footer>`;
+}
+function render() {
+  const app = $('#app');
+  document.body.dataset.season = st && !ui.title ? season(st.day) : 'summer';
+  if (!st || ui.title) app.innerHTML = titleView();
+  else app.innerHTML = ({day: dayView, result: resultView, market: marketView, reward: rewardView, full: fullView, over: overView}[st.phase] || dayView)();
+  if (ui.tip) app.insertAdjacentHTML('beforeend', `<div class="tip">${esc(ui.tip)}</div>`);
+  bind();
+}
+function bind() {
+  const on = (sel, fn) => { const el = $(sel); if (el) el.onclick = fn; };
+  on('#cont', () => { ui.title = false; render(); });
+  on('#new', () => { if (!st || st.phase === 'over' || confirm('Start a new run? The current one will be lost.')) { ui.title = false; newRun(); render(); } });
+  on('#seeded', () => { const s = $('#seed').value.trim(); if (!s) return; if (!st || st.phase === 'over' || confirm('Start a new run? The current one will be lost.')) { ui.title = false; newRun(s); render(); } });
+  on('#menu', () => { ui.title = true; render(); });
+  on('#help', () => { ui.help = !ui.help; render(); });
+  on('#gotit', () => { ui.help = false; rec.seenHelp = true; save(); render(); });
+  on('#again', () => { newRun(); render(); });
+  on('#same', () => { newRun(st.seed); render(); });
+  on('#undo', undo);
+  on('#restart', restartRoute);
+  on('#end', () => {
+    const day = st.dayState, R = rulesFor(st, day, true), sim = simulate(day, R, day.route), left = budgetOf(day, R) - sim.t;
+    const waiting = day.bag.filter(i => !sim.done.has(i)).length;
+    if (left > 0 && waiting && !confirm('You still have ' + left + ' move' + (left > 1 ? 's' : '') + ' and ' + waiting + ' deliver' + (waiting > 1 ? 'ies' : 'y') + ' in your bag. End the shift anyway?')) return;
+    endShift();
+  });
+  on('#next', nextAfterResult);
+  on('#reroll', reroll);
+  on('#leave', () => { if (st.pending) st.pending = null; st.shop = null; st.nightLog = null; st.day++; startDay(); render(); window.scrollTo(0, 0); });
+  on('#letgo', () => { st.pending = null; afterReward(); });
+  $$('[data-n]').forEach(b => b.onclick = () => tapNode(+b.dataset.n));
+  $$('[data-p]').forEach(b => b.onclick = () => toggleBag(+b.dataset.p));
+  $$('[data-spell]').forEach(b => b.onclick = () => ({peek: castPeek, measure: castMeasure, map: castMap}[b.dataset.spell])());
+  $$('[data-buy]').forEach(b => b.onclick = () => buy(+b.dataset.buy));
+  $$('[data-take]').forEach(b => b.onclick = () => takeReward(b.dataset.take));
+  if (st && (st.phase === 'market' || st.phase === 'full')) bindItems();
+}
+ui.title = true;
+render();
+</script>
+</body>
+</html>
