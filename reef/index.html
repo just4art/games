@@ -45,66 +45,59 @@ button:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
 .small{font-size:12.5px}
 .good{color:var(--good)} .bad{color:var(--bad)}
 
-/* the playing screen: header, goal, board that takes the free space, and the dock with every control */
-.game{min-height:100vh;min-height:100dvh;max-width:780px;margin:0 auto;display:flex;flex-direction:column;gap:6px;padding:8px 10px max(8px,env(safe-area-inset-bottom))}
-.hud{display:flex;align-items:center;gap:6px}
-.ib{border:1.5px solid var(--line);background:var(--surface);border-radius:10px;width:34px;height:34px;display:grid;place-items:center;cursor:pointer;flex:none;padding:0}
-.dn{font-family:Marcellus,Georgia,serif;font-size:19px;white-space:nowrap;line-height:1.1}
-.dn small{display:block;font-family:system-ui,sans-serif;font-size:11px;color:var(--muted)}
-.air{flex:1;min-width:70px;font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+/* the playing screen scrolls like the other pages: score, reef, hand and buttons, then today's scoring and your items */
+.game{max-width:620px;margin:0 auto;padding:12px 16px 40px}
+.hud{display:flex;align-items:center;gap:8px}
+.ib{border:1.5px solid var(--line);background:var(--surface);border-radius:12px;width:42px;height:42px;display:grid;place-items:center;cursor:pointer;flex:none;padding:0;font-size:18px}
+.dn{font-family:Marcellus,Georgia,serif;font-size:22px;white-space:nowrap;line-height:1.1}
+.dn small{display:block;font-family:system-ui,sans-serif;font-size:12px;color:var(--muted)}
+.air{flex:1;min-width:80px;font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
 .air b{color:var(--text)}
-.bar{height:6px;background:var(--line);border-radius:3px;margin-top:2px;overflow:hidden}
+.bar{height:7px;background:var(--line);border-radius:4px;margin-top:3px;overflow:hidden}
 .bar i{display:block;height:100%;background:var(--sky);transition:width .3s}
 .air.low .bar i{background:var(--bad)}
-.pill{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:3px 8px;font-size:12px;color:var(--muted);text-align:center;white-space:nowrap;line-height:1.2}
-.pill b{display:block;font-size:15px;color:var(--text);font-variant-numeric:tabular-nums}
-.goal{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:4px 10px 2px;position:sticky;top:4px;z-index:6}
-.gl{display:flex;justify-content:space-between;align-items:baseline;gap:8px;font-size:13px}
-.gl b{font-size:17px;font-variant-numeric:tabular-nums}
-.gl .gm{font-size:12.5px;font-weight:600;text-align:center}
-.gbar{position:relative;height:8px;background:var(--line);border-radius:4px;margin:3px 0 14px}
+.pill{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:4px 10px;font-size:12px;color:var(--muted);text-align:center;white-space:nowrap;line-height:1.2}
+.pill b{display:block;font-size:16px;color:var(--text);font-variant-numeric:tabular-nums}
+.goal{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:8px 12px 6px;margin:10px 0 8px}
+.gl{display:flex;justify-content:space-between;align-items:baseline;gap:8px;font-size:14px}
+.gl b{font-size:20px;font-variant-numeric:tabular-nums}
+.gl .gm{font-size:13px;font-weight:600;text-align:center}
+.gbar{position:relative;height:10px;background:var(--line);border-radius:5px;margin:5px 0 16px}
 .gbar i{position:absolute;left:0;top:0;bottom:0;border-radius:5px;background:var(--accent);transition:width .25s}
 .gbar.ok i{background:var(--good)}
 .gbar s{position:absolute;top:-2px;bottom:-2px;width:2px;background:var(--surface);text-decoration:none}
-.gbar s span{position:absolute;top:10px;left:50%;transform:translateX(-50%);font-size:10px;color:var(--muted);white-space:nowrap}
-.gs{font-size:11.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.banner{background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--accent);border-radius:10px;padding:3px 10px;font-size:12.5px;cursor:pointer;text-align:left;width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gbar s span{position:absolute;top:13px;left:50%;transform:translateX(-50%);font-size:11px;color:var(--muted);white-space:nowrap}
+.gs{font-size:12.5px;color:var(--muted)}
+.banner{background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--accent);border-radius:12px;padding:7px 12px;margin:0 0 8px;font-size:14px;cursor:pointer;text-align:left;width:100%;display:block}
 .banner b{color:var(--accent)}
-.play{display:flex;flex-direction:column;gap:6px;flex:1 0 auto}
-.boardwrap{flex:1 0 auto;display:grid;place-items:center}
-@media (min-width:900px){
-  .game{max-width:1180px}
-  .play{flex-direction:row;align-items:flex-start;gap:12px}
-  .play .boardwrap{flex:1;min-width:0}
-  .play .dock{width:340px;flex:none;top:8px;bottom:auto;box-shadow:var(--shadow)}
-  .play .info{min-height:4em}
-}
+.boardwrap{container-type:inline-size}
 .board{display:grid;gap:4px;padding:6px;border-radius:16px;background:linear-gradient(160deg,var(--sea1),var(--sea2));box-shadow:var(--shadow);
-  width:100%;grid-template-columns:repeat(var(--w),1fr);touch-action:manipulation}
-.cell{position:relative;aspect-ratio:1;border:none;border-radius:9px;background:var(--cell);display:grid;place-items:center;cursor:pointer;padding:0;line-height:1;
-  font-size:calc(var(--cs,60px) * .5);transition:transform .08s}
+  grid-template-columns:repeat(var(--w),1fr);touch-action:manipulation}
+.cell{position:relative;aspect-ratio:1;border:none;border-radius:10px;background:var(--cell);display:grid;place-items:center;cursor:pointer;padding:0;line-height:1;
+  font-size:calc(100cqw / var(--w) * .52);transition:transform .08s}
 .cell:active{transform:scale(.95)}
 .cell.fixed{cursor:default;background:color-mix(in srgb,var(--cell) 25%,transparent)}
 .cell.open{box-shadow:inset 0 0 0 2px color-mix(in srgb,var(--accent) 55%,transparent)}
 .cell.pin{box-shadow:inset 0 0 0 3px var(--sky)}
-.cell .pt{position:absolute;right:4px;bottom:3px;font-size:max(10px,min(calc(var(--cs,60px) * .17), 14px));font-weight:700;font-variant-numeric:tabular-nums;color:var(--good);font-family:system-ui,sans-serif}
+.cell .pt{position:absolute;right:4px;bottom:3px;font-size:max(11px,min(calc(100cqw / var(--w) * .18), 15px));font-weight:700;font-variant-numeric:tabular-nums;color:var(--good);font-family:system-ui,sans-serif}
 .cell .pt.neg{color:var(--bad)}
 .cell .pt.zero{color:var(--muted)}
-.cell .hot{position:absolute;inset:0;border-radius:9px;display:grid;place-items:center;font-size:max(12px,min(calc(var(--cs,60px) * .22), 18px));font-weight:700;color:var(--text);font-family:system-ui,sans-serif}
-.dock{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:5px 6px;display:flex;flex-direction:column;gap:5px;position:sticky;bottom:max(8px,env(safe-area-inset-bottom));z-index:5;box-shadow:0 -4px 14px rgba(0,0,0,.12)}
-.info{font-size:12px;color:var(--muted);line-height:1.3;height:2.6em;text-align:center;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.cell .hot{position:absolute;inset:0;border-radius:10px;display:grid;place-items:center;font-size:max(13px,min(calc(100cqw / var(--w) * .22), 19px));font-weight:700;color:var(--text);font-family:system-ui,sans-serif}
+.info{font-size:14px;color:var(--muted);text-align:center;margin:12px 0 8px;line-height:1.4}
 .info b{color:var(--text)}
-.hand{display:flex;gap:5px;justify-content:safe center;overflow-x:auto;scrollbar-width:none;padding:2px 1px}
-.htile{display:flex;align-items:center;gap:3px;border:1.5px solid var(--line);background:var(--surface2);border-radius:11px;padding:2px 7px;font-size:21px;cursor:pointer;line-height:1.2;flex:none}
-.htile span{font-size:12.5px;font-weight:700;color:var(--muted)}
-.htile.sel{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent);background:var(--surface)}
+.hand{display:flex;flex-wrap:wrap;gap:7px;justify-content:center}
+.htile{display:flex;align-items:center;gap:4px;border:1.5px solid var(--line);background:var(--surface);border-radius:12px;padding:5px 11px;font-size:27px;cursor:pointer;line-height:1.2}
+.htile span{font-size:14px;font-weight:700;color:var(--muted)}
+.htile.sel{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent)}
 .htile.none{opacity:.35;cursor:default}
-.tools{display:flex;gap:3px;justify-content:center}
-.tb{border:1.5px solid var(--line);background:var(--surface2);border-radius:10px;padding:6px 5px;min-width:33px;justify-content:center;cursor:pointer;font-size:13px;flex:none;font-weight:600;white-space:nowrap;display:flex;align-items:center;gap:3px}
+.tools{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin:12px 0 0}
+.tb{border:1.5px solid var(--line);background:var(--surface);border-radius:12px;padding:7px 11px;cursor:pointer;font-size:14px;font-weight:600;white-space:nowrap;display:flex;align-items:center;gap:5px}
 .tb:disabled{opacity:.4;cursor:default}
-.tb.pouch{border-style:dashed;padding:6px 5px}
-.tb.fin{background:var(--accent);border-color:var(--accent);color:#fff;font-size:15px;padding:6px 6px;flex:1 1 auto;min-width:0;justify-content:center;max-width:220px}
-.tb.fin.ok{background:var(--good);border-color:var(--good)}
+.tb.pouch{border-style:dashed}
+.finrow{display:flex;gap:8px;justify-content:center;margin:12px 0 4px}
+.finrow .btn{font-size:15px;padding:11px 14px}
+.finrow .fin{flex:1;max-width:300px;font-size:17px}
+.finrow .fin.ok{background:var(--good);border-color:var(--good)}
 
 /* scrolling pages (results, market, prizes, title) keep their main buttons in a bar fixed to the bottom */
 .page{max-width:620px;margin:0 auto;padding:12px 16px 120px}
@@ -155,7 +148,6 @@ button.irow{cursor:pointer}
 .bagrow:last-child{border-bottom:none}
 .bagrow .e{font-size:22px;width:28px;text-align:center}
 .bagrow .t{flex:1;min-width:0}
-.tip.top{top:38%;bottom:auto}
 .tip{position:fixed;left:50%;bottom:90px;transform:translateX(-50%);background:var(--text);color:var(--bg);padding:8px 14px;border-radius:12px;font-size:13.5px;max-width:min(92vw,480px);z-index:60;box-shadow:var(--shadow);text-align:center}
 input[type=text]{font:inherit;border:1.5px solid var(--line);background:var(--surface);color:var(--text);border-radius:10px;padding:7px 10px;width:150px}
 .sheet-bg{position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:flex-end;justify-content:center;padding:12px;z-index:40}
@@ -1148,7 +1140,7 @@ function everywhere(R, day) {
   return out;
 }
 function typesOf(day) { return KIND_IDS.filter(k => st.bag[k] > 0 || day.hand.includes(k)); }
-function rulesSheet() {
+function rulesSheet(inline) {
   const day = st.dayState, R = rulesFor(st, day, true), types = typesOf(day), changed = {};
   for (const it of st.items) {
     if (!ITEM[it.id].rules) continue;
@@ -1160,7 +1152,7 @@ function rulesSheet() {
   const line = t => `<div><span class="e">${KINDS[t].e}</span><span><b>${KINDS[t].name}</b>${tags(t)}: ${esc(ruleParts(R, t, types))} <span class="n">· bag ${st.bag[t] || 0}${day.hand.includes(t) ? ', hand ' + Math.max(0, left[t] || 0) : ''}</span></span></div>`;
   const ev = everywhere(R, day).map(([e, n, d]) => `<div><span class="e">${e}</span><span><b>${n}</b>: ${esc(d)}</span></div>`).join('');
   const cur = day.current ? CURRENTS[day.current] : null, E = day.event ? EVENTS[day.event.id] : null;
-  return `<div class="sh"><h2>Scoring today</h2><span><button class="btn sm" data-guide>How to play</button> <button class="btn sm" data-close>Close</button></span></div>
+  return `<div class="sh"><h2>Scoring today</h2><span><button class="btn sm" data-guide>How to play</button>${inline ? '' : ' <button class="btn sm" data-close>Close</button>'}</span></div>
     ${E ? `<p>🎪 <b>${E.name}</b>. ${esc(E.desc(day.event))} The target is higher today, and you win a prize if you reach it.</p>` : ''}
     ${cur ? `<p>${cur.e} <b>${cur.name}</b>. ${esc(cur.desc)}${cur.bad && has('calm') ? ' Your 🪷 Calm Waters keeps it away.' : ''}</p>` : ''}
     <div class="rules">${types.map(line).join('')}${ev}</div>
@@ -1168,19 +1160,9 @@ function rulesSheet() {
     <h3>Tools</h3><div class="rules">${Object.entries(SPELL).map(([k, s]) => `<div><span class="e">${s.e}</span><span><b>${s.name}</b> ×${st.charges[k] || 0}: ${esc(s.desc)}</span></div>`).join('')}</div>
     <h3>Shells</h3><p class="small">2 for every day, 2 more for reaching the target, and the further past it you go the more you get: +4 at 1.5 times the target, +8 at double, +12 at 2.5 times. Matching the best layout adds 2 and winning a festival adds 4. You also get 1 shell of interest for every 5 you have saved, up to 4 a day.</p>`;
 }
-function menuSheet() {
-  const b = (attr, e, name, note) => `<button class="irow" ${attr}><span class="ie">${e}</span><span class="it"><b>${name}</b><span class="small muted">${note}</span></span></button>`;
-  return `<div class="sh"><h2>Menu</h2><button class="btn sm" data-close>Close</button></div><div class="ilist">
-    ${b('data-sheet="rules"', '📜', 'Scoring today', 'How each species scores, today’s current or festival, and the tools.')}
-    ${b('data-sheet="items"', '🎒', 'Items and pouch', `${st.items.length} items, ${st.pouch.length} in the pouch. Use pouch things from here.`)}
-    ${b('data-sheet="bag"', '🐚', 'Your bag', bagSize(st.bag) + ' tiles, with a picture for each species.')}
-    ${b('data-guide', '💡', 'How to play', 'The picture guide.')}
-    ${b('id="totitle"', '🏠', 'Title screen', 'Your run is saved.')}
-  </div>`;
-}
-function itemsSheet(live) {
+function itemsSheet(live, inline) {
   const s = stats(st);
-  return `<div class="sh"><h2>Items</h2><button class="btn sm" data-close>Close</button></div>
+  return `<div class="sh"><h2>Your items</h2>${inline ? '<button class="btn sm" data-sheet="bag">🐚 Your bag</button>' : '<button class="btn sm" data-close>Close</button>'}</div>
     <h3>Pouch <span class="small muted">${st.pouch.length} / ${s.pouch}</span></h3>${pouchHtml(true)}
     <h3>Locker <span class="small muted">${st.items.length} / ${s.slots}</span></h3>${st.items.length ? '' : '<p class="small muted">Nothing yet. The market opens after day 2.</p>'}${itemsHtml(false, live)}`;
 }
@@ -1234,7 +1216,7 @@ function guideHtml(p) {
       <p>Each creature scores by what is around it. The number in the corner of a cell is what that creature scores. For the outlined creature, the shaded cells are the ones that count: usually the four cells above, below, left and right.</p>
       <p class="small muted">Left: coral likes coral. Right: clownfish get +2 for each coral next to them.</p>`],
     ['Every species is different', `<div class="gpic">${exampleHtml('crab', 38)}${exampleHtml('kelp', 38)}${exampleHtml('puffer', 38)}</div>
-      <p>Crabs want the edge, kelp counts kelp in its whole column, a pufferfish wants to be alone. The line above your hand always says how the creature you’re holding scores, and 📜 Rules lists them all.</p>`],
+      <p>Crabs want the edge, kelp counts kelp in its whole column, a pufferfish wants to be alone. The line above your hand always says how the creature you’re holding scores, and “Scoring today” under the reef lists them all.</p>`],
     ['Beat the target', `<div class="goal"><div class="gl"><span>Score <b>46</b></span><span class="gm good">+12 🐚 now · double!</span><span>Target <b>23</b></span></div>
         <div class="gbar ok"><i style="width:80%"></i>${[1, 1.5, 2].map(x => `<s style="left:${x / 2.5 * 100}%"><span>${x === 1 ? 23 : x + '×'}</span></s>`).join('')}</div></div>
       <p>When the score bar passes the target, press <b>Finish day</b>. Shells for a day:</p>
@@ -1244,7 +1226,7 @@ function guideHtml(p) {
       <div class="gi"><span class="ge">🏪</span><span>Some evenings there is a market. Buy items that raise your score (🛶 🗡️ 🍯), things for your pouch that you use when you like (🍱 🧵), and more creatures for your bag (🦀🦀🦀).</span></div>
       <div class="gi"><span class="ge">🎪</span><span>Every fifth day is a festival with a special rule and a higher target. Reach it and you choose a prize.</span></div>
       <div class="gi"><span class="ge">🌊</span><span>Some days have a current that changes the rules a little. The banner above the reef says what it does.</span></div>`],
-    ['Your species', `<p class="small muted">These are in your bag${st ? '' : ' at the start'}. Other species turn up at the market, and “Your bag” in the ☰ menu shows these pictures again.</p>${mine.map(speciesCard).join('')}`]
+    ['Your species', `<p class="small muted">These are in your bag${st ? '' : ' at the start'}. Other species turn up at the market, and “Your bag” next to your items shows these pictures again.</p>${mine.map(speciesCard).join('')}`]
   ];
   const [title, body] = pages[p], last = p === pages.length - 1;
   return `<div class="guide"><div class="gtitle"><h2>${title}</h2><span class="small muted">${p + 1} / ${pages.length}</span></div>${body}
@@ -1273,8 +1255,10 @@ function dayView() {
     for (let i = 0; i < g.length; i++) if (!g[i]) { g[i] = ui.sel; hot[i] = scoreGrid(g, day.D, R) - score; g[i] = null; }
   }
   let banner = '';
-  if (day.event) { const E = EVENTS[day.event.id]; banner = `<button class="banner" data-sheet="rules">🎪 <b>${E.name}</b>: ${esc(E.desc(day.event))} Higher target, prize if you reach it.</button>`; }
-  else if (day.current) { const c = CURRENTS[day.current]; banner = `<button class="banner" data-sheet="rules">${c.e} <b>${c.name}</b>: ${esc(c.desc)}${c.bad && has('calm') ? ' (🪷 keeps it away)' : ''}</button>`; }
+  if (day.event) { const E = EVENTS[day.event.id]; banner = `<div class="banner">🎪 <b>${E.name}</b>: ${esc(E.desc(day.event))} The target is higher today, and you win a prize if you reach it.</div>`; }
+  else if (day.current) { const c = CURRENTS[day.current]; banner = `<div class="banner">${c.e} <b>${c.name}</b>: ${esc(c.desc)}${c.bad && has('calm') ? ' (🪷 keeps it away)' : ''}</div>`; }
+  const morning = (st.nightLog || []).concat(day.startLog || []);
+  if (morning.length && !ui.seenMorning) banner += `<button class="banner" id="morning">Since yesterday: ${esc(morning.join(' · '))} <span class="small muted">(tap to hide)</span></button>`;
 
   const reached = ratio >= 1 && !fog;
   const pct = fog ? 0 : Math.min(100, 100 * ratio / 2.5);
@@ -1294,20 +1278,22 @@ function dayView() {
   const hand = ORDER.filter(t => day.hand.includes(t)).map(t =>
     `<button class="htile${ui.sel === t ? ' sel' : ''}${left[t] > 0 ? '' : ' none'}" data-t="${t}" aria-label="${tileOf(t).name}">${tileOf(t).e}<span>${Math.max(0, left[t])}</span></button>`).join('');
   const info = ui.sel && left[ui.sel] > 0 ? `<b>${tileOf(ui.sel).e} ${tileOf(ui.sel).name}</b>: ${esc(ruleParts(R, ui.sel, typesOf(day)))}`
-    : leftN ? 'Tap a tile in your hand to pick it up.' : 'Everything is placed. Tap a creature to move it, or finish the day.';
+    : leftN ? 'Tap a tile in your hand to pick it up.' : 'Everything is placed. Tap a creature on the reef to pick it up and move it, or finish the day.';
   const spells = Object.keys(SPELL).map(k => {
     const used = (k === 'measure' && day.measured) || (k === 'hot' && day.hotOn);
-    return `<button class="tb" data-spell="${k}" title="${esc(SPELL[k].name + ': ' + SPELL[k].desc)}" ${!st.charges[k] || used ? 'disabled' : ''}>${SPELL[k].e}${st.charges[k] || 0}</button>`;
+    return `<button class="tb" data-spell="${k}" title="${esc(SPELL[k].name + ': ' + SPELL[k].desc)}" ${!st.charges[k] || used ? 'disabled' : ''}>${SPELL[k].e} ${SPELL[k].name} ×${st.charges[k] || 0}</button>`;
   }).join('');
-  const sheet = ui.sheet === 'rules' ? rulesSheet() : ui.sheet === 'items' ? itemsSheet(liveMap(day, H, fog)) : ui.sheet === 'bag' ? bagSheet(false) : ui.sheet === 'menu' ? menuSheet() : '';
+  const sheet = ui.sheet === 'bag' ? bagSheet(false) : '';
+  const pouch = st.pouch.map((id, k) => `<button class="tb pouch" data-ask-use="${k}">${ITEM[id].e} ${esc(ITEM[id].name)}</button>`).join('');
   return `<div class="game">
     ${hud()}${goal}${banner}
-    <div class="play"><div class="boardwrap"><div class="board" style="--w:${day.D.w};--h:${day.D.h}">${cells}</div></div>
-    <div class="dock">
-      <div class="info">${info}</div>
-      <div class="hand">${hand || '<span class="small muted">Your hand is empty.</span>'}</div>
-      <div class="tools">${spells}<button class="tb" id="undo" aria-label="Undo" ${ui.hist.length ? '' : 'disabled'}>↶</button><button class="tb" id="clear" aria-label="Clear the reef" title="Clear the reef" ${day.g.some((t, i) => t && !day.D.fixed[i]) ? '' : 'disabled'}>🧹</button><button class="tb" data-sheet="rules" aria-label="Scoring rules">📜</button><button class="tb${st.pouch.length ? ' pouch' : ''}" data-sheet="items" aria-label="Items and pouch">🎒${st.pouch.length ? st.pouch.length : ''}</button><button class="tb fin${reached ? ' ok' : ''}" id="finish">Finish</button></div>
-    </div></div>
+    <div class="boardwrap"><div class="board" style="--w:${day.D.w};--h:${day.D.h}">${cells}</div></div>
+    <p class="info">${info}</p>
+    <div class="hand">${hand || '<span class="small muted">Your hand is empty.</span>'}</div>
+    <div class="tools">${spells}${pouch}</div>
+    <div class="finrow"><button class="btn" id="undo" ${ui.hist.length ? '' : 'disabled'}>↶ Undo</button><button class="btn" id="clear" ${day.g.some((t, i) => t && !day.D.fixed[i]) ? '' : 'disabled'}>🧹 Clear</button><button class="btn pri fin${reached ? ' ok' : ''}" id="finish">Finish · ${fog ? '?' : H.total} / ${day.target}</button></div>
+    <div class="card">${rulesSheet(true)}</div>
+    <div class="card">${itemsSheet(liveMap(day, H, fog), true)}</div>
   </div>${sheet ? `<div class="sheet-bg" data-bg><div class="sheet" role="dialog" aria-modal="true">${sheet}</div></div>` : ''}`;
 }
 function miniGrid(D, g) {
@@ -1409,36 +1395,9 @@ function render() {
   if (st && st.phase === 'day' && st.day === 1 && !ui.title && !rec.seenHelp && !ui.helpClosed && ui.guide == null) ui.guide = 0;
   if (ui.guide != null) app.insertAdjacentHTML('beforeend', `<div class="sheet-bg" style="z-index:45"><div class="sheet" role="dialog" aria-modal="true">${guideHtml(ui.guide)}</div></div>`);
   if (ui.ask) app.insertAdjacentHTML('beforeend', `<div class="sheet-bg" style="z-index:50"><div class="sheet" role="dialog" aria-modal="true"><p>${esc(ui.ask.text)}</p><div class="row c"><button class="btn" id="askno">Cancel</button><button class="btn pri" id="askyes">${esc(ui.ask.yes)}</button></div></div></div>`);
-  if (ui.tip) app.insertAdjacentHTML('beforeend', `<div class="tip${st && st.phase === 'day' && !ui.title ? ' top' : ''}">${esc(ui.tip)}</div>`);
+  if (ui.tip) app.insertAdjacentHTML('beforeend', `<div class="tip">${esc(ui.tip)}</div>`);
   bind();
-  fitBoard();
-  if (st && st.phase === 'day' && !ui.title && !ui.seenMorning && ui.guide == null) {
-    ui.seenMorning = true;
-    const morning = (st.nightLog || []).concat(st.dayState.startLog || []);
-    if (morning.length) setTimeout(() => toast('Since yesterday: ' + morning.join(' · '), 4500), 0);
-  }
 }
-/* The board fills the free height on big screens, but never gets narrower than the screen on a phone (or 460px):
-   if that doesn't fit, the page scrolls and the dock stays pinned to the bottom. */
-function fitBoard() {
-  const b = $('.board'), wrap = $('.boardwrap'), game = $('.game');
-  if (!b || !wrap || !game) return;
-  const w = +b.style.getPropertyValue('--w'), h = +b.style.getPropertyValue('--h');
-  const padW = 12 + 4 * (w - 1), padH = 12 + 4 * (h - 1);
-  // worked out once per day and screen size, so the board doesn't jump when the text around it changes
-  const key = [st.day, w, h, window.innerWidth, window.innerHeight].join(':');
-  if (ui.fit && ui.fit.key === key) { b.style.width = ui.fit.size + 'px'; b.style.setProperty('--cs', (ui.fit.size - padW) / w + 'px'); return; }
-  const W = wrap.clientWidth;
-  const side = getComputedStyle($('.play')).flexDirection === 'row', dock = $('.dock');
-  const top = wrap.getBoundingClientRect().top + window.scrollY;
-  const avail = window.innerHeight - top - (side ? 0 : dock.offsetHeight + 6) - 14;
-  const byH = (avail - padH) / h * w + padW;
-  const size = Math.min(W, Math.max(byH, Math.min(W * 0.85, 460)));
-  ui.fit = {key, size};
-  b.style.width = size + 'px';
-  b.style.setProperty('--cs', (size - padW) / w + 'px');
-}
-window.addEventListener('resize', fitBoard);
 function bind() {
   const on = (sel, fn) => { const el = $(sel); if (el) el.onclick = fn; };
   on('#askno', () => { ui.ask = null; render(); });
@@ -1447,8 +1406,8 @@ function bind() {
   const fresh = fn => { if (!st || st.phase === 'over') fn(); else ask('Start a new run? The current one will be lost.', 'Start a new run', fn); };
   on('#new', () => fresh(() => { ui.title = false; newRun(); render(); }));
   on('#seeded', () => { const s = $('#seed').value.trim(); if (s) fresh(() => { ui.title = false; newRun(s); render(); }); });
-  on('#menu', () => { if (st && st.phase === 'day') ui.sheet = 'menu'; else { ui.title = true; ui.sheet = null; } render(); });
-  on('#totitle', () => { ui.title = true; ui.sheet = null; render(); });
+  on('#menu', () => { ui.title = true; ui.sheet = null; render(); });
+  on('#morning', () => { ui.seenMorning = true; render(); });
   on('#again', () => { newRun(); render(); });
   on('#same', () => { newRun(st.seed); render(); });
   on('#finish', () => {
