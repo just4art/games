@@ -1,0 +1,2264 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Shark Math</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#14365a;--ink2:#4a6680;--teal:#0d8496;--teal-d:#0a6574;--teal-l:#dcf3f6;--coral:#ef6a4a;--coral-d:#c9502f;
+  --sun:#ffcf5a;--sun-d:#d9a62c;--sand:#f6e4b8;--sand-d:#e2c47f;--card:#fff;--line:#cfe5eb;--good:#1f8f55;--good-l:#dcf5e6;
+  --bad:#c4553a;--bad-l:#fde6df;--bg1:#e8f8fb;--bg2:#bfe6ef;--shadow:0 6px 20px rgba(20,54,90,.12);
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{margin:0;height:100%}
+body{font-family:'Fredoka',system-ui,-apple-system,sans-serif;font-size:20px;line-height:1.35;color:var(--ink);
+  background:linear-gradient(180deg,var(--bg1),var(--bg2));overflow:hidden;-webkit-user-select:none;user-select:none}
+button{font:inherit;color:inherit;cursor:pointer}
+input{font:inherit;color:inherit}
+:focus-visible{outline:4px solid #ffb703;outline-offset:3px}
+.btn{border:0;border-radius:14px;padding:10px 18px;font-weight:600;background:var(--teal);color:#fff;box-shadow:0 4px 0 var(--teal-d);transition:transform .08s,box-shadow .08s;white-space:nowrap}
+.btn:active:not(:disabled){transform:translateY(3px);box-shadow:0 1px 0 var(--teal-d)}
+.btn.alt{background:#fff;color:var(--teal-d);border:2px solid var(--line);box-shadow:0 4px 0 var(--line)}
+.btn.coral{background:var(--coral);box-shadow:0 4px 0 var(--coral-d)}
+.btn.sun{background:var(--sun);color:var(--ink);box-shadow:0 4px 0 var(--sun-d)}
+.btn.big{font-size:22px;padding:12px 24px}
+.btn.sq{width:52px;height:52px;padding:0;font-size:28px}
+.btn:disabled{opacity:.45;cursor:default}
+.btn.pulse{animation:pulse 1.2s ease-in-out infinite}
+@keyframes pulse{50%{transform:scale(1.07)}}
+
+/* top bar */
+.top{height:64px;display:flex;align-items:center;gap:12px;padding:0 20px;background:rgba(255,255,255,.8);border-bottom:2px solid var(--line);position:relative;z-index:5}
+.logo{display:flex;align-items:center;gap:6px;background:none;border:0;font-size:26px;font-weight:700;color:var(--teal-d);padding:2px 8px;border-radius:12px}
+.logo svg{width:64px;height:42px}
+.spacer{flex:1}
+.teeth{font-weight:700;background:#fff;border:2px solid var(--line);border-radius:999px;padding:4px 16px;font-size:21px;min-width:90px;text-align:center}
+.teeth.bump{animation:bump .4s}
+@keyframes bump{50%{transform:scale(1.25)}}
+.navb{background:#fff;border:2px solid var(--line);border-radius:12px;padding:6px 14px;font-weight:600;color:var(--teal-d)}
+.navb[aria-current="page"]{background:var(--teal);color:#fff;border-color:var(--teal)}
+#app{height:calc(100vh - 64px);position:relative}
+
+/* map */
+.mapscreen{display:grid;grid-template-columns:290px 1fr;gap:20px;padding:18px 22px;height:100%}
+.side{background:#fff;border-radius:24px;box-shadow:var(--shadow);padding:18px;display:flex;flex-direction:column;gap:14px;min-height:0}
+.side .shark-box{display:flex;justify-content:center}
+.side .shark-box svg{width:210px;height:136px}
+.stat{display:flex;justify-content:space-between;background:var(--teal-l);border-radius:14px;padding:8px 14px;font-weight:500}
+.parentlink{margin-top:auto;background:none;border:0;color:var(--ink2);font-size:15px;text-decoration:underline;align-self:flex-start;padding:4px}
+.ocean{position:relative;border-radius:28px;overflow:hidden;box-shadow:var(--shadow);
+  background:radial-gradient(circle at 20% 15%,rgba(255,255,255,.35),transparent 30%),radial-gradient(circle at 80% 80%,rgba(255,255,255,.2),transparent 35%),linear-gradient(160deg,#7fd6e8,#3aa3c4 70%,#2d8fb3)}
+.ocean svg.route{position:absolute;inset:0;width:100%;height:100%}
+.island{position:absolute;transform:translate(-50%,-50%);width:210px;background:none;border:0;padding:6px;display:flex;flex-direction:column;align-items:center;gap:4px;border-radius:20px;transition:transform .15s}
+.island:hover:not(.locked){transform:translate(-50%,-50%) scale(1.05)}
+.isl-blob{width:132px;height:86px;border-radius:50%;display:grid;place-items:center;position:relative;
+  background:radial-gradient(circle at 50% 35%,#fff6d8,#f2d892 58%,#dfb966);box-shadow:0 0 0 9px rgba(255,255,255,.35),0 8px 0 rgba(0,0,0,.08)}
+.isl-emo{font-size:46px;line-height:1}
+.isl-name{background:#fff;border-radius:12px;padding:3px 12px;font-weight:600;font-size:19px;box-shadow:0 3px 0 rgba(0,0,0,.1)}
+.isl-prog{width:120px;height:10px;border-radius:6px;background:rgba(255,255,255,.6);overflow:hidden}
+.isl-prog i{display:block;height:100%;background:var(--sun)}
+.isl-count{font-size:15px;color:#fff;font-weight:600;text-shadow:0 1px 2px rgba(0,0,0,.35)}
+.island.locked .isl-blob{filter:grayscale(.85) brightness(.9)}
+.island.locked .isl-emo{opacity:.35}
+.island.locked{cursor:default}
+.lockbadge{position:absolute;font-size:30px}
+.island .star{position:absolute;top:-8px;right:-4px;font-size:30px}
+.island.next .isl-blob{animation:glow 1.6s ease-in-out infinite}
+@keyframes glow{50%{box-shadow:0 0 0 14px rgba(255,236,150,.7),0 8px 0 rgba(0,0,0,.08)}}
+
+/* play screen */
+.play{display:grid;grid-template-columns:290px 1fr;gap:18px;padding:16px 20px;height:100%}
+@media (max-width:1150px){.bhead .note{display:none}.bhead .wname{font-size:19px}.task{font-size:20px}.dot{width:28px;height:28px;font-size:14px}.play,.mapscreen{grid-template-columns:250px 1fr}.side .shark-box svg,.guide .shark-box svg{width:180px;height:117px}}
+.guide{background:#fff;border-radius:24px;box-shadow:var(--shadow);padding:14px;display:flex;flex-direction:column;gap:12px;min-height:0}
+.shark-box{display:flex;justify-content:center;height:136px;flex:none}
+.shark-box svg{width:210px;height:136px;animation:bob 3.2s ease-in-out infinite}
+.shark-box.happy svg{animation:hop .9s ease-in-out 2}
+.shark-box.think svg{animation:tilt .8s ease-in-out}
+@keyframes bob{50%{transform:translateY(-6px) rotate(-2deg)}}
+@keyframes hop{30%{transform:translateY(-22px) rotate(-8deg)}60%{transform:translateY(0) rotate(4deg)}}
+@keyframes tilt{30%{transform:rotate(-8deg)}70%{transform:rotate(5deg)}}
+.bubble{position:relative;background:var(--teal-l);border-radius:18px;padding:14px 16px;font-size:19px;flex:1 1 auto;overflow:auto;min-height:80px}
+.bubble:before{content:'';position:absolute;top:-12px;left:50%;margin-left:-12px;border:12px solid transparent;border-top:0;border-bottom-color:var(--teal-l)}
+.bubble.nudge{background:#fff1d6}.bubble.nudge:before{border-bottom-color:#fff1d6}
+.bubble.yay{background:var(--good-l)}.bubble.yay:before{border-bottom-color:var(--good-l)}
+.bubble .in{animation:fadein .3s}
+@keyframes fadein{from{opacity:0;transform:translateY(4px)}}
+.bubble p{margin:0 0 8px}
+.idea{background:#fff;border-radius:12px;padding:10px 12px;margin-top:8px;border-left:6px solid var(--good)}
+.idea small{display:block;font-size:14px;text-transform:uppercase;letter-spacing:.06em;color:var(--good);font-weight:700}
+.hintrow{display:flex;flex-direction:column;gap:8px;flex:none}
+.hintmeter{font-size:15px;color:var(--ink2);text-align:center}
+.board{background:#fff;border-radius:24px;box-shadow:var(--shadow);display:flex;flex-direction:column;min-height:0;min-width:0;overflow:hidden}
+.bhead{display:flex;align-items:center;gap:12px;padding:10px 16px;border-bottom:2px solid var(--line);flex:none}
+.bhead .wname{font-weight:600;font-size:21px;white-space:nowrap}
+.dots{display:flex;gap:6px;flex-wrap:wrap}
+.dot{width:32px;height:32px;border-radius:50%;border:2px solid var(--line);background:#fff;font-size:15px;font-weight:600;padding:0;color:var(--ink2)}
+.dot.done{background:var(--good);border-color:var(--good);color:#fff}
+.dot.cur{border-color:var(--coral);box-shadow:0 0 0 3px #ffd9cf}
+.dot:disabled{opacity:.4;cursor:default}
+.task{padding:12px 22px 0;font-size:22px;font-weight:500;flex:none}
+.stage{flex:1;min-height:0;overflow:auto;padding:12px 22px;display:flex;flex-direction:column;align-items:center;gap:14px}
+.bfoot{display:flex;gap:12px;align-items:center;padding:12px 16px;border-top:2px solid var(--line);flex:none}
+.bfoot .acts{display:flex;gap:12px;align-items:center}
+
+/* drag and drop */
+.dd{touch-action:none;cursor:grab}
+.dd.sel{outline:4px solid #ffb703;outline-offset:2px;transform:scale(1.08)}
+.dd.lifted{opacity:.3}
+.ghost{position:fixed;z-index:1000;pointer-events:none;transform:translate(-50%,-50%) scale(1.1);opacity:.92;margin:0}
+body.dragging,body.dragging *{cursor:grabbing!important}
+body.picking [data-drop],body.dragging [data-drop]{outline:3px dashed rgba(13,132,150,.45);outline-offset:3px}
+[data-drop].over{outline:4px solid var(--coral)!important;outline-offset:3px}
+
+/* shared widgets */
+.ask{display:flex;flex-direction:column;align-items:center;gap:10px;background:var(--teal-l);border-radius:18px;padding:12px 18px}
+.asklabel{font-weight:500;text-align:center}
+.numrow{display:flex;gap:10px;align-items:center}
+.numin{width:100px;height:56px;border-radius:14px;border:3px solid var(--line);text-align:center;font-size:30px;font-weight:600;background:#fff}
+.numin.ok{border-color:var(--good);background:var(--good-l)}
+.shake{animation:shake .45s}
+@keyframes shake{20%,60%{transform:translateX(-7px)}40%,80%{transform:translateX(7px)}}
+.choices{display:flex;gap:12px;flex-wrap:wrap;justify-content:center}
+.choice{background:#fff;border:3px solid var(--line);border-radius:16px;padding:10px 18px;font-weight:600;font-size:21px;box-shadow:0 4px 0 var(--line)}
+.choice.ok{border-color:var(--good);background:var(--good-l)}
+.row{display:flex;gap:14px;align-items:center;justify-content:center;flex-wrap:wrap}
+.note{font-size:17px;color:var(--ink2);text-align:center}
+.pill{display:inline-block;background:var(--teal-l);border-radius:999px;padding:3px 12px;font-weight:600}
+
+/* fx */
+#fx{position:fixed;inset:0;pointer-events:none;z-index:900;overflow:hidden}
+.conf{position:absolute;font-size:30px}
+.fly{position:absolute;font-size:28px;font-weight:700;color:var(--coral-d);background:#fff;border-radius:999px;padding:2px 12px;box-shadow:var(--shadow)}
+
+/* modal */
+#modal{position:fixed;inset:0;background:rgba(10,40,60,.45);display:grid;place-items:center;z-index:950}
+#modal[hidden]{display:none}
+.mbox{background:#fff;border-radius:26px;padding:24px 28px;max-width:860px;width:calc(100% - 40px);max-height:calc(100vh - 60px);overflow:auto;box-shadow:0 20px 60px rgba(0,0,0,.3)}
+.mbox h2{margin:0 0 10px;font-size:28px}
+.ptable{width:100%;border-collapse:collapse;font-size:17px;margin:10px 0}
+.ptable th,.ptable td{text-align:left;padding:6px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+.ptable th{font-size:14px;text-transform:uppercase;letter-spacing:.05em;color:var(--ink2)}
+.wcomplete{text-align:center}
+.wcomplete .big{font-size:96px;animation:hop 1s ease-in-out 3}
+
+/* aquarium */
+.aqscreen{display:grid;grid-template-columns:1fr 360px;gap:18px;padding:16px 20px;height:100%}
+.tank{position:relative;border-radius:28px;overflow:hidden;box-shadow:var(--shadow),inset 0 0 0 8px rgba(255,255,255,.5);
+  background:linear-gradient(180deg,#9be3f0,#45aacb 60%,#2f8fb5)}
+.tank .sandbed{position:absolute;left:0;right:0;bottom:0;height:70px;background:linear-gradient(#f6e2b0,#e7c784);border-radius:50% 50% 0 0/30px 30px 0 0}
+.tank .decor{position:absolute;bottom:22px;font-size:54px;line-height:1}
+.tank .swim{position:absolute;left:0;font-size:38px;line-height:1;will-change:transform}
+.tank .swim.me svg{width:150px;height:98px}
+.tank .bub{position:absolute;bottom:60px;width:14px;height:14px;border-radius:50%;border:2px solid rgba(255,255,255,.7);animation:rise linear infinite}
+@keyframes rise{to{transform:translateY(-700px);opacity:0}}
+.tankinfo{position:absolute;top:14px;left:18px;background:rgba(255,255,255,.85);border-radius:14px;padding:6px 14px;font-size:17px;max-width:70%}
+.shop{background:#fff;border-radius:24px;box-shadow:var(--shadow);padding:16px;display:flex;flex-direction:column;gap:12px;min-height:0}
+.shop h2{margin:0;font-size:24px}
+.tabs{display:flex;gap:8px}
+.tab{flex:1;border:2px solid var(--line);background:#fff;border-radius:12px;padding:6px;font-weight:600}
+.tab[aria-selected="true"]{background:var(--teal);color:#fff;border-color:var(--teal)}
+.shopgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;overflow:auto;padding:4px}
+.item{border:3px solid var(--line);background:#fff;border-radius:16px;padding:8px 4px;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:15px;font-weight:600}
+.item .ic{font-size:38px;line-height:1.1;height:44px;display:grid;place-items:center}
+.item .sw{width:40px;height:40px;border-radius:50%;border:3px solid #fff;box-shadow:0 0 0 2px var(--line)}
+.item.on{border-color:var(--good);background:var(--good-l)}
+.item:disabled{opacity:.5;cursor:default}
+.shop .mini svg{width:200px;height:130px}
+.shop .mini{display:flex;justify-content:center}
+</style>
+</head>
+<body>
+<header class="top">
+  <button class="logo" id="logo" aria-label="Shark Math, go to the map"></button>
+  <div class="spacer"></div>
+  <div class="teeth" id="teeth" aria-live="polite" title="Shark teeth you have earned"></div>
+  <button class="navb" id="navMap">🗺️ Map</button>
+  <button class="navb" id="navAq">🐠 Aquarium</button>
+  <button class="navb" id="mute" aria-label="Sound on or off"></button>
+</header>
+<main id="app"></main>
+<div id="fx" aria-hidden="true"></div>
+<div id="modal" hidden></div>
+<style>
+/* scale */
+.facts{display:flex;gap:16px;flex-wrap:wrap;justify-content:center}
+.fact{background:var(--sand);border-radius:16px;padding:8px 16px 4px;min-width:200px}
+.fpans{display:flex;justify-content:space-between;gap:20px;font-size:30px;line-height:1.1}
+.fbar{height:6px;background:#8a6a3a;border-radius:3px;margin-top:4px}
+.fpiv{width:0;height:0;margin:0 auto;border-left:12px solid transparent;border-right:12px solid transparent;border-bottom:16px solid #8a6a3a}
+.flab{font-size:13px;text-align:center;color:#7a5b30;font-weight:600}
+.trade{background:#fff4d6;border:3px dashed var(--sun-d);border-radius:16px;padding:6px 16px;text-align:center}
+.trade .tt{font-size:32px}
+.scale{position:relative;width:min(100%,720px);height:258px;flex:none;margin-top:10px}
+.post{position:absolute;left:50%;top:52px;bottom:26px;width:16px;margin-left:-8px;background:linear-gradient(90deg,#9b7442,#c79a5d,#9b7442);border-radius:8px}
+.sbase{position:absolute;left:50%;bottom:6px;width:180px;margin-left:-90px;height:24px;background:#9b7442;border-radius:14px 14px 6px 6px}
+.beam{position:absolute;left:15%;width:70%;top:46px;height:12px;background:linear-gradient(#e0b66d,#a77b3d);border-radius:6px;transition:transform .8s cubic-bezier(.34,1.45,.64,1)}
+.pivot{position:absolute;left:50%;top:39px;width:26px;height:26px;margin-left:-13px;border-radius:50%;background:#f2c14e;border:4px solid #a77b3d}
+.pan{position:absolute;top:52px;width:30%;height:150px;transition:transform .8s cubic-bezier(.34,1.45,.64,1);border-radius:16px}
+.panL{left:0}.panR{right:0}
+.strings{position:absolute;left:0;right:0;top:0;height:120px;pointer-events:none}
+.strings svg{width:100%;height:100%;overflow:visible}
+.strings line{stroke:#7a5b30;stroke-width:2;vector-effect:non-scaling-stroke}
+.dish{position:absolute;left:0;right:0;top:120px;height:26px;background:linear-gradient(#f7d27a,#d6a336);border-radius:4px 4px 50% 50%/4px 4px 100% 100%;box-shadow:0 3px 0 rgba(0,0,0,.12)}
+.pitems{position:absolute;left:4%;right:4%;top:0;bottom:26px;display:flex;flex-wrap:wrap-reverse;justify-content:center;align-content:flex-start}
+.pitem{font-size:34px;line-height:1;background:none;border:0;padding:2px 1px;border-radius:10px}
+.pitem.lock{cursor:default;display:inline-block}
+.fog{position:absolute;left:50%;top:-6px;transform:translateX(-50%);background:rgba(255,255,255,.95);border-radius:20px;padding:6px 16px;font-weight:600;font-size:18px;box-shadow:var(--shadow);z-index:2;white-space:nowrap}
+.tray{display:flex;gap:14px;align-items:center;justify-content:center;background:linear-gradient(#c7edf5,#93d4e6);border-radius:20px;padding:6px 18px;min-width:min(100%,560px);min-height:72px}
+.titem{font-size:38px;background:#fff;border:3px solid #fff;border-radius:16px;width:60px;height:60px;padding:0;box-shadow:0 4px 0 rgba(0,0,0,.12)}
+.tray .note{max-width:300px;text-align:left}
+
+/* pattern */
+.prow{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:24px}
+.pslot{display:flex;flex-direction:column;align-items:center;gap:4px}
+.pcell{min-width:70px;height:80px;padding:0 6px;border-radius:16px;background:var(--teal-l);display:grid;place-items:center;border:3px solid transparent;transition:background .3s}
+.pcell.blank{background:#fff;border:3px dashed var(--teal)}
+.pcell.tint1{background:#ffe2a6}.pcell.tint2{background:#c4ecfb}
+.prow.long .pcell{min-width:58px;height:70px}
+.prow.long .pemo{font-size:34px}
+.pemo{font-size:40px;line-height:1;white-space:nowrap}
+.pnum{font-size:34px;font-weight:600}
+.q{font-size:36px;color:var(--teal);font-weight:700}
+.plab{font-size:15px;color:var(--ink2);min-height:20px;font-weight:600}
+.plab.dl{color:var(--coral-d);font-size:17px}
+.pgap{font-size:28px;color:var(--ink2);align-self:center;padding:0 4px;margin-bottom:24px}
+.ppal{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;background:var(--sand);border-radius:20px;padding:12px 18px}
+.pchoice{min-width:78px;height:80px;border-radius:16px;background:#fff;border:3px solid #fff;box-shadow:0 4px 0 var(--sand-d);display:grid;place-items:center;padding:0 8px}
+.pfill{background:none;border:0;padding:0;display:grid;place-items:center;width:100%;height:100%}
+
+/* array */
+.agrid{display:flex;flex-direction:column;gap:4px}
+.arow{display:flex;align-items:center;gap:2px;border:3px solid transparent;background:none;border-radius:14px;padding:2px 8px}
+.arow:hover{background:var(--teal-l)}
+.arow.on{background:#ffe9b8;border-color:var(--sun)}
+.acell{width:46px;height:44px;font-size:34px;line-height:44px;text-align:center}
+.acell.hole{background:#e9d6a8;border-radius:6px}
+.acell.ghostf{opacity:.25;background:#e9d6a8}
+.acount{width:40px;font-weight:700;color:var(--coral-d);font-size:24px}
+.tally{min-height:30px}
+
+/* pairs and pools */
+.pool{position:relative;width:min(100%,640px);height:230px;background:linear-gradient(#d4f1f7,#a9e0ec);border-radius:24px;flex:none}
+.bub{position:absolute;width:76px;height:76px;margin:-38px 0 0 -38px;border-radius:50%;border:3px solid #fff;background:radial-gradient(circle at 35% 30%,#fff,#bfe9f5 55%,#7fcde4);font-size:32px;font-weight:700;color:var(--ink);box-shadow:0 4px 10px rgba(0,0,0,.1)}
+.bub.glow{animation:pulse 1s infinite;border-color:var(--coral)}
+.tens{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;min-height:10px}
+.ten{background:var(--good-l);border:2px solid var(--good);border-radius:14px;padding:4px 12px;display:flex;gap:8px;align-items:center}
+.ten b{background:var(--good);color:#fff;border-radius:999px;padding:0 10px}
+
+/* outfits */
+.dress{display:flex;gap:24px;align-items:center;flex-wrap:wrap;justify-content:center}
+.model{width:240px;height:170px;border-radius:24px;background:linear-gradient(#e8f8fb,#cdeef5);display:grid;place-items:center;border:3px dashed var(--teal)}
+.model svg{width:220px;height:143px}
+.wears{display:flex;flex-direction:column;gap:10px;align-items:flex-start}
+.wear{display:flex;gap:10px;align-items:center}
+.wlab{width:80px;font-weight:600}
+.witem{width:66px;height:66px;font-size:40px;border-radius:16px;background:#fff;border:3px solid var(--line);padding:0;display:grid;place-items:center;box-shadow:0 4px 0 var(--line)}
+.album{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;min-height:60px;max-width:760px}
+.photo{width:86px;height:62px;background:#fff;border:3px solid var(--sand-d);border-radius:10px;display:grid;place-items:center;box-shadow:0 3px 0 var(--sand)}
+.photo svg{width:80px;height:52px}
+.otable{border-collapse:separate;border-spacing:6px}
+.otable th{font-size:34px}
+.gridsum{text-align:center;font-weight:600;font-size:22px;color:var(--good)}
+.album.grid{flex-direction:column;align-items:center}
+
+/* graph */
+.grow{display:flex;gap:24px;align-items:flex-start;justify-content:center;flex-wrap:wrap;width:100%}
+.gside{display:flex;flex-direction:column;gap:12px;max-width:300px;min-width:220px}
+.gside .note{text-align:left;margin:0}
+.garea{position:relative;flex:none;background:radial-gradient(circle,#e3f6fa,#c9edf4);border-radius:50%}
+.gsvg{position:absolute;inset:0;pointer-events:none}
+.gnode{position:absolute;width:92px;height:84px;margin:-42px 0 0 -46px;border-radius:20px;background:#fff;border:3px solid var(--line);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:0;box-shadow:0 4px 0 var(--line)}
+.ge{font-size:36px;line-height:1}
+.gn{font-size:16px;font-weight:600}
+.gb{position:absolute;top:-10px;right:-10px;background:var(--coral);color:#fff;border-radius:999px;min-width:30px;height:30px;line-height:30px;font-weight:700;font-size:17px}
+.gb.ok{background:var(--good)}
+.ginfo{font-size:22px}
+
+/* paths */
+.parea{flex:none;background:#e8f8fb;border-radius:20px}
+.plist{display:flex;flex-direction:column;gap:6px}
+.plh{font-weight:700}
+.pchip{background:var(--teal-l);border-radius:10px;padding:4px 12px;font-size:20px}
+
+/* parity */
+.fishpool{height:250px;width:min(100%,560px)}
+.fbtn{position:absolute;width:80px;height:60px;margin:-30px 0 0 -40px;border:0;background:none;padding:0;border-radius:14px}
+.buddies{display:flex;flex-direction:column;gap:6px;min-width:160px}
+.pairc{background:#fff;border:3px solid var(--good);border-radius:14px;padding:2px 8px;display:flex;gap:2px;width:max-content}
+.tview{display:flex;justify-content:center}
+.lampbox{width:200px;height:170px;border-radius:30px;background:#1f3450;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;transition:background .3s,box-shadow .3s}
+.lampbox .jelly{font-size:80px;filter:grayscale(1) brightness(.6);transition:filter .3s}
+.lampbox .lstate{color:#cfe5eb;font-weight:700;font-size:22px}
+.lampbox.on{background:#3a5f8f;box-shadow:0 0 40px 10px rgba(255,214,102,.8)}
+.lampbox.on .jelly{filter:none drop-shadow(0 0 16px #ffe08a)}
+.rocks{position:relative;width:min(640px,100%);height:150px;display:flex;justify-content:space-between;align-items:flex-end;background:linear-gradient(#d4f1f7,#a9e0ec);border-radius:24px;padding:0 20px 10px}
+.rock{font-size:60px;display:flex;flex-direction:column;align-items:center;line-height:1}
+.rock b{font-size:16px}
+.swimmer{position:absolute;top:10px;transition:left .7s ease-in-out}
+.swimmer svg{width:120px;height:78px}
+.tlog{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;align-items:center;max-width:700px}
+.tchip{background:#e7eef2;border-radius:10px;padding:2px 10px;font-size:17px}
+.tchip.on{background:#ffe7a0}
+.tchip.even{outline:3px solid var(--teal)}
+.shells{display:flex;gap:14px;flex-wrap:wrap;justify-content:center;margin-top:10px}
+.shell{width:96px;height:100px;border-radius:22px;background:#fff;border:3px solid var(--line);display:flex;flex-direction:column;align-items:center;justify-content:center;box-shadow:0 4px 0 var(--line);padding:0}
+.shell span{font-size:40px;line-height:1}
+.shell b{font-size:28px}
+.shell.on{background:#ffe7a0;border-color:var(--sun-d);transform:translateY(-6px)}
+.bucket{font-size:26px;background:var(--sand);border-radius:18px;padding:10px 24px;min-width:300px;text-align:center}
+
+/* logic */
+.lrules{display:flex;gap:24px;flex-wrap:wrap;justify-content:center;background:var(--teal-l);border-radius:16px;padding:8px 18px;font-weight:500}
+.lrules div{display:flex;align-items:center;gap:8px}
+.lrules .big{font-size:36px;display:inline-flex}
+.lcards{display:flex;gap:18px;flex-wrap:wrap;justify-content:center;margin-top:6px}
+.lcard{width:230px;background:#fff;border:3px solid var(--line);border-radius:22px;padding:12px;display:flex;flex-direction:column;align-items:center;gap:8px}
+.lsay{background:#fff7e0;border-radius:14px;padding:8px 10px;font-size:18px;text-align:center;min-height:60px;display:grid;place-items:center;position:relative;width:100%}
+.lsay:after{content:'';position:absolute;bottom:-10px;left:50%;margin-left:-10px;border:10px solid transparent;border-bottom:0;border-top-color:#fff7e0}
+.lsay.quiet{background:#f1f4f6;color:var(--ink2)}.lsay.quiet:after{border-top-color:#f1f4f6}
+.lpic{height:80px;display:grid;place-items:center}
+.lav{font-size:64px;line-height:1;display:inline-flex}
+.lav.mystery{width:76px;height:76px;border-radius:50%;background:#2b4a6b;color:#fff;font-size:46px;font-weight:700;display:grid;place-items:center}
+.lname{font-weight:600;text-align:center}
+.ltogs{display:flex;gap:6px}
+.ltog{white-space:nowrap;border:3px solid var(--line);background:#fff;border-radius:12px;padding:4px 8px;font-size:16px;font-weight:600;display:flex;align-items:center;gap:2px}
+.ltog.on{border-color:var(--teal);background:var(--teal-l)}
+.seatwrap{display:flex;flex-direction:column;gap:4px;align-items:stretch}
+.ends{display:flex;justify-content:space-between;font-size:15px;color:var(--ink2);font-weight:600}
+.seats{display:flex;gap:12px}
+.seat{width:110px;height:120px;border-radius:20px 20px 8px 8px;background:linear-gradient(#ffcfb8,#f4a38a);border:3px solid #e08a70;display:grid;place-items:center}
+.seat .empty{color:#8a4a36;font-weight:600;font-size:16px}
+.cbtn{width:94px;height:100px;border-radius:16px;background:#fff;border:3px solid var(--line);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:0}
+.ce{font-size:46px;line-height:1}
+.cn{font-size:16px;font-weight:600}
+.bench{display:flex;gap:12px;min-height:116px;min-width:min(100%,500px);justify-content:center;align-items:center;background:var(--sand);border-radius:20px;padding:6px 16px}
+.cluebox{background:#fff;border:3px solid var(--line);border-radius:18px;padding:8px 16px;min-width:min(100%,520px)}
+.clues{margin:4px 0 0;padding:0;list-style:none;display:flex;flex-direction:column;gap:4px}
+.clues li{display:flex;gap:10px;align-items:center}
+.cmark{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;background:#e7eef2;font-weight:700;flex:none}
+.clues li.ok .cmark{background:var(--good);color:#fff}
+.clues li.no .cmark{background:var(--bad);color:#fff}
+
+/* backwards */
+.strip{display:flex;align-items:stretch;gap:6px;margin-top:16px;max-width:100%}
+.tank2{width:124px;min-height:170px;border-radius:20px;background:linear-gradient(#d4f1f7,#a9e0ec);border:3px solid #fff;box-shadow:var(--shadow);display:flex;flex-direction:column;align-items:center;padding:6px;flex:none;transition:transform .2s}
+.strip.long .tank2{width:108px}
+.tank2.unk{background:#eef3f5}
+.tank2.glow{transform:scale(1.08);box-shadow:0 0 0 5px var(--sun)}
+.tank2.from{box-shadow:0 0 0 4px var(--coral)}
+.tlab{font-size:14px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink2);font-weight:700}
+.tval{font-size:40px;font-weight:700}
+.tfish{font-size:16px;line-height:1.1;text-align:center;word-break:break-all;max-width:100%}
+.arrow{flex:1;min-width:92px;max-width:170px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;text-align:center;font-size:17px;opacity:.75}
+.arrow .ahead{font-size:34px;line-height:1;color:var(--teal)}
+.arrow.now{opacity:1}
+.arrow.now .atext{background:#ffe7a0;border-radius:10px;padding:2px 8px}
+.aundo{color:var(--good);font-weight:600;font-size:16px}
+.undo{display:flex;flex-direction:column;align-items:center;gap:10px;background:var(--teal-l);border-radius:18px;padding:12px 18px}
+.undo:empty{display:none}
+.nimrow{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;font-size:52px;margin-top:20px}
+.nf{transition:opacity .4s,transform .4s}
+.nf.gone{opacity:.12;transform:scale(.6)}
+.nimstat{font-size:22px;min-height:30px}
+.nimlog{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;font-size:17px;color:var(--ink2)}
+.nimlog span{background:#eef3f5;border-radius:10px;padding:2px 10px}
+
+/* shapes */
+.farea{position:relative;width:min(600px,100%);aspect-ratio:3/2;flex:none;background:#fbf7ec;border-radius:20px}
+.farea svg{position:absolute;inset:0;width:100%;height:100%}
+.fpt{position:absolute;width:42px;height:42px;margin:-21px 0 0 -21px;border-radius:50%;background:#fff;border:4px solid var(--teal);font-weight:700;font-size:18px;padding:0;color:var(--teal-d)}
+.fpt.on{background:var(--coral);border-color:var(--coral-d);color:#fff;transform:scale(1.15)}
+.meq{display:flex;gap:22px;align-items:center;margin-top:30px;background:#2b4a6b;padding:24px 30px;border-radius:24px}
+.mtok{position:relative;width:88px;height:164px}
+.mtok.op{width:86px}
+.mtok.eq{width:84px}
+.mtok.hl{outline:4px solid var(--sun);outline-offset:8px;border-radius:8px}
+.stick,.slot{position:absolute;border-radius:6px;padding:0}
+.stick.h,.slot.h{width:64px;height:12px}
+.stick.v,.slot.v{width:12px;height:64px}
+.stick{background:linear-gradient(#f6d58b,#d9a441);border:0;box-shadow:0 2px 0 rgba(0,0,0,.25)}
+.stick.h:after,.stick.v:after{content:'';position:absolute;width:14px;height:14px;border-radius:50%;background:#e0493a}
+.stick.h:after{right:-4px;top:-1px}.stick.v:after{top:-4px;left:-1px}
+.stick.fixed{cursor:default}
+.slot{border:2px dashed rgba(255,255,255,.28)}
+body.picking .slot,body.dragging .slot{border-color:rgba(255,255,255,.75)}
+.msays{font-size:24px}
+.mwrap{background:#fff;padding:10px;border-radius:16px;border:3px solid var(--line)}
+.mgrid{display:grid;gap:0}
+.mcell{width:46px;height:46px;border:1px solid #d5e4ea;background:#fff;padding:0;border-radius:0}
+.mcell.theirs{background:#f3f7f9}
+.mcell.edgeR{border-right:5px dashed var(--coral)}
+.mcell.edgeB{border-bottom:5px dashed var(--coral)}
+.mcell.tip{box-shadow:inset 0 0 0 4px var(--sun)}
+.fsteps{display:flex;gap:20px;align-items:center}
+.fstep{display:flex;flex-direction:column;align-items:center;gap:4px;max-width:220px}
+.farrow{font-size:36px;color:var(--teal)}
+.fopen{display:flex;flex-direction:column;align-items:center;gap:8px}
+.fgrid{display:grid;grid-template-columns:repeat(4,58px);background:#fffaf0;border:3px solid #c9b48a;border-radius:6px}
+.fcell{width:58px;height:58px;border:1px solid #eadfc4;background:none;padding:0;position:relative}
+.fcell.vline{border-right:3px dashed var(--coral)}
+.fcell.hline{border-bottom:3px dashed var(--coral)}
+.fcell.mark:after{content:'';position:absolute;inset:12px;border-radius:50%;border:4px solid var(--teal)}
+.fcell.hole:after{content:'';position:absolute;inset:12px;border-radius:50%;background:#3aa3c4;border:0}
+
+/* pigeonhole */
+.cave{position:relative;width:300px;height:260px;border-radius:50% 50% 24px 24px/40% 40% 24px 24px;background:radial-gradient(circle at 50% 70%,#30465f,#16263a);display:flex;align-items:center;justify-content:center;flex:none}
+.cavein{display:flex;flex-direction:column;align-items:center;gap:6px;color:#fff;text-align:center}
+.cq{font-size:50px}
+.cfish{display:flex;flex-direction:column;gap:4px;font-size:16px}
+.cchip{display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.12);border-radius:10px;padding:0 10px}
+.octo{position:absolute;right:-20px;bottom:-10px;font-size:64px}
+.gnum{width:80px;height:56px;border-radius:14px;border:3px solid var(--line);text-align:center;font-size:32px;font-weight:700;line-height:50px;background:#fff}
+.gside .numrow{flex-wrap:wrap}
+.grabbed{display:flex;gap:4px;flex-wrap:wrap;min-height:44px}
+.gf{animation:fadein .3s}
+.cavesrow{display:flex;gap:14px;flex-wrap:wrap;justify-content:center}
+.cavebox{width:150px;min-height:150px;border-radius:50% 50% 16px 16px/36% 36% 16px 16px;background:linear-gradient(#5b7591,#2f465f);padding:24px 8px 8px;display:flex;flex-direction:column;align-items:center;gap:4px;color:#fff}
+.cavebox.two{box-shadow:0 0 0 4px var(--sun)}
+.cavelab{font-weight:600;font-size:17px}
+.cavef{display:flex;flex-wrap:wrap;justify-content:center;gap:2px}
+.cfb{background:none;border:0;padding:2px;border-radius:10px}
+.cpool{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;min-height:60px;min-width:min(100%,420px);background:linear-gradient(#d4f1f7,#a9e0ec);border-radius:20px;padding:8px 16px;align-items:center}
+
+/* sums */
+.sarea{position:relative;flex:none}
+.sarea svg{position:absolute;inset:0}
+.sslot{position:absolute;width:74px;height:74px;margin:-37px 0 0 -37px;border-radius:50%;background:#fff;border:4px dashed var(--teal);display:grid;place-items:center}
+.sslot.fixed{border-style:solid;background:var(--teal-l)}
+.snum{font-size:32px;font-weight:700}
+.stile{width:62px;height:62px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff,#ffe2a6 60%,#f5c35a);border:3px solid #fff;font-size:30px;font-weight:700;padding:0;box-shadow:0 3px 0 rgba(0,0,0,.15)}
+.ssum{position:absolute;transform:translate(-50%,-50%);background:#eef3f5;border-radius:999px;padding:2px 12px;font-weight:700;font-size:20px;color:var(--ink2)}
+.ssum.ok{background:var(--good);color:#fff}
+.ssum.no{background:var(--bad);color:#fff}
+.stray{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;background:var(--sand);border-radius:20px;padding:10px;min-height:84px;align-items:center}
+@media (max-height:780px){.scale{height:240px}.tray{min-height:62px;padding:4px 14px}.titem{width:52px;height:52px;font-size:32px}.fact{padding:4px 12px 2px}.fpans{font-size:26px}.trade .tt{font-size:26px}.prow{margin-top:10px}}
+@media (max-width:1150px){.lcard{width:196px;padding:10px}.ltog{font-size:15px;padding:4px 6px}.lcards{gap:12px}}
+</style>
+<script>
+'use strict';
+/* ============ helpers ============ */
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+function h(tag, a = {}, ...kids) {
+  const el = document.createElement(tag);
+  for (const k in a) {
+    const v = a[k];
+    if (v == null || v === false) continue;
+    if (k === 'class') el.className = v;
+    else if (k === 'style' && typeof v === 'object') Object.assign(el.style, v);
+    else if (k.startsWith('on') && typeof v === 'function') el.addEventListener(k.slice(2), v);
+    else if (k === 'html') el.innerHTML = v;
+    else el.setAttribute(k, v === true ? '' : v);
+  }
+  for (const c of kids.flat()) if (c != null && c !== false) el.append(c.nodeType ? c : document.createTextNode(String(c)));
+  return el;
+}
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+const range = n => [...Array(n).keys()];
+const shuffle = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+const pick = a => a[Math.floor(Math.random() * a.length)];
+function* combos(arr, k, start = 0, acc = []) { if (acc.length === k) { yield acc.slice(); return; } for (let i = start; i < arr.length; i++) { acc.push(arr[i]); yield* combos(arr, k, i + 1, acc); acc.pop(); } }
+function* perms(arr) { if (arr.length <= 1) { yield arr.slice(); return; } for (let i = 0; i < arr.length; i++) { const rest = arr.slice(0, i).concat(arr.slice(i + 1)); for (const p of perms(rest)) yield [arr[i], ...p]; } }
+
+/* ============ saved state ============ */
+const KEY = 'shark-math-v1';
+const DEF = { solved: {}, hints: {}, teeth: 0, earned: 0, owned: ['c-blue', 'c-grey', 'h-none'], hat: '', color: 'blue', decor: [], creatures: [], muted: false, unlockAll: false, met: false, wdone: {} };
+function load() { try { const s = JSON.parse(localStorage.getItem(KEY)); return Object.assign(JSON.parse(JSON.stringify(DEF)), s || {}); } catch (e) { return JSON.parse(JSON.stringify(DEF)); } }
+let S = load();
+function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} }
+
+/* ============ sound ============ */
+const snd = {
+  ctx: null,
+  ac() { if (!this.ctx) { try { this.ctx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { return null; } } if (this.ctx.state === 'suspended') this.ctx.resume(); return this.ctx; },
+  tone(f, t = 0, d = .15, type = 'sine', v = .12, f2) {
+    if (S.muted) return; const c = this.ac(); if (!c) return;
+    const o = c.createOscillator(), g = c.createGain(); o.type = type; const t0 = c.currentTime + t;
+    o.frequency.setValueAtTime(f, t0); if (f2) o.frequency.exponentialRampToValueAtTime(f2, t0 + d);
+    g.gain.setValueAtTime(0.0001, t0); g.gain.linearRampToValueAtTime(v, t0 + .015); g.gain.exponentialRampToValueAtTime(.0001, t0 + d);
+    o.connect(g); g.connect(c.destination); o.start(t0); o.stop(t0 + d + .05);
+  },
+  pop() { this.tone(620, 0, .08, 'triangle', .09); this.tone(900, .03, .07, 'triangle', .05); },
+  drop() { this.tone(300, 0, .14, 'sine', .12, 520); },
+  good() { [523, 659, 784].forEach((f, i) => this.tone(f, i * .08, .2, 'triangle', .1)); },
+  win() { [523, 659, 784, 1047, 1319].forEach((f, i) => this.tone(f, i * .1, .35, 'triangle', .1)); },
+  soft() { this.tone(330, 0, .2, 'sine', .07); this.tone(262, .13, .28, 'sine', .06); },
+  tooth() { this.tone(1568, 0, .12, 'sine', .06); this.tone(2093, .07, .16, 'sine', .05); },
+  bloop() { this.tone(500, 0, .25, 'sine', .1, 180); },
+};
+
+/* ============ art ============ */
+const COLORS = { blue: ['#5b9bd5', '#3c7db5'], grey: ['#8fa3b3', '#6c8495'], teal: ['#2fb3ac', '#1d8f89'], green: ['#5cc28e', '#3c9f6d'], pink: ['#f497b6', '#d6719a'], purple: ['#a487df', '#8166c2'], orange: ['#ff9f5a', '#de7d38'], gold: ['#f2c14e', '#cf9d22'] };
+function sharkSVG(o = {}) {
+  const [c, d] = COLORS[o.color || S.color] || COLORS.blue; const hat = o.hat !== undefined ? o.hat : S.hat;
+  const scarf = o.scarf ? `<path d="M128 44 Q138 70 130 98" stroke="${o.scarf}" stroke-width="15" fill="none" stroke-linecap="round"/><path d="M131 88 L120 116" stroke="${o.scarf}" stroke-width="11" stroke-linecap="round"/>` : '';
+  return `<svg viewBox="0 0 200 130" aria-hidden="true">
+  <path d="M36 66 L6 32 Q16 66 6 102 Z" fill="${d}"/>
+  <path d="M96 36 Q106 8 124 3 Q117 22 122 40 Z" fill="${d}"/>
+  <path d="M28 66 C52 30 122 26 166 48 C186 57 197 66 189 74 C173 92 112 102 62 90 C46 85 34 76 28 66 Z" fill="${c}"/>
+  <path d="M64 87 C108 100 160 93 189 74 C168 81 118 85 64 87 Z" fill="#fff" opacity=".95"/>
+  <path d="M106 86 L94 114 L134 90 Z" fill="${d}"/>
+  <path d="M124 56 q-4 8 0 16 M133 55 q-4 8 0 16 M142 54 q-4 8 0 16" stroke="${d}" stroke-width="3" fill="none" stroke-linecap="round"/>
+  ${scarf}
+  <circle cx="164" cy="56" r="8" fill="#fff"/><circle cx="166" cy="57" r="4.6" fill="#14365a"/><circle cx="167.6" cy="55" r="1.7" fill="#fff"/>
+  <ellipse cx="158" cy="72" rx="6" ry="3.5" fill="#ff8fa8" opacity=".55"/>
+  <path d="M160 79 Q173 86 185 76" stroke="#14365a" stroke-width="3" fill="none" stroke-linecap="round"/>
+  ${hat ? `<text x="160" y="42" font-size="42" text-anchor="middle">${hat}</text>` : ''}
+</svg>`;
+}
+function eelSVG(s = 64) {
+  return `<svg viewBox="0 0 120 80" width="${s}" height="${s * .67}" aria-hidden="true"><path d="M8 52 C24 28 40 74 56 50 S86 26 100 40" stroke="#4f9a3a" stroke-width="17" fill="none" stroke-linecap="round"/><path d="M8 52 C24 28 40 74 56 50 S86 26 100 40" stroke="#9fd36b" stroke-width="5" fill="none" stroke-linecap="round" stroke-dasharray="3 9"/><circle cx="101" cy="39" r="11" fill="#4f9a3a"/><circle cx="105" cy="35" r="4" fill="#fff"/><circle cx="106" cy="35" r="2.2" fill="#123"/><path d="M98 46 q6 4 12 -1" stroke="#123" stroke-width="2.2" fill="none" stroke-linecap="round"/></svg>`;
+}
+const FISHC = { red: '#e85d5d', blue: '#4a8fe0', yellow: '#f0bd1f', green: '#45b46a', orange: '#f28c38', purple: '#9b6ad6' };
+function fishSVG(col, s = 44) {
+  const c = FISHC[col] || col;
+  return `<svg viewBox="0 0 60 40" width="${s}" height="${s * .67}" aria-hidden="true"><path d="M12 20 L0 6 L2 20 L0 34 Z" fill="${c}"/><ellipse cx="32" cy="20" rx="22" ry="14" fill="${c}"/><path d="M28 8 Q34 2 40 8" fill="${c}"/><circle cx="44" cy="17" r="3.4" fill="#fff"/><circle cx="45" cy="17" r="1.8" fill="#123"/><path d="M48 25 q3 1 5 -1" stroke="#123" stroke-width="1.4" fill="none"/></svg>`;
+}
+
+/* ============ drag and drop (with click-click alternative) ============ */
+const DnD = { sel: null, quietUntil: 0 };
+function clearSel() { if (DnD.sel) DnD.sel.classList.remove('sel'); DnD.sel = null; document.body.classList.remove('picking'); }
+function setSel(el) { clearSel(); DnD.sel = el; el.classList.add('sel'); document.body.classList.add('picking'); snd.pop(); }
+function dropOn(t, el) { clearSel(); DnD.quietUntil = performance.now() + 80; if (t._onDrop) t._onDrop(el._dd, el); }
+function draggable(el, data) {
+  el._dd = data; el.classList.add('dd');
+  el.addEventListener('pointerdown', e => {
+    if (e.button !== 0 || el.disabled || el.classList.contains('nodrag')) return;
+    const sx = e.clientX, sy = e.clientY; let ghost = null, over = null;
+    const mv = ev => {
+      if (!ghost) {
+        if (Math.hypot(ev.clientX - sx, ev.clientY - sy) < 7) return;
+        clearSel(); const r = el.getBoundingClientRect();
+        ghost = el.cloneNode(true); ghost.classList.add('ghost'); ghost.classList.remove('sel', 'lifted');
+        ghost.style.width = r.width + 'px'; ghost.style.height = r.height + 'px';
+        document.body.append(ghost); el.classList.add('lifted'); document.body.classList.add('dragging');
+      }
+      ghost.style.left = ev.clientX + 'px'; ghost.style.top = ev.clientY + 'px';
+      let t = document.elementFromPoint(ev.clientX, ev.clientY); t = t && t.closest('[data-drop]'); if (t === el) t = null;
+      if (t !== over) { over && over.classList.remove('over'); over = t; over && over.classList.add('over'); }
+    };
+    const up = ev => {
+      window.removeEventListener('pointermove', mv); window.removeEventListener('pointerup', up); window.removeEventListener('pointercancel', up);
+      if (!ghost) return;
+      ghost.remove(); el.classList.remove('lifted'); document.body.classList.remove('dragging'); over && over.classList.remove('over');
+      DnD.quietUntil = performance.now() + 150;
+      let t = document.elementFromPoint(ev.clientX, ev.clientY); t = t && t.closest('[data-drop]');
+      if (t && t !== el && t._onDrop && ev.type === 'pointerup') t._onDrop(el._dd, el);
+    };
+    window.addEventListener('pointermove', mv); window.addEventListener('pointerup', up); window.addEventListener('pointercancel', up);
+  });
+  el.addEventListener('click', e => {
+    e.stopPropagation();
+    if (performance.now() < DnD.quietUntil || el.disabled) return;
+    if (DnD.sel && DnD.sel !== el) { const t = el.closest('[data-drop]'); if (t && t !== DnD.sel && t._onDrop) { dropOn(t, DnD.sel); return; } }
+    if (DnD.sel === el) { clearSel(); return; }
+    setSel(el);
+  });
+}
+function droppable(el, fn, label) {
+  el.dataset.drop = '1'; el._onDrop = fn;
+  if (label) el.setAttribute('aria-label', label);
+  if (el.tagName !== 'BUTTON') {
+    el.tabIndex = 0; el.setAttribute('role', 'button');
+    el.addEventListener('keydown', e => { if ((e.key === 'Enter' || e.key === ' ') && e.target === el) { e.preventDefault(); el.click(); } });
+  }
+  el.addEventListener('click', e => {
+    if (performance.now() < DnD.quietUntil) return;
+    if (DnD.sel && DnD.sel !== el) { e.stopPropagation(); dropOn(el, DnD.sel); }
+  });
+}
+document.addEventListener('click', e => { if (!e.target.closest('.dd,[data-drop]')) clearSel(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') clearSel(); });
+
+/* ============ effects ============ */
+function confetti(x, y, n = 26) {
+  const fx = $('#fx'); const em = ['🫧', '✨', '🐟', '⭐', '🐠', '🦷', '🫧', '💙'];
+  for (let i = 0; i < n; i++) {
+    const s = h('span', { class: 'conf' }, pick(em)); s.style.left = x + 'px'; s.style.top = y + 'px'; fx.append(s);
+    const a = Math.random() * Math.PI * 2, d = 120 + Math.random() * 260;
+    s.animate([{ transform: 'translate(-50%,-50%) scale(.4)', opacity: 1 }, { transform: `translate(${Math.cos(a) * d - 15}px,${Math.sin(a) * d - 60}px) scale(1.2) rotate(${Math.random() * 360}deg)`, opacity: 0 }], { duration: 1100 + Math.random() * 700, easing: 'cubic-bezier(.2,.7,.3,1)' }).onfinish = () => s.remove();
+  }
+}
+function flyTeeth(n, from) {
+  const t = $('#teeth').getBoundingClientRect(); const fx = $('#fx');
+  const s = h('span', { class: 'fly' }, `+${n} 🦷`); fx.append(s);
+  const fr = from.getBoundingClientRect(); const x0 = fr.left + fr.width / 2, y0 = fr.top + fr.height / 2;
+  s.animate([{ left: x0 + 'px', top: y0 + 'px', transform: 'scale(.6)' }, { left: x0 + 'px', top: (y0 - 60) + 'px', transform: 'scale(1.3)', offset: .35 }, { left: (t.left + 10) + 'px', top: t.top + 'px', transform: 'scale(.7)' }], { duration: 1300, easing: 'ease-in-out', fill: 'forwards' }).onfinish = () => { s.remove(); updateTop(); const tt = $('#teeth'); tt.classList.remove('bump'); void tt.offsetWidth; tt.classList.add('bump'); snd.tooth(); };
+}
+
+/* ============ top bar ============ */
+function updateTop() {
+  $('#teeth').textContent = '🦷 ' + S.teeth;
+  $('#mute').textContent = S.muted ? '🔇 Sound off' : '🔊 Sound on';
+  $('#logo').innerHTML = sharkSVG({ hat: S.hat }) + '<span>Shark Math</span>';
+}
+$('#logo').onclick = () => showMap();
+$('#navMap').onclick = () => showMap();
+$('#navAq').onclick = () => showAquarium();
+$('#mute').onclick = () => { S.muted = !S.muted; save(); updateTop(); if (!S.muted) snd.pop(); };
+function setNav(which) { $('#navMap').toggleAttribute('aria-current', which === 'map'); $('#navAq').toggleAttribute('aria-current', which === 'aq'); if (which === 'map') $('#navMap').setAttribute('aria-current', 'page'); if (which === 'aq') $('#navAq').setAttribute('aria-current', 'page'); }
+
+/* ============ progress ============ */
+const pid = (wi, pi) => WORLDS[wi].id + '-' + pi;
+const solvedIn = wi => WORLDS[wi].puzzles.filter((_, i) => S.solved[pid(wi, i)]).length;
+const totalSolved = () => WORLDS.reduce((a, _, wi) => a + solvedIn(wi), 0);
+const totalPuzzles = () => WORLDS.reduce((a, w) => a + w.puzzles.length, 0);
+const needFor = wi => wi * 3;
+const isOpen = wi => S.unlockAll || totalSolved() >= needFor(wi);
+const firstUnsolved = wi => { const i = WORLDS[wi].puzzles.findIndex((_, k) => !S.solved[pid(wi, k)]); return i < 0 ? 0 : i; };
+const canPlay = (wi, pi) => pi === 0 || S.solved[pid(wi, pi)] || S.solved[pid(wi, pi - 1)] || S.unlockAll;
+
+/* ============ map ============ */
+const MAPPOS = [[17, 18], [50, 18], [83, 18], [83, 52], [50, 52], [17, 52], [17, 85], [50, 85], [83, 85]];
+function showMap() {
+  cur = null; clearSel(); setNav('map'); updateTop();
+  const app = $('#app'); app.innerHTML = '';
+  const solved = totalSolved();
+  const nextW = WORLDS.findIndex((w, wi) => isOpen(wi) && solvedIn(wi) < w.puzzles.length);
+  const greet = !S.met ? `<p>Hi! I'm <b>Finn</b>, a shark who loves puzzles.</p><p>Each island has a new kind of puzzle. Solve puzzles to earn shark teeth 🦷 and open more islands.</p><p>Click the glowing island to start!</p>`
+    : solved === 0 ? `<p>Click the glowing island to start!</p>` : `<p>Welcome back! You have solved <b>${solved}</b> puzzles.</p><p>Pick any open island. The glowing one is a good next step.</p>`;
+  const side = h('div', { class: 'side' },
+    h('div', { class: 'shark-box', html: sharkSVG() }),
+    h('div', { class: 'bubble', html: `<div class="in">${greet}</div>` }),
+    h('div', { class: 'stat' }, h('span', {}, 'Puzzles solved'), h('b', {}, `${solved} / ${totalPuzzles()}`)),
+    h('div', { class: 'stat' }, h('span', {}, 'Sea friends'), h('b', {}, String(S.creatures.length))),
+    h('button', { class: 'btn alt', onclick: showAquarium }, '🐠 Visit your aquarium'),
+    h('button', { class: 'parentlink', onclick: showParent }, 'Grown-ups corner'));
+  const ocean = h('div', { class: 'ocean', role: 'region', 'aria-label': 'Island map' });
+  const pts = MAPPOS.slice(0, WORLDS.length).map(([x, y]) => `${x},${y}`).join(' ');
+  ocean.innerHTML = `<svg class="route" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><polyline points="${pts}" fill="none" stroke="rgba(255,255,255,.75)" stroke-width=".7" stroke-dasharray="1.6 1.6" vector-effect="non-scaling-stroke" style="stroke-width:5px"/></svg>`;
+  WORLDS.forEach((w, wi) => {
+    const open = isOpen(wi), n = solvedIn(wi), N = w.puzzles.length;
+    const b = h('button', { class: 'island' + (open ? '' : ' locked') + (wi === nextW ? ' next' : ''), style: { left: MAPPOS[wi][0] + '%', top: MAPPOS[wi][1] + '%' },
+      'aria-label': open ? `${w.name}: ${w.concept}. ${n} of ${N} solved.` : `${w.name} is locked. Solve ${needFor(wi) - solved} more puzzles to open it.` },
+      h('div', { class: 'isl-blob' }, h('span', { class: 'isl-emo' }, w.emoji), open ? null : h('span', { class: 'lockbadge' }, '🔒'), n === N ? h('span', { class: 'star' }, '⭐') : null),
+      h('div', { class: 'isl-name' }, w.name),
+      open ? h('div', { class: 'isl-prog' }, h('i', { style: { width: (100 * n / N) + '%' } })) : null,
+      h('div', { class: 'isl-count' }, open ? `${n} of ${N} solved` : `Solve ${needFor(wi) - solved} more to open`));
+    b.onclick = () => { if (!open) { snd.soft(); $('.side .bubble').innerHTML = `<div class="in"><p>${w.name} is still locked.</p><p>Solve ${needFor(wi) - solved} more puzzles on the open islands to unlock it.</p></div>`; return; } snd.pop(); S.met = true; save(); openPuzzle(wi, firstUnsolved(wi)); };
+    ocean.append(b);
+  });
+  app.append(h('div', { class: 'mapscreen' }, side, ocean));
+}
+
+/* ============ puzzle runner ============ */
+let cur = null;
+const R = {}; // renderers by type
+function openPuzzle(wi, pi) {
+  clearSel(); setNav(''); updateTop();
+  const W = WORLDS[wi], p = W.puzzles[pi], id = pid(wi, pi);
+  const app = $('#app'); app.innerHTML = '';
+  const bubble = h('div', { class: 'bubble', 'aria-live': 'polite' });
+  const sharkBox = h('div', { class: 'shark-box', html: sharkSVG() });
+  const hintBtn = h('button', { class: 'btn sun' });
+  const meter = h('div', { class: 'hintmeter' });
+  const guide = h('div', { class: 'guide' }, sharkBox, bubble, h('div', { class: 'hintrow' }, hintBtn, meter));
+  const dots = h('div', { class: 'dots' }, W.puzzles.map((_, k) => h('button', { class: 'dot' + (S.solved[pid(wi, k)] ? ' done' : '') + (k === pi ? ' cur' : ''), disabled: !canPlay(wi, k), 'aria-label': `Puzzle ${k + 1}` + (S.solved[pid(wi, k)] ? ', solved' : ''), onclick: () => openPuzzle(wi, k) }, S.solved[pid(wi, k)] ? '✓' : String(k + 1))));
+  const stage = h('div', { class: 'stage' });
+  const acts = h('div', { class: 'acts' });
+  const nextBtn = h('button', { class: 'btn coral big pulse', hidden: true }, pi + 1 < W.puzzles.length ? 'Next puzzle ▶' : 'Finish island ▶');
+  const restart = h('button', { class: 'btn alt', onclick: () => openPuzzle(wi, pi) }, '↺ Start over');
+  const board = h('div', { class: 'board' },
+    h('div', { class: 'bhead' }, h('button', { class: 'btn alt', onclick: showMap, 'aria-label': 'Back to the map' }, '← Map'), h('span', { class: 'wname' }, `${W.emoji} ${W.name}`), dots, h('div', { class: 'spacer' }), h('span', { class: 'note' }, `Puzzle ${pi + 1} of ${W.puzzles.length}`)),
+    h('div', { class: 'task', html: p.task }), stage,
+    h('div', { class: 'bfoot' }, restart, h('div', { class: 'spacer' }), acts, nextBtn));
+  app.append(h('div', { class: 'play' }, guide, board));
+
+  const c = cur = { wi, pi, p, id, hl: S.hints[id] && !S.solved[id] ? S.hints[id] : 0, done: false, bubble, sharkBox, stage, acts, nextBtn };
+  const say = (html, mood = '') => {
+    bubble.className = 'bubble' + (mood === 'nudge' ? ' nudge' : mood === 'yay' ? ' yay' : '');
+    bubble.innerHTML = ''; bubble.append(h('div', { class: 'in', html }));
+    sharkBox.className = 'shark-box' + (mood === 'yay' ? ' happy' : mood === 'nudge' ? ' think' : '');
+  };
+  c.say = say;
+  const api = {
+    win: () => winPuzzle(c),
+    nudge: t => { if (c.done) return; snd.soft(); say(`<p>${t}</p>`, 'nudge'); },
+    say: t => { if (c.done) return; say(`<p>${t}</p>`); },
+    done: () => c.done || cur !== c,
+    stage,
+    button: (label, fn, cls = 'btn') => { const b = h('button', { class: cls, onclick: () => { if (!c.done) fn(); } }, label); acts.append(b); return b; },
+  };
+  c.api = api;
+  const hintsN = (p.hints || []).length;
+  const showHintBtn = () => {
+    const lvl = c.hl;
+    if (c.done) { hintBtn.hidden = true; meter.textContent = ''; return; }
+    hintBtn.hidden = false;
+    if (lvl < hintsN) hintBtn.textContent = lvl === 0 ? '💡 Show me a hint' : '💡 Another hint';
+    else if (lvl === hintsN) hintBtn.textContent = '🧭 Show me how';
+    else hintBtn.textContent = '🪄 Do it for me';
+    meter.textContent = lvl === 0 ? 'Solve it with no hints for 3 teeth!' : lvl <= hintsN ? `Hints used: ${lvl}. Solving now earns 2 teeth.` : 'Solving now earns 1 tooth.';
+  };
+  c.showHint = lvl => {
+    if (lvl >= 1 && lvl <= hintsN) { say(`<p><b>Hint ${lvl}:</b> ${p.hints[lvl - 1]}</p>`); c.ctx.hint && c.ctx.hint(lvl); }
+    else if (lvl > hintsN) { say(`<p><b>Here is how:</b> ${p.walk || ''}</p>`); c.ctx.hint && c.ctx.hint(lvl); }
+  };
+  hintBtn.onclick = () => {
+    if (c.done) return;
+    snd.pop();
+    if (c.hl > hintsN) { c.ctx.solve ? c.ctx.solve() : winPuzzle(c); return; }
+    c.hl++; S.hints[id] = Math.max(S.hints[id] || 0, c.hl); save();
+    c.showHint(c.hl); showHintBtn();
+  };
+  nextBtn.onclick = () => {
+    if (pi + 1 < W.puzzles.length) openPuzzle(wi, pi + 1); else worldDone(wi);
+  };
+  c.showHintBtn = showHintBtn;
+  c.ctx = R[p.type](stage, p, api) || {};
+  showHintBtn();
+  if (c.hl > 0) c.showHint(Math.min(c.hl, hintsN + 1));
+  else say(`<p>${p.intro || pick(['Take your time. Play with it!', 'Try things out. There is no rush.', 'You can drag things, or click one and then click where it goes.', 'Have a go! Mistakes help you learn.'])}</p>`);
+}
+function winPuzzle(c) {
+  if (c.done || cur !== c) return; c.done = true; clearSel();
+  const W = WORLDS[c.wi];
+  const got = c.hl === 0 ? 3 : c.hl <= (c.p.hints || []).length ? 2 : 1;
+  const prev = S.solved[c.id] || 0; const gain = Math.max(0, got - prev);
+  S.solved[c.id] = Math.max(prev, got); S.teeth += gain; S.earned += gain;
+  if (!prev) S.creatures.push(W.creature);
+  save();
+  snd.win();
+  const r = c.stage.getBoundingClientRect(); confetti(r.left + r.width / 2, r.top + r.height / 2);
+  const praise = pick(['Brilliant!', 'You got it!', 'Wonderful thinking!', 'Yes, that is it!', 'Great job!', 'Super!']);
+  const extra = gain ? `You earned ${gain} ${gain === 1 ? 'tooth' : 'teeth'}${!prev ? ' and a new sea friend ' + W.creature : ''}.` : prev ? 'You solved this one before.' : '';
+  c.say(`<p><b>${praise}</b> ${extra}</p><div class="idea"><small>The idea</small>${c.p.explain}</div>`, 'yay');
+  if (gain) flyTeeth(gain, c.sharkBox);
+  c.showHintBtn(); c.nextBtn.hidden = false;
+  $$('.acts button', document).forEach(b => b.disabled = true);
+  const dot = $$('.dot')[c.pi]; if (dot) { dot.classList.add('done'); dot.textContent = '✓'; }
+  const nd = $$('.dot')[c.pi + 1]; if (nd) nd.disabled = false;
+  setTimeout(() => c.nextBtn.focus({ preventScroll: true }), 50);
+}
+function worldDone(wi) {
+  const W = WORLDS[wi]; const all = solvedIn(wi) === W.puzzles.length;
+  if (all && !S.wdone[W.id]) { S.wdone[W.id] = 1; S.creatures.push(W.prize); S.teeth += 5; S.earned += 5; save(); }
+  const m = $('#modal');
+  m.innerHTML = ''; m.hidden = false;
+  m.append(h('div', { class: 'mbox wcomplete', role: 'dialog', 'aria-label': 'Island finished' },
+    h('div', { class: 'big' }, all ? W.prize : W.emoji),
+    h('h2', {}, all ? `You finished ${W.name}!` : `You reached the end of ${W.name}.`),
+    h('p', {}, all ? `A ${W.prizeName} joined your aquarium, and you got 5 bonus teeth. ` : 'Some puzzles here are still waiting for you. ', `On this island you learned about ${W.concept.toLowerCase()}.`),
+    h('div', { class: 'row' }, h('button', { class: 'btn alt big', onclick: () => { m.hidden = true; showAquarium(); } }, '🐠 See the aquarium'), h('button', { class: 'btn coral big', onclick: () => { m.hidden = true; showMap(); } }, '🗺️ Back to the map'))));
+  snd.win(); confetti(innerWidth / 2, innerHeight / 2, 40); updateTop();
+  setTimeout(() => $('.wcomplete .btn.coral') && $('.wcomplete .btn.coral').focus(), 50);
+}
+
+/* ============ shared widgets ============ */
+function numAsk(api, o) {
+  const inp = h('input', { type: 'number', min: 0, max: o.max || 200, class: 'numin', 'aria-label': o.label, placeholder: '?' });
+  const bump = d => { inp.value = Math.max(0, Math.min(o.max || 200, (parseInt(inp.value) || 0) + d)); snd.pop(); };
+  const check = () => {
+    if (api.done()) return;
+    const n = parseInt(inp.value);
+    if (isNaN(n)) return api.nudge('Type a number in the box first, or use the + button.');
+    if (n === o.answer) { inp.classList.add('ok'); o.onRight ? o.onRight(n) : api.win(); }
+    else { inp.classList.remove('shake'); void inp.offsetWidth; inp.classList.add('shake'); api.nudge(o.wrong ? o.wrong(n) : `${n} is not quite right. Try the trick from the hint button, or count again in groups.`); }
+  };
+  inp.addEventListener('keydown', e => { if (e.key === 'Enter') check(); });
+  const box = h('div', { class: 'ask' }, h('div', { class: 'asklabel', html: o.label }),
+    h('div', { class: 'numrow' }, h('button', { class: 'btn alt sq', onclick: () => bump(-1), 'aria-label': 'One less' }, '−'), inp, h('button', { class: 'btn alt sq', onclick: () => bump(1), 'aria-label': 'One more' }, '+'), h('button', { class: 'btn big', onclick: check }, 'Check')));
+  box.set = n => { inp.value = n; }; box.check = check;
+  return box;
+}
+function choiceAsk(api, label, opts, onRight) {
+  const box = h('div', { class: 'ask' }, h('div', { class: 'asklabel', html: label }));
+  const row = h('div', { class: 'choices' });
+  opts.forEach(o => row.append(h('button', { class: 'choice', html: o.t, onclick: e => {
+    if (api.done()) return;
+    if (o.ok) { e.currentTarget.classList.add('ok'); onRight ? onRight() : api.win(); }
+    else { e.currentTarget.classList.remove('shake'); void e.currentTarget.offsetWidth; e.currentTarget.classList.add('shake'); api.nudge(o.no || 'Not quite. Think about it once more.'); }
+  } })));
+  box.append(row); box.pick = i => row.children[i].click();
+  return box;
+}
+/* ============ World 1: balance scale ============ */
+const EM = { fish: '🐟', crab: '🦀', octo: '🐙', puff: '🐡' };
+const NAME = { fish: 'fish', crab: 'crab', octo: 'octopus', puff: 'pufferfish' };
+const ems = ks => ks.map(k => EM[k]).join('');
+R.scale = (st, p, api) => {
+  const wt = k => k === 'fish' ? 1 : p.w[k];
+  const mk = k => ({ k, lock: !!p.lockAll || (p.lock || []).includes(k) });
+  const pans = { L: p.L.map(mk), R: p.R.map(mk) };
+  const fog = !!p.blind; let peek = false;
+  const sum = s => pans[s].reduce((a, it) => a + wt(it.k), 0);
+  if (p.facts || p.trades) {
+    const fr = h('div', { class: 'facts' });
+    (p.facts || []).forEach(f => fr.append(h('div', { class: 'fact', role: 'img', 'aria-label': `A level scale: ${f.L.length} ${NAME[f.L[0]]} on one side, ${f.R.length} ${NAME[f.R[0]]} on the other` },
+      h('div', { class: 'fpans' }, h('span', {}, ems(f.L)), h('span', {}, ems(f.R))), h('div', { class: 'fbar' }), h('div', { class: 'fpiv' }), h('div', { class: 'flab' }, 'a level scale'))));
+    (p.trades || []).forEach(t => {
+      const card = h('div', { class: 'trade' }, h('div', { class: 'tt' }, `${EM[t.from]} ⇄ ${ems(t.to)}`), h('div', { class: 'note' }, `Swap card: drop the ${NAME[t.from]} here`));
+      droppable(card, d => doTrade(t, d), `Swap card: one ${NAME[t.from]} becomes ${t.to.length} ${NAME[t.to[0]]}s`); fr.append(card);
+    });
+    st.append(fr);
+  }
+  const beam = h('div', { class: 'beam' }); const panEl = {}, items = {};
+  const scale = h('div', { class: 'scale' }, h('div', { class: 'post' }), h('div', { class: 'sbase' }), beam);
+  for (const s of ['L', 'R']) {
+    items[s] = h('div', { class: 'pitems' });
+    panEl[s] = h('div', { class: 'pan pan' + s }, h('div', { class: 'strings', html: '<svg viewBox="0 0 100 100" preserveAspectRatio="none"><line x1="50" y1="0" x2="3" y2="100"/><line x1="50" y1="0" x2="97" y2="100"/></svg>' }), items[s], h('div', { class: 'dish' }));
+    droppable(panEl[s], d => onPan(s, d), s === 'L' ? 'Left pan' : 'Right pan');
+    scale.append(panEl[s]);
+  }
+  scale.append(h('div', { class: 'pivot' }));
+  const fogEl = h('div', { class: 'fog' }, '☁️ Foggy! Press Check to see the scale.'); fogEl.hidden = !fog;
+  scale.append(fogEl); st.append(scale);
+  const tray = h('div', { class: 'tray' });
+  (p.tray || []).forEach(k => { const b = h('button', { class: 'titem', 'aria-label': `A ${NAME[k]} from the sea` }, EM[k]); draggable(b, { src: 'tray', k }); tray.append(b); });
+  tray.append(h('span', { class: 'note' }, p.tray && p.tray.length ? 'Drag from the sea onto a pan. Drag back to the sea to take it off.' : 'This is the sea. Drag things here to take them off the scale.'));
+  droppable(tray, d => { if (d.src === 'pan') remove(d); }, 'The sea: drop here to take something off');
+  st.append(tray);
+  function onPan(s, d) {
+    if (api.done()) return;
+    if (p.addTo && p.addTo !== s) return api.nudge(`Put the fish on the ${p.addTo === 'R' ? 'right' : 'left'} pan.`);
+    if (d.src === 'tray') {
+      if (pans[s].length >= 12) return api.nudge('That pan is full!');
+      pans[s].push({ k: d.k });
+    } else if (d.src === 'pan') {
+      if (d.side === s) return;
+      pans[s].push(pans[d.side].splice(d.i, 1)[0]);
+    } else return;
+    snd.drop(); update(true);
+  }
+  function remove(d) { if (api.done()) return; pans[d.side].splice(d.i, 1); snd.bloop(); update(true, true); }
+  function doTrade(t, d) {
+    if (api.done()) return;
+    if (d.src !== 'pan') return api.nudge('Drop something from the scale onto the swap card.');
+    const it = pans[d.side][d.i];
+    if (it.k !== t.from) return api.nudge(`This card only swaps the ${NAME[t.from]}.`);
+    pans[d.side].splice(d.i, 1, ...t.to.map(k => ({ k }))); snd.good(); update(false);
+    api.say(`Swapped! The scale stays level, because ${EM[t.from]} weighs the same as ${ems(t.to)}.`);
+  }
+  function render() {
+    for (const s of ['L', 'R']) {
+      items[s].innerHTML = '';
+      pans[s].forEach((it, i) => {
+        if (it.lock) items[s].append(h('span', { class: 'pitem lock', title: NAME[it.k] }, EM[it.k]));
+        else { const b = h('button', { class: 'pitem', 'aria-label': `${NAME[it.k]} on the ${s === 'L' ? 'left' : 'right'} pan` }, EM[it.k]); draggable(b, { src: 'pan', side: s, i }); items[s].append(b); }
+      });
+    }
+  }
+  function tilt(show) {
+    const d = sum('R') - sum('L');
+    const ang = show && d ? Math.sign(d) * Math.min(12, 5 + Math.abs(d) * 2) : 0;
+    const dy = scale.offsetWidth * .35 * Math.sin(ang * Math.PI / 180);
+    beam.style.transform = `rotate(${ang}deg)`;
+    panEl.L.style.transform = `translateY(${-dy}px)`; panEl.R.style.transform = `translateY(${dy}px)`;
+    return d;
+  }
+  function goalMet() {
+    if (!pans.L.length || !pans.R.length || sum('L') !== sum('R')) return false;
+    if (p.goal === 'balance') return true;
+    const iso = (a, b) => a.length === 1 && a[0].k === p.goal && b.every(x => x.k === 'fish');
+    return iso(pans.L, pans.R) || iso(pans.R, pans.L);
+  }
+  function update(changed, removed) {
+    render(); const d = tilt(!fog || peek); fogEl.hidden = !fog || peek;
+    if (!changed || fog) return;
+    if (goalMet()) { setTimeout(() => api.win(), 650); return; }
+    if (p.goal === 'balance') { if (d > 0) api.say('Too many! The right side went down, so it is heavier now. Take one off.'); }
+    else if (d !== 0) api.nudge(removed ? 'The scale tipped! If you take something off one side, take the same thing off the other side too.' : 'The scale tipped. Keep both sides the same weight.');
+    else api.say(`Still level. Keep going until one ${NAME[p.goal]} is alone on a pan.`);
+  }
+  if (p.blind) api.button('👀 Check the scale', () => {
+    if (!pans.R.length) return api.nudge('Put some fish on the right pan first.');
+    peek = true; update(false);
+    if (goalMet()) { setTimeout(() => api.win(), 700); return; }
+    const d = sum('R') - sum('L');
+    api.nudge(d > 0 ? 'The right side went down. That is too many fish. Use the small scales to work it out.' : 'The left side is still heavier. Use the small scales to work it out.');
+    setTimeout(() => { if (!api.done()) { peek = false; update(false); } }, 2200);
+  });
+  new ResizeObserver(() => tilt(!fog || peek)).observe(scale);
+  update(false);
+  return {
+    solve() {
+      if (p.goal === 'balance') pans.R = range(sum('L')).map(() => ({ k: 'fish' }));
+      else { pans.L = [{ k: p.goal }]; pans.R = range(wt(p.goal)).map(() => ({ k: 'fish' })); }
+      peek = true; update(false); setTimeout(() => api.win(), 800);
+    }
+  };
+};
+
+/* ============ World 2: patterns ============ */
+function itemView(v) {
+  if (typeof v === 'number') return h('span', { class: 'pnum' }, String(v));
+  return h('span', { class: 'pemo' }, v);
+}
+R.pattern = (st, p, api) => {
+  let cells;
+  const n = p.cycle ? p.cycle.length : p.unit || 0;
+  if (p.cycle) { cells = range(p.show).map(i => ({ v: p.cycle[i % n], label: i + 1 })); cells.push({ gap: true }); cells.push({ blank: true, ans: p.cycle[(p.target - 1) % n], label: p.target }); }
+  else cells = p.seq.map((v, i) => p.blanks.includes(i) ? { blank: true, ans: v, label: i + 1 } : { v, label: i + 1 });
+  const long = cells.length > 8;
+  const row = h('div', { class: 'prow' + (long ? ' long' : '') });
+  let shown = 0;
+  function draw() {
+    row.innerHTML = '';
+    cells.forEach(c => {
+      if (c.gap) { row.append(h('div', { class: 'pgap', 'aria-label': 'and so on' }, '· · ·')); return; }
+      const box = h('div', { class: 'pcell' + (c.blank ? ' blank' : '') + (c.tint ? ' tint' + c.tint : '') });
+      if (c.blank) {
+        if (c.fill != null) {
+          const b = h('button', { class: 'pfill', 'aria-label': 'Take this piece out' }, itemView(c.fill));
+          b.addEventListener('click', e => { if (DnD.sel || api.done()) return; e.stopPropagation(); c.fill = null; snd.pop(); draw(); });
+          box.append(b);
+        } else box.append(h('span', { class: 'q' }, '?'));
+        droppable(box, d => { if (api.done()) return; c.fill = d.v; snd.drop(); draw(); checkAll(); }, `Empty spot, number ${c.label}`);
+      } else box.append(itemView(c.v));
+      const lab = c.dl != null ? c.dl : p.cycle || c.blank ? (c.blank && p.cycle ? 'spot ' + c.label : p.cycle ? c.label : '') : '';
+      row.append(h('div', { class: 'pslot' }, box, h('div', { class: 'plab' + (c.dl != null ? ' dl' : '') }, String(lab))));
+    });
+  }
+  function checkAll() {
+    const bl = cells.filter(c => c.blank); if (bl.some(c => c.fill == null)) return;
+    if (bl.every(c => c.fill === c.ans)) {
+      $$('.pcell', row).forEach((el, i) => el.animate([{ transform: 'none' }, { transform: 'translateY(-16px)' }, { transform: 'none' }], { duration: 420, delay: i * 70 }));
+      setTimeout(() => api.win(), 400);
+    } else {
+      api.nudge(p.wrong || 'Not quite. Say the pattern out loud and look at how it changes.');
+      $$('.pcell.blank', row).forEach(el => el.classList.add('shake'));
+      setTimeout(() => { bl.forEach(c => { if (c.fill !== c.ans) c.fill = null; }); if (!api.done()) draw(); }, 900);
+    }
+  }
+  const pal = h('div', { class: 'ppal' });
+  shuffle(p.choices).forEach(v => { const b = h('button', { class: 'pchoice', 'aria-label': 'Piece: ' + v }, itemView(v)); draggable(b, { v }); pal.append(b); });
+  draw();
+  st.append(row, h('div', { class: 'note' }, 'Drag a piece into the ? spot. Or click a piece, then click the spot.'), pal);
+  return {
+    hint(l) {
+      if (l < 2) return;
+      if (p.hfx === 'unit' || p.hfx === 'groups') cells.forEach(c => { if (!c.gap) c.tint = Math.floor((c.label - 1) / n) % 2 + 1; });
+      if (p.hfx === 'alt') cells.forEach(c => { if (!c.gap) c.tint = c.label % 2 ? 1 : 2; });
+      if (p.hfx === 'diff') cells.forEach((c, i) => { if (i === 0) return; const a = cells[i - 1]; c.dl = c.blank || a.blank ? '?' : (c.v - a.v >= 0 ? '+' : '−') + Math.abs(c.v - a.v); });
+      if (p.hfx === 'fib') cells.forEach((c, i) => { if (i >= 2) c.dl = `${cells[i - 2].v}+${cells[i - 1].v}`; });
+      draw();
+    },
+    solve() { cells.forEach(c => { if (c.blank) c.fill = c.ans; }); draw(); checkAll(); }
+  };
+};
+
+/* ============ World 3: counting ============ */
+R.array = (st, p, api) => {
+  const inHole = (r, c) => p.hole && r >= p.hole[0] && r < p.hole[0] + p.hole[2] && c >= p.hole[1] && c < p.hole[1] + p.hole[3];
+  const rowsN = range(p.rows).map(r => range(p.cols).filter(c => !inHole(r, c)).length);
+  const total = rowsN.reduce((a, b) => a + b, 0);
+  const order = []; let ghost = false;
+  const grid = h('div', { class: 'agrid' }); const tally = h('div', { class: 'tally' });
+  function draw() {
+    grid.innerHTML = '';
+    range(p.rows).forEach(r => {
+      const on = order.includes(r);
+      const b = h('button', { class: 'arow' + (on ? ' on' : ''), 'aria-pressed': on ? 'true' : 'false', 'aria-label': `Row ${r + 1}. Click to count this row.` },
+        range(p.cols).map(c => h('span', { class: 'acell' + (inHole(r, c) ? (ghost ? ' ghostf' : ' hole') : '') }, inHole(r, c) ? (ghost ? p.e : '') : p.e)),
+        h('span', { class: 'acount' }, on ? String(rowsN[r]) : ''));
+      b.onclick = () => { if (api.done()) return; const k = order.indexOf(r); if (k >= 0) order.splice(k, 1); else order.push(r); snd.pop(); draw(); };
+      grid.append(b);
+    });
+    let run = 0; const steps = order.map(r => (run += rowsN[r]));
+    tally.innerHTML = order.length ? `Rows counted: <b>${order.map(r => rowsN[r]).join(' + ')}</b>${order.length > 1 ? ' = <b>' + run + '</b>' : ''} <span class="note">(${steps.join(', ')})</span>` : '<span class="note">Click a row to count it.</span>';
+  }
+  const ask = numAsk(api, { label: p.q || `How many ${p.what || 'fish'} are there in all?`, answer: total, wrong: n => p.wrongTxt || `Not ${n}. Click each row to see how many are in it.` });
+  draw(); st.append(grid, tally, ask);
+  return {
+    hint(l) { if (l >= 2) { if (p.hole) ghost = true; else if (!order.length) order.push(0); draw(); } },
+    solve() { order.length = 0; range(p.rows).forEach(r => order.push(r)); draw(); ask.set(total); setTimeout(() => api.win(), 700); }
+  };
+};
+
+R.pairs = (st, p, api) => {
+  const T = p.target, total = p.nums.reduce((a, b) => a + b, 0);
+  const slots = shuffle(range(p.nums.length));
+  let bubs = p.nums.map((n, i) => { const s = slots[i]; return { n, id: i, x: 10 + (s % 5) * 20 + (Math.random() * 6 - 3), y: 24 + Math.floor(s / 5) * 50 + (Math.random() * 8 - 4) }; });
+  const made = []; let glow = [];
+  const pool = h('div', { class: 'pool' }); const tens = h('div', { class: 'tens' });
+  function draw() {
+    pool.innerHTML = '';
+    bubs.forEach(b => {
+      const el = h('button', { class: 'bub' + (glow.includes(b.id) ? ' glow' : ''), style: { left: b.x + '%', top: b.y + '%' }, 'aria-label': 'Bubble ' + b.n }, String(b.n));
+      draggable(el, { id: b.id }); droppable(el, d => join(d.id, b.id)); pool.append(el);
+    });
+    tens.innerHTML = '';
+    made.forEach(([a, b]) => tens.append(h('div', { class: 'ten' }, h('span', {}, `${a} + ${b}`), h('b', {}, String(T)))));
+  }
+  const findPair = () => { for (const a of bubs) for (const b of bubs) if (a.id < b.id && a.n + b.n === T) return [a.id, b.id]; return null; };
+  function join(i, j) {
+    if (api.done() || i === j || ask.hidden === false) return;
+    const A = bubs.find(b => b.id === i), B = bubs.find(b => b.id === j); if (!A || !B) return;
+    if (A.n + B.n !== T) return api.nudge(`${A.n} + ${B.n} = ${A.n + B.n}. We want to make ${T}.`);
+    bubs = bubs.filter(b => b !== A && b !== B); made.push([A.n, B.n]); glow = []; snd.good(); draw(); after();
+  }
+  function after() {
+    if (findPair()) { api.say(`${made.length} ${made.length > 1 ? 'tens' : 'ten'} made! Keep going.`); return; }
+    api.say(`All the tens are made${bubs.length ? ', and ' + bubs.map(b => b.n).join(', ') + ' is left over' : ''}. Now add everything up.`);
+    ask.hidden = false;
+  }
+  const ask = numAsk(api, { label: 'What do all the numbers add up to?', answer: total, wrong: n => `Not ${n}. Count the tens: 10, 20, 30…${bubs.length ? ' Then add what is left over.' : ''}` });
+  ask.hidden = true;
+  draw(); st.append(pool, h('div', { class: 'note' }, `Drag one bubble onto another to make ${T}.`), tens, ask);
+  return {
+    hint(l) { if (l >= 2) { const pr = findPair(); if (pr) { glow = pr; draw(); } } },
+    solve() { let pr; while ((pr = findPair())) { const [i, j] = pr; const A = bubs.find(b => b.id === i), B = bubs.find(b => b.id === j); bubs = bubs.filter(b => b !== A && b !== B); made.push([A.n, B.n]); } draw(); ask.hidden = false; ask.set(total); setTimeout(() => api.win(), 700); }
+  };
+};
+
+const SCARF = { red: ['#e63946', 'red'], blue: ['#3a86ff', 'blue'], yellow: ['#f4b400', 'yellow'] };
+const scarfIcon = s => `<svg viewBox="0 0 40 40" width="46" height="46" aria-hidden="true"><path d="M7 12 Q20 21 33 12" stroke="${SCARF[s][0]}" stroke-width="8" fill="none" stroke-linecap="round"/><path d="M24 17 L28 35" stroke="${SCARF[s][0]}" stroke-width="7" stroke-linecap="round"/></svg>`;
+R.outfits = (st, p, api) => {
+  let hat = null, scarf = null; const photos = [];
+  const total = p.hats.length * p.scarves.length;
+  const model = h('div', { class: 'model' });
+  droppable(model, d => { if (api.done()) return; if (d.hat) hat = d.hat; if (d.scarf) scarf = d.scarf; snd.drop(); drawModel(); }, 'Finn: drop a hat or a scarf here');
+  const drawModel = () => { model.innerHTML = sharkSVG({ hat: hat || '', scarf: scarf ? SCARF[scarf][0] : null, color: 'blue' }); };
+  const hatsRow = h('div', { class: 'wear' }, h('span', { class: 'wlab' }, 'Hats'), p.hats.map(x => { const b = h('button', { class: 'witem', 'aria-label': 'Hat ' + x }, x); draggable(b, { hat: x }); return b; }));
+  const scRow = h('div', { class: 'wear' }, h('span', { class: 'wlab' }, 'Scarves'), p.scarves.map(s => { const b = h('button', { class: 'witem', 'aria-label': SCARF[s][1] + ' scarf', html: scarfIcon(s) }); draggable(b, { scarf: s }); return b; }));
+  const album = h('div', { class: 'album' });
+  const snapBtn = h('button', { class: 'btn big', onclick: takePhoto }, '📸 Take a photo');
+  const mini = (ht, sc) => h('div', { class: 'photo', title: `${ht} and ${SCARF[sc][1]} scarf`, html: sharkSVG({ hat: ht, scarf: SCARF[sc][0], color: 'blue' }) });
+  function takePhoto() {
+    if (api.done()) return;
+    if (!hat || !scarf) return api.nudge('Finn needs a hat AND a scarf for the photo. Drag them onto Finn.');
+    const k = hat + '|' + scarf;
+    if (photos.includes(k)) return api.nudge('You already have that photo! Try a different mix.');
+    photos.push(k); snd.good(); drawAlbum(false);
+    api.say(`Click! That is photo number ${photos.length}.`);
+  }
+  function drawAlbum(grid, sum = true) {
+    album.innerHTML = ''; album.className = 'album' + (grid ? ' grid' : ''); dressEl.hidden = !!grid;
+    if (!grid) { photos.forEach(k => { const [a, b] = k.split('|'); album.append(mini(a, b)); }); if (!photos.length) album.append(h('span', { class: 'note' }, 'Your photos will go here.')); return; }
+    const tb = h('table', { class: 'otable' });
+    tb.append(h('tr', {}, h('th', {}, ''), p.scarves.map(s => h('th', { html: scarfIcon(s) }))));
+    p.hats.forEach(ht => tb.append(h('tr', {}, h('th', { class: 'hh' }, ht), p.scarves.map(s => h('td', {}, mini(ht, s))))));
+    album.append(tb, sum ? h('div', { class: 'gridsum' }, `${p.hats.length} hats × ${p.scarves.length} scarves = ${total} outfits`) : null);
+  }
+  const dressEl = h('div', { class: 'dress' }, model, h('div', { class: 'wears' }, hatsRow, scRow, h('div', { class: 'note' }, 'Drag a hat and a scarf onto Finn, then take a photo.'), snapBtn));
+  st.append(dressEl, album);
+  let ask = null;
+  if (p.ask) { ask = numAsk(api, { label: 'How many different outfits can Finn make?', answer: total, wrong: n => `Not ${n}. Each hat can go with ${p.scarves.length} scarves.` }); st.append(ask); }
+  else api.button('✅ I found them all!', () => {
+    if (photos.length === total) { drawAlbum(true); api.win(); }
+    else api.nudge(`You have ${photos.length} ${photos.length === 1 ? 'photo' : 'photos'}. There are more outfits! Try each hat with every scarf.`);
+  });
+  drawModel(); drawAlbum(false);
+  return {
+    hint(l) { if (l >= 2 && p.ask) drawAlbum(true, l > (p.hints || []).length); },
+    solve() { photos.length = 0; p.hats.forEach(a => p.scarves.forEach(b => photos.push(a + '|' + b))); drawAlbum(true); if (ask) ask.set(total); setTimeout(() => api.win(), 700); }
+  };
+};
+
+const NAMES = ['Ava', 'Ben', 'Cal', 'Dot', 'Eli', 'Fay'];
+R.shake = (st, p, api) => {
+  const n = p.n, names = NAMES.slice(0, n), all = n * (n - 1) / 2;
+  const edges = new Set(); const key = (a, b) => a < b ? a + '-' + b : b + '-' + a;
+  const W = 460, H = 400, cx = W / 2, cy = H / 2, rad = 150;
+  const pos = range(n).map(i => [cx + rad * Math.sin(2 * Math.PI * i / n), cy - rad * Math.cos(2 * Math.PI * i / n)]);
+  const area = h('div', { class: 'garea', style: { width: W + 'px', height: H + 'px' } });
+  const svgWrap = h('div', { class: 'gsvg' }); area.append(svgWrap);
+  const deg = i => [...edges].filter(e => e.split('-').map(Number).includes(i)).length;
+  const nodes = pos.map(([x, y], i) => {
+    const b = h('button', { class: 'gnode', style: { left: x + 'px', top: y + 'px' } });
+    draggable(b, { i }); droppable(b, d => toggle(d.i, i)); area.append(b); return b;
+  });
+  const info = h('div', { class: 'ginfo' });
+  function draw() {
+    svgWrap.innerHTML = `<svg width="${W}" height="${H}">${[...edges].map(e => { const [a, b] = e.split('-').map(Number); return `<line x1="${pos[a][0]}" y1="${pos[a][1]}" x2="${pos[b][0]}" y2="${pos[b][1]}" stroke="#ef6a4a" stroke-width="6" stroke-linecap="round"/>`; }).join('')}</svg>`;
+    nodes.forEach((b, i) => { const d = deg(i); b.innerHTML = `<span class="ge">🦈</span><span class="gn">${names[i]}</span><span class="gb${p.d != null && d === p.d ? ' ok' : ''}">${d}</span>`; b.setAttribute('aria-label', `${names[i]}, ${d} handshakes`); });
+    info.innerHTML = `Handshakes: <b>${edges.size}</b>`;
+  }
+  function toggle(a, b) {
+    if (api.done() || a === b) return; const k = key(a, b);
+    if (edges.has(k)) { edges.delete(k); snd.bloop(); api.say(`${names[a]} and ${names[b]} let go. Drag again to shake fins.`); }
+    else { edges.add(k); snd.good(); }
+    draw();
+  }
+  st.append(h('div', { class: 'grow' }, area, h('div', { class: 'gside' }, info, h('p', { class: 'note' }, 'Drag a shark onto another shark to shake fins. Or click one shark, then another. Do it again to undo.'), h('p', { class: 'note' }, 'The number on each shark shows how many fins it has shaken.'))));
+  const possible = p.d != null && (n * p.d) % 2 === 0 && p.d < n;
+  let ask = null;
+  if (p.mode === 'all') api.button('✅ Everyone has met!', () => {
+    if (edges.size === all) return api.win();
+    const i = range(n).find(i => deg(i) < n - 1);
+    api.nudge(`${names[i]} has shaken fins with only ${deg(i)} ${deg(i) === 1 ? 'shark' : 'sharks'}. Every shark meets all ${n - 1} others.`);
+  });
+  if (p.mode === 'ask') { ask = numAsk(api, { label: 'How many handshakes are there in all?', answer: all, wrong: x => `Not ${x}. Try drawing them shark by shark. How many new sharks does each one meet?` }); st.append(ask); }
+  if (p.mode === 'degree') {
+    api.button('✅ Check my sharks', () => {
+      const bad = range(n).find(i => deg(i) !== p.d);
+      if (bad === undefined) return api.win();
+      api.nudge(`${names[bad]} has ${deg(bad)} ${deg(bad) === 1 ? 'handshake' : 'handshakes'}, not ${p.d}.`);
+    });
+    api.button("🚫 It can't be done!", () => possible ? api.nudge(p.canMsg || 'It can be done! Keep trying.') : api.win(), 'btn coral');
+  }
+  draw();
+  return {
+    solve() {
+      edges.clear();
+      if (p.mode === 'degree') {
+        if (possible) { range(n).forEach(i => { for (let s = 1; s <= Math.floor(p.d / 2); s++) edges.add(key(i, (i + s) % n)); if (p.d % 2) edges.add(key(i, (i + n / 2) % n)); }); }
+      } else range(n).forEach(a => range(n).forEach(b => { if (a < b) edges.add(key(a, b)); }));
+      draw(); if (ask) ask.set(all); setTimeout(() => api.win(), 700);
+    }
+  };
+};
+
+R.paths = (st, p, api) => {
+  const C = p.c, Rw = p.r; const binom = (a, b) => { let r = 1; for (let i = 1; i <= b; i++) r = r * (a - b + i) / i; return Math.round(r); };
+  const total = binom(C + Rw, C); const G = 110, ox = 50, oy = 50, W = ox * 2 + C * G, H = oy * 2 + Rw * G;
+  let path = '', found = [], busy = false, pascal = false;
+  const at = s => [[...s].filter(c => c === 'R').length, [...s].filter(c => c === 'D').length];
+  const box = h('div', { class: 'parea', style: { width: W + 'px', height: H + 'px' } });
+  const list = h('div', { class: 'plist' });
+  const arrows = s => [...s].map(c => c === 'R' ? '→' : '↓').join(' ');
+  function draw() {
+    let sv = `<svg width="${W}" height="${H}" aria-hidden="true">`;
+    for (let y = 0; y <= Rw; y++) sv += `<line x1="${ox}" y1="${oy + y * G}" x2="${ox + C * G}" y2="${oy + y * G}" stroke="#9fdcea" stroke-width="16" stroke-linecap="round"/>`;
+    for (let x = 0; x <= C; x++) sv += `<line x1="${ox + x * G}" y1="${oy}" x2="${ox + x * G}" y2="${oy + Rw * G}" stroke="#9fdcea" stroke-width="16" stroke-linecap="round"/>`;
+    for (let y = 0; y < Rw; y++) for (let x = 0; x < C; x++) sv += `<rect x="${ox + x * G + 14}" y="${oy + y * G + 14}" width="${G - 28}" height="${G - 28}" rx="14" fill="#f6e4b8"/><text x="${ox + x * G + G / 2}" y="${oy + y * G + G / 2 + 12}" font-size="32" text-anchor="middle">🪸</text>`;
+    let px = ox, py = oy, pts = [`${px},${py}`];
+    for (const c of path) { if (c === 'R') px += G; else py += G; pts.push(`${px},${py}`); }
+    if (path) sv += `<polyline points="${pts.join(' ')}" fill="none" stroke="#ef6a4a" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>`;
+    for (let y = 0; y <= Rw; y++) for (let x = 0; x <= C; x++) {
+      sv += `<circle cx="${ox + x * G}" cy="${oy + y * G}" r="10" fill="#fff" stroke="#0d8496" stroke-width="3"/>`;
+      if (pascal) sv += `<text x="${ox + x * G + 16}" y="${oy + y * G - 12}" font-size="22" font-weight="700" fill="#0a6574">${binom(x + y, x)}</text>`;
+    }
+    sv += `<text x="${ox + C * G}" y="${oy + Rw * G + 14}" font-size="44" text-anchor="middle">🏰</text>`;
+    sv += `<text x="${px}" y="${py + 14}" font-size="40" text-anchor="middle">🦈</text></svg>`;
+    box.innerHTML = sv;
+    list.innerHTML = '';
+    list.append(h('div', { class: 'plh' }, `Ways found: ${found.length}`));
+    found.forEach((f, i) => list.append(h('div', { class: 'pchip' }, `${i + 1}.  ${arrows(f)}`)));
+    const [x, y] = at(path); rb.disabled = x >= C || busy; db.disabled = y >= Rw || busy; ub.disabled = !path || busy;
+  }
+  function move(d) {
+    if (api.done() || busy) return;
+    const [x, y] = at(path);
+    if (d === 'R' && x >= C) return api.nudge('Finn cannot swim further right.');
+    if (d === 'D' && y >= Rw) return api.nudge('Finn cannot swim further down.');
+    path += d; snd.pop();
+    const [nx, ny] = at(path);
+    if (nx === C && ny === Rw) {
+      busy = true;
+      if (found.includes(path)) api.nudge(`You found that way already (${arrows(path)}). Try a different one!`);
+      else { found.push(path); snd.good(); api.say(`New way: ${arrows(path)}`); }
+      setTimeout(() => { busy = false; path = ''; if (!api.done()) draw(); }, 900);
+    }
+    draw();
+  }
+  const rb = h('button', { class: 'btn big', onclick: () => move('R') }, '→ Right');
+  const db = h('button', { class: 'btn big', onclick: () => move('D') }, '↓ Down');
+  const ub = h('button', { class: 'btn alt', onclick: () => { if (busy || api.done()) return; path = path.slice(0, -1); snd.pop(); draw(); } }, '↩ Undo');
+  const kh = e => { if (!document.contains(box)) { document.removeEventListener('keydown', kh); return; } if (e.key === 'ArrowRight') { e.preventDefault(); move('R'); } if (e.key === 'ArrowDown') { e.preventDefault(); move('D'); } };
+  document.addEventListener('keydown', kh);
+  st.append(h('div', { class: 'grow' }, box, h('div', { class: 'gside' }, h('div', { class: 'row' }, rb, db, ub), h('p', { class: 'note' }, 'You can also use the arrow keys.'), list)));
+  api.button('✅ I found them all!', () => found.length === total ? api.win() : api.nudge(`You found ${found.length}. There are more ways! ${p.more || 'Try starting with the other direction.'}`));
+  draw();
+  return {
+    hint(l) { if (l >= 2 && p.pascal) { pascal = true; draw(); } },
+    solve() { const out = []; const go = (s, x, y) => { if (x === C && y === Rw) { out.push(s); return; } if (x < C) go(s + 'R', x + 1, y); if (y < Rw) go(s + 'D', x, y + 1); }; go('', 0, 0); found = out; path = ''; draw(); setTimeout(() => api.win(), 700); }
+  };
+};
+
+/* ============ World 4: odd and even ============ */
+R.pairup = (st, p, api) => {
+  let fish = []; p.groups.forEach(g => range(g.n).forEach(() => fish.push({ col: g.col, id: fish.length })));
+  const total = fish.length; const slots = shuffle(range(total));
+  fish.forEach((f, i) => { const s = slots[i]; f.x = 8 + (s % 5) * 20 + Math.random() * 5; f.y = 18 + Math.floor(s / 5) * 42 + Math.random() * 8; });
+  const pairs = []; let asked = false;
+  const pool = h('div', { class: 'pool fishpool' }); const buddies = h('div', { class: 'buddies' });
+  function draw() {
+    pool.innerHTML = '';
+    fish.forEach(f => { const b = h('button', { class: 'fbtn' + (asked ? ' alone' : ''), style: { left: f.x + '%', top: f.y + '%' }, 'aria-label': `A ${f.col} fish`, html: fishSVG(f.col, 64) }); draggable(b, { id: f.id }); droppable(b, d => join(d.id, f.id)); pool.append(b); });
+    buddies.innerHTML = '';
+    buddies.append(h('div', { class: 'plh' }, `Buddy pairs: ${pairs.length}`));
+    pairs.forEach(([a, b]) => buddies.append(h('div', { class: 'pairc', html: fishSVG(a, 44) + fishSVG(b, 44) })));
+  }
+  function join(i, j) {
+    if (api.done() || i === j || asked) return;
+    const A = fish.find(f => f.id === i), B = fish.find(f => f.id === j); if (!A || !B) return;
+    fish = fish.filter(f => f !== A && f !== B); pairs.push([A.col, B.col]); snd.good(); draw();
+    if (fish.length <= 1) { asked = true; draw(); api.say(fish.length ? 'One fish is left without a buddy.' : 'Everyone has a buddy!'); q.hidden = false; }
+  }
+  const ev = total % 2 === 0;
+  const q = choiceAsk(api, p.q || `Is ${total} odd or even?`, [
+    { t: 'Even: everyone has a buddy', ok: ev, no: 'Look at the pool. Is there a fish left without a buddy?' },
+    { t: 'Odd: one fish is left alone', ok: !ev, no: 'Look again. Did every fish get a buddy?' }]);
+  q.hidden = true;
+  draw(); st.append(h('div', { class: 'grow' }, pool, buddies), h('div', { class: 'note' }, 'Drag a fish onto another fish to make buddies. Or click two fish.'), q);
+  return {
+    solve() { while (fish.length > 1) { const [A, B] = fish; fish = fish.slice(2); pairs.push([A.col, B.col]); } asked = true; draw(); q.hidden = false; setTimeout(() => api.win(), 700); }
+  };
+};
+
+R.toggle = (st, p, api) => {
+  let state = p.start, presses = 0; const log = []; let evenGlow = false;
+  const view = h('div', { class: 'tview ' + p.kind });
+  const logEl = h('div', { class: 'tlog' });
+  function draw() {
+    if (p.kind === 'lamp') view.innerHTML = `<div class="lampbox ${state ? 'on' : ''}"><span class="jelly">🪼</span><span class="lstate">${state ? 'ON' : 'OFF'}</span></div>`;
+    else view.innerHTML = `<div class="rocks"><span class="rock">🪨<b>left rock</b></span><span class="swimmer" style="left:${state ? 78 : 4}%">${sharkSVG({ color: 'blue', hat: '' })}</span><span class="rock">🪨<b>right rock</b></span></div>`;
+    logEl.innerHTML = '';
+    logEl.append(h('span', { class: 'plh' }, `${p.verb2}: ${presses}`));
+    log.forEach((s, i) => logEl.append(h('span', { class: 'tchip' + (s ? ' on' : '') + (evenGlow && (i + 1) % 2 === 0 ? ' even' : '') }, `${i + 1}: ${p.labels[s]}`)));
+    pb.disabled = api.done();
+  }
+  const pb = h('button', { class: 'btn big', onclick: () => {
+    if (api.done()) return;
+    if (presses >= p.max) return api.say(p.tired);
+    presses++; state ^= 1; log.push(state); snd.pop(); draw();
+  } }, p.verb);
+  const rs = h('button', { class: 'btn alt', onclick: () => { presses = 0; state = p.start; log.length = 0; snd.pop(); draw(); } }, '↺ Reset');
+  const ansState = (p.start + p.ask) % 2;
+  const q = choiceAsk(api, p.q, p.labels.map((l, s) => ({ t: p.answers[s], ok: s === ansState, no: p.no })));
+  st.append(view, h('div', { class: 'row' }, pb, rs), logEl, q);
+  draw();
+  return { hint(l) { if (l >= 2) { evenGlow = true; draw(); } }, solve() { q.pick(ansState); } };
+};
+
+R.picksum = (st, p, api) => {
+  const picked = []; const possible = [...combos(p.nums, p.k)].some(c => c.reduce((a, b) => a + b, 0) === p.target);
+  const shells = h('div', { class: 'shells' }); const bucket = h('div', { class: 'bucket' });
+  function draw() {
+    shells.innerHTML = '';
+    p.nums.forEach((n, i) => { const on = picked.includes(i); const b = h('button', { class: 'shell' + (on ? ' on' : ''), 'aria-pressed': on ? 'true' : 'false', 'aria-label': `Shell ${n}` }, h('span', {}, '🐚'), h('b', {}, String(n))); b.onclick = () => tog(i); shells.append(b); });
+    const s = picked.reduce((a, i) => a + p.nums[i], 0);
+    bucket.innerHTML = picked.length ? `🪣 ${picked.map(i => p.nums[i]).join(' + ')} = <b>${s}</b>` : `🪣 Pick ${p.k} shells.`;
+  }
+  function tog(i) {
+    if (api.done()) return; const k = picked.indexOf(i);
+    if (k >= 0) picked.splice(k, 1);
+    else { if (picked.length >= p.k) return api.nudge(`You can pick only ${p.k} shells. Click a picked shell to put it back.`); picked.push(i); }
+    snd.pop(); draw();
+    if (picked.length === p.k) {
+      const s = picked.reduce((a, j) => a + p.nums[j], 0);
+      if (s === p.target) setTimeout(() => api.win(), 300);
+      else api.say(`${picked.map(j => p.nums[j]).join(' + ')} = ${s}, not ${p.target}. Click a shell to put it back and try others.`);
+    }
+  }
+  api.button("🚫 It can't be done!", () => possible ? api.nudge('It can be done! Keep looking.') : api.win(), 'btn coral');
+  draw(); st.append(shells, bucket);
+  return { solve() { if (possible) { const c = [...combos(range(p.nums.length), p.k)].find(c => c.reduce((a, i) => a + p.nums[i], 0) === p.target); picked.length = 0; picked.push(...c); draw(); setTimeout(() => api.win(), 600); } else api.win(); } };
+};
+
+/* ============ World 5: logic ============ */
+function liarSolutions(p) {
+  const unk = p.chars.filter(c => !c.known).map(c => c.n); const out = [];
+  for (let m = 0; m < (1 << unk.length); m++) {
+    const a = {}; p.chars.forEach(c => { if (c.known) a[c.n] = c.known; }); unk.forEach((n, i) => a[n] = (m >> i) & 1 ? 'E' : 'D');
+    if (p.chars.every(c => !c.f || c.f(a) === (a[c.n] === 'D'))) out.push(a);
+  }
+  return out;
+}
+R.liars = (st, p, api) => {
+  const a = {}; p.chars.forEach(c => a[c.n] = c.known || null); let reveal = false;
+  const cards = h('div', { class: 'lcards' });
+  const av = t => t === 'D' ? '<span class="lav">🐬</span>' : t === 'E' ? `<span class="lav">${eelSVG(78)}</span>` : '<span class="lav mystery">?</span>';
+  function draw() {
+    cards.innerHTML = '';
+    p.chars.forEach(c => {
+      const shown = c.known || reveal ? a[c.n] : null;
+      const card = h('div', { class: 'lcard' });
+      card.append(h('div', { class: 'lsay' + (c.say ? '' : ' quiet') }, c.say ? `“${c.say}”` : '(says nothing)'));
+      card.append(h('div', { class: 'lpic', html: av(shown) }));
+      card.append(h('div', { class: 'lname' }, c.n + (c.known ? (c.known === 'D' ? ' is a dolphin' : ' is an eel') : '')));
+      if (!c.known && !reveal) {
+        const mk = (t, html) => { const b = h('button', { class: 'ltog' + (a[c.n] === t ? ' on' : ''), 'aria-pressed': a[c.n] === t ? 'true' : 'false', html }); b.onclick = () => { if (api.done()) return; a[c.n] = t; snd.pop(); draw(); }; return b; };
+        card.append(h('div', { class: 'ltogs' }, mk('D', '🐬 Dolphin'), mk('E', eelSVG(34) + ' Eel')));
+      }
+      cards.append(card);
+    });
+  }
+  st.append(h('div', { class: 'lrules' }, h('div', { html: '<span class="big">🐬</span> Dolphins always tell the truth.' }), h('div', { html: `<span class="big">${eelSVG(46)}</span> Eels always fib. Everything they say is false.` })), cards);
+  api.button('✅ Check', () => {
+    const miss = p.chars.find(c => !a[c.n]);
+    if (miss) return api.nudge(`Choose dolphin or eel for ${miss.n} first.`);
+    for (const c of p.chars) {
+      if (!c.f) continue; const val = c.f(a), D = a[c.n] === 'D';
+      if (val !== D) return api.nudge(`You chose ${c.n} as ${D ? 'a dolphin' : 'an eel'}. ${D ? 'Dolphins tell the truth' : 'Eels always fib'}, so “${c.say}” should be ${D ? 'true' : 'false'}. But with your choices it is ${val ? 'true' : 'false'}.`);
+    }
+    reveal = true; draw(); api.win();
+  });
+  draw();
+  return { solve() { Object.assign(a, liarSolutions(p)[0]); reveal = true; draw(); setTimeout(() => api.win(), 500); } };
+};
+
+const C_ = {
+  at: (a, k) => P => P[a] < 0 ? null : P[a] === k,
+  notAt: (a, k) => P => P[a] < 0 ? null : P[a] !== k,
+  next: (a, b) => P => P[a] < 0 || P[b] < 0 ? null : Math.abs(P[a] - P[b]) === 1,
+  notNext: (a, b) => P => P[a] < 0 || P[b] < 0 ? null : Math.abs(P[a] - P[b]) !== 1,
+  rightOf: (a, b) => P => P[a] < 0 || P[b] < 0 ? null : P[a] > P[b],
+  ends: (a, b, n) => P => P[a] < 0 || P[b] < 0 ? null : (P[a] === 0 && P[b] === n - 1) || (P[b] === 0 && P[a] === n - 1),
+};
+function seatSolutions(p) {
+  const out = []; const ids = p.chars.map(c => c.id);
+  for (const pr of perms(range(p.n))) { const P = {}; ids.forEach((id, i) => P[id] = pr[i]); if (p.clues.every(c => c.f(P) === true)) out.push(P); }
+  return out;
+}
+R.seats = (st, p, api) => {
+  const P = {}; p.chars.forEach(c => P[c.id] = -1);
+  const seatsEl = h('div', { class: 'seats' }); const bench = h('div', { class: 'bench' }); const clues = h('ol', { class: 'clues' });
+  const chBtn = c => { const b = h('button', { class: 'cbtn', 'aria-label': c.name }, h('span', { class: 'ce' }, c.e), h('span', { class: 'cn' }, c.name)); draggable(b, { id: c.id }); return b; };
+  droppable(bench, d => { if (api.done()) return; P[d.id] = -1; snd.pop(); draw(); }, 'Waiting area');
+  const seatBoxes = range(p.n).map(s => { const el = h('div', { class: 'seat' }); droppable(el, d => place(d.id, s), `Seat ${s + 1}`); return el; });
+  function place(id, s) {
+    if (api.done()) return;
+    const occ = Object.keys(P).find(k => P[k] === s);
+    if (occ && occ !== id) P[occ] = P[id];
+    P[id] = s; snd.drop(); draw(); check();
+  }
+  function draw() {
+    seatBoxes.forEach((el, s) => { el.innerHTML = ''; const id = Object.keys(P).find(k => P[k] === s); if (id) el.append(chBtn(p.chars.find(c => c.id === id))); else el.append(h('span', { class: 'empty' }, 'seat ' + (s + 1))); });
+    bench.innerHTML = ''; const wait = p.chars.filter(c => P[c.id] < 0);
+    wait.forEach(c => bench.append(chBtn(c))); if (!wait.length) bench.append(h('span', { class: 'note' }, 'Everyone is sitting down.'));
+    clues.innerHTML = '';
+    p.clues.forEach(c => { const v = c.f(P); clues.append(h('li', { class: v === true ? 'ok' : v === false ? 'no' : '' }, h('span', { class: 'cmark', 'aria-label': v === true ? 'true' : v === false ? 'not true' : 'not checked yet' }, v === true ? '✓' : v === false ? '✗' : '•'), h('span', {}, c.t))); });
+  }
+  function check() {
+    if (p.chars.some(c => P[c.id] < 0)) return;
+    if (p.clues.every(c => c.f(P) === true)) setTimeout(() => api.win(), 400);
+    else api.nudge('Everyone is sitting, but a clue with a ✗ is not true yet. Try moving someone.');
+  }
+  seatBoxes.forEach(el => seatsEl.append(el));
+  st.append(h('div', { class: 'seatwrap' }, h('div', { class: 'ends' }, h('span', {}, '← left end'), h('span', {}, 'right end →')), seatsEl), bench, h('div', { class: 'cluebox' }, h('div', { class: 'plh' }, 'Clues'), clues));
+  draw();
+  return { solve() { Object.assign(P, seatSolutions(p)[0]); draw(); setTimeout(() => api.win(), 500); } };
+};
+/* ============ World 6: think backwards ============ */
+const OPS = {
+  '+': { f: (x, n) => x + n, inv: '-', undo: n => `take away ${n}` },
+  '-': { f: (x, n) => x - n, inv: '+', undo: n => `add ${n}` },
+  '*': { f: x => x * 2, inv: '/', undo: () => 'halve it' },
+  '/': { f: x => x / 2, inv: '*', undo: () => 'double it' },
+};
+R.back = (st, p, api) => {
+  const k = p.steps.length; const vals = Array(k + 1).fill(null); vals[k] = p.end;
+  const truth = Array(k + 1); truth[k] = p.end;
+  for (let i = k - 1; i >= 0; i--) { const s = p.steps[i]; truth[i] = s.op === '+' ? truth[i + 1] - s.n : s.op === '-' ? truth[i + 1] + s.n : s.op === '*' ? truth[i + 1] / 2 : truth[i + 1] * 2; }
+  let j = k - 1; // the step we are undoing now
+  const strip = h('div', { class: 'strip' + (k > 2 ? ' long' : '') });
+  const tank = (i) => {
+    const v = vals[i]; const lab = i === 0 ? 'start' : i === k ? 'end' : 'then';
+    const fishes = v == null ? '' : p.numbers ? '' : '🐟'.repeat(Math.min(v, 20));
+    return h('div', { class: 'tank2' + (v == null ? ' unk' : '') + (i === j + 1 && j >= 0 ? ' from' : '') }, h('div', { class: 'tlab' }, lab), h('div', { class: 'tval' }, v == null ? '?' : String(v)), h('div', { class: 'tfish' }, fishes));
+  };
+  const optsEl = h('div', { class: 'undo' });
+  function draw() {
+    strip.innerHTML = '';
+    for (let i = 0; i <= k; i++) {
+      strip.append(tank(i));
+      if (i < k) strip.append(h('div', { class: 'arrow' + (i === j ? ' now' : '') + (i > j ? ' done' : '') }, h('div', { class: 'atext' }, p.steps[i].t), h('div', { class: 'ahead' }, '⟶'), i > j ? h('div', { class: 'aundo' }, '⟵ ' + OPS[p.steps[i].op].undo(p.steps[i].n)) : null));
+    }
+    optsEl.innerHTML = '';
+    if (j < 0) return;
+    const s = p.steps[j];
+    const nn = s.n || (p.steps.find(x => x.n) || { n: 2 }).n;
+    const opts = [{ op: '+', n: nn }, { op: '-', n: nn }, { op: '*' }, { op: '/' }];
+    optsEl.append(h('div', { class: 'asklabel' }, `How do we undo “${s.t}”?`));
+    const row = h('div', { class: 'choices' });
+    opts.forEach(o => {
+      const lbl = o.op === '+' ? `➕ add ${o.n}` : o.op === '-' ? `➖ take away ${o.n}` : o.op === '*' ? '✖️ double it' : '➗ halve it';
+      row.append(h('button', { class: 'choice', onclick: () => choose(o) }, lbl));
+    });
+    optsEl.append(row);
+  }
+  const why = { '-': 'Fish were taken away. To go back, we put them back.', '+': 'Fish were added. To go back, we take them away again.', '/': 'Half was eaten. To go back, we need twice as many.', '*': 'It doubled. To go back, we take half.' };
+  function choose(o) {
+    if (api.done() || j < 0) return;
+    const s = p.steps[j];
+    if (o.op !== OPS[s.op].inv || (o.n && s.n && o.n !== s.n)) return api.nudge(why[s.op]);
+    vals[j] = truth[j]; snd.good(); j--;
+    if (j < 0) { draw(); playForward(); return; }
+    api.say(`Yes! Before that, there were ${vals[j + 1]}. Now undo the step before.`); draw();
+  }
+  async function playForward() {
+    api.say('Let’s check it forwards…'); await sleep(500);
+    const tanks = $$('.tank2', strip);
+    for (const t of tanks) { t.classList.add('glow'); snd.pop(); await sleep(450); }
+    api.win();
+  }
+  st.append(strip, optsEl);
+  draw();
+  return { solve() { for (let i = 0; i < k; i++) vals[i] = truth[i]; j = -1; draw(); playForward(); } };
+};
+
+R.nim = (st, p, api) => {
+  let left = p.n, turn = 'you', over = false; const log = [];
+  const row = h('div', { class: 'nimrow' }); const status = h('div', { class: 'nimstat' }); const btns = h('div', { class: 'row' }); const logEl = h('div', { class: 'nimlog' });
+  function draw() {
+    row.innerHTML = ''; for (let i = 0; i < p.n; i++) row.append(h('span', { class: 'nf' + (i >= left ? ' gone' : '') }, '🐟'));
+    status.innerHTML = over ? '' : turn === 'you' ? `<b>Your turn.</b> ${left} ${left === 1 ? 'fish is' : 'fish are'} left.` : `Finn is thinking… ${left} left.`;
+    btns.innerHTML = '';
+    if (!over) for (let t = 1; t <= p.k; t++) btns.append(h('button', { class: 'btn big', disabled: turn !== 'you' || t > left, onclick: () => eat(t) }, `Eat ${t} ${'🐟'.repeat(t)}`));
+    else btns.append(h('button', { class: 'btn coral big', onclick: reset }, '↺ Play again'));
+    logEl.innerHTML = log.map(s => `<span>${s}</span>`).join('');
+  }
+  function reset() { left = p.n; turn = 'you'; over = false; log.length = 0; snd.pop(); draw(); api.say('New game! You go first.'); }
+  async function eat(t) {
+    if (api.done() || turn !== 'you' || over) return;
+    left -= t; log.push(`You ate ${t}`); snd.pop();
+    if (left === 0) { over = true; draw(); api.win(); return; }
+    turn = 'finn'; draw(); await sleep(900); if (api.done()) return;
+    let f = left % (p.k + 1); if (f === 0) f = 1;
+    left -= f; log.push(`Finn ate ${f}`); snd.bloop();
+    if (left === 0) { over = true; draw(); api.nudge(`Finn ate the last fish and won this time! ${p.lose || 'Think backwards from the end. Then play again.'}`); return; }
+    turn = 'you'; draw();
+  }
+  st.append(row, status, btns, logEl);
+  draw();
+  return {
+    async solve() {
+      if (over) reset();
+      while (!over && !api.done()) {
+        if (turn === 'you') { let t = left % (p.k + 1); if (t === 0) t = 1; await sleep(500); await eat(t); }
+        else await sleep(200);
+      }
+    }
+  };
+};
+
+/* ============ World 7: shapes ============ */
+R.find = (st, p, api) => {
+  const ids = Object.keys(p.pts);
+  const conn = (a, b) => p.lines.some(l => l.includes(a) && l.includes(b));
+  const onOne = (a, b, c) => p.lines.some(l => l.includes(a) && l.includes(b) && l.includes(c));
+  const targets = new Map();
+  if (p.kind === 'tri') {
+    for (const [a, b, c] of combos(ids, 3)) if (conn(a, b) && conn(b, c) && conn(a, c) && !onOne(a, b, c)) targets.set([a, b, c].sort().join(''), [a, b, c]);
+  } else {
+    for (const [a, b] of combos(ids, 2)) {
+      const [ax, ay] = p.pts[a], [bx, by] = p.pts[b]; if (ax === bx || ay === by) continue;
+      if (p.kind === 'sq' && Math.abs(ax - bx) !== Math.abs(ay - by)) continue;
+      const c = ids.find(i => p.pts[i][0] === ax && p.pts[i][1] === by), d = ids.find(i => p.pts[i][0] === bx && p.pts[i][1] === ay);
+      if (!c || !d) continue;
+      if (conn(a, c) && conn(c, b) && conn(b, d) && conn(d, a)) { const q = [a, c, b, d]; targets.set([...q].sort().join(''), q); }
+    }
+  }
+  const need = p.kind === 'tri' ? 3 : 2; let sel = []; const found = []; let flash = null;
+  const COLS = ['#ff9f80', '#7fd1c7', '#ffd166', '#a3b8ff', '#c9a0ff', '#8fe08f', '#ffb3d1', '#9fe3ff'];
+  const box = h('div', { class: 'farea' }); const list = h('div', { class: 'plist' });
+  function draw() {
+    let sv = `<svg viewBox="0 0 600 400" width="600" height="400" aria-hidden="true">`;
+    found.forEach((k, i) => { const q = targets.get(k); sv += `<polygon points="${q.map(v => p.pts[v].join(',')).join(' ')}" fill="${COLS[i % COLS.length]}" opacity="${i === found.length - 1 ? .75 : .38}"/>`; });
+    if (flash) sv += `<polygon points="${flash.map(v => p.pts[v].join(',')).join(' ')}" fill="none" stroke="#ef6a4a" stroke-width="6" stroke-dasharray="12 8"/>`;
+    p.lines.forEach(l => { const a = p.pts[l[0]], b = p.pts[l[l.length - 1]]; sv += `<line x1="${a[0]}" y1="${a[1]}" x2="${b[0]}" y2="${b[1]}" stroke="#14365a" stroke-width="5" stroke-linecap="round"/>`; });
+    sv += '</svg>';
+    box.innerHTML = sv;
+    ids.forEach(i => {
+      const [x, y] = p.pts[i];
+      const b = h('button', { class: 'fpt' + (sel.includes(i) ? ' on' : ''), style: { left: (x / 6) + '%', top: (y / 4) + '%' }, 'aria-label': 'Dot ' + i, 'aria-pressed': sel.includes(i) ? 'true' : 'false' }, i);
+      b.onclick = () => tap(i); box.append(b);
+    });
+    list.innerHTML = ''; list.append(h('div', { class: 'plh' }, `Found: ${found.length}`));
+    found.forEach((k, i) => list.append(h('div', { class: 'pchip', style: { borderLeft: `8px solid ${COLS[i % COLS.length]}` } }, (p.kind === 'tri' ? 'Triangle ' : 'Square ') + targets.get(k).join(''))));
+  }
+  function tap(i) {
+    if (api.done()) return;
+    const k = sel.indexOf(i); if (k >= 0) { sel.splice(k, 1); snd.pop(); draw(); return; }
+    sel.push(i); snd.pop(); flash = null;
+    if (sel.length < need) { draw(); return; }
+    const s = sel.slice(); sel = [];
+    let key = null;
+    if (p.kind === 'tri') {
+      const [a, b, c] = s;
+      if (onOne(a, b, c)) api.nudge('Those 3 dots are on one straight line. That is not a triangle.');
+      else if (!(conn(a, b) && conn(b, c) && conn(a, c))) api.nudge('Those dots are not all joined by lines in the picture. Each side of the triangle must be a line you can see.');
+      else key = s.slice().sort().join('');
+    } else {
+      const [a, b] = s; const [ax, ay] = p.pts[a], [bx, by] = p.pts[b];
+      if (ax === bx || ay === by) api.nudge('Pick two corners across from each other, like top-left and bottom-right.');
+      else {
+        const c = ids.find(i => p.pts[i][0] === ax && p.pts[i][1] === by), d = ids.find(i => p.pts[i][0] === bx && p.pts[i][1] === ay);
+        const k2 = c && d ? [a, b, c, d].sort().join('') : null;
+        if (k2 && targets.has(k2)) key = k2;
+        else api.nudge(p.kind === 'sq' && Math.abs(ax - bx) !== Math.abs(ay - by) ? 'Those corners make a long rectangle, not a square. A square has all 4 sides the same length.' : 'The sides of that shape are not all lines in the picture.');
+      }
+    }
+    if (key) {
+      if (found.includes(key)) api.nudge('You found that one already! Look for a different one.');
+      else { found.push(key); snd.good(); api.say(`Found one! That makes ${found.length}.`); }
+    }
+    draw();
+  }
+  st.append(h('div', { class: 'grow' }, box, h('div', { class: 'gside' }, h('p', { class: 'note' }, p.kind === 'tri' ? 'Click the 3 corners of a triangle.' : 'Click 2 opposite corners of a square.'), list)));
+  api.button('✅ I found them all!', () => {
+    if (found.length === targets.size) return api.win();
+    api.nudge(`You found ${found.length}. There are more hiding! ${p.more || 'Look for bigger shapes made of smaller ones.'}`);
+  });
+  draw();
+  return {
+    hint(l) { if (l >= 2) { const miss = [...targets.keys()].filter(k => !found.includes(k)); if (miss.length) { flash = targets.get(miss[miss.length - 1]); draw(); } } },
+    solve() { found.length = 0; found.push(...targets.keys()); flash = null; draw(); setTimeout(() => api.win(), 700); },
+    count: () => targets.size,
+  };
+};
+
+const SEG = { 0: 'abcdef', 1: 'bc', 2: 'abged', 3: 'abgcd', 4: 'fgbc', 5: 'afgcd', 6: 'afgedc', 7: 'abc', 8: 'abcdefg', 9: 'abcdfg' };
+const SEGPOS = { a: [12, 0, 'h'], b: [76, 6, 'v'], c: [76, 82, 'v'], d: [12, 152, 'h'], e: [0, 82, 'v'], f: [0, 6, 'v'], g: [12, 76, 'h'] };
+R.match = (st, p, api) => {
+  // tokens: [digit, op, digit, digit]; op uses slots h and v
+  const init = () => [new Set(SEG[p.eq[0]]), new Set(p.eq[1] === '+' ? ['h', 'v'] : ['h']), new Set(SEG[p.eq[2]]), new Set(SEG[p.eq[3]])];
+  let T = init(); let busy = false;
+  const dig = s => { for (const d in SEG) { const t = SEG[d]; if (t.length === s.size && [...t].every(x => s.has(x))) return +d; } return null; };
+  const read = T => { const a = dig(T[0]), b = dig(T[2]), c = dig(T[3]); const op = T[1].has('h') && T[1].has('v') ? '+' : T[1].has('h') ? '−' : null; return { a, b, c, op, ok: a != null && b != null && c != null && op && (op === '+' ? a + b : a - b) === c }; };
+  const txt = r => `${r.a ?? '?'} ${r.op ?? '?'} ${r.b ?? '?'} = ${r.c ?? '?'}`;
+  const eqEl = h('div', { class: 'meq' }); const says = h('div', { class: 'msays' });
+  function tokEl(i) {
+    const isOp = i === 1; const el = h('div', { class: 'mtok' + (isOp ? ' op' : '') });
+    const slots = isOp ? { h: [10, 76, 'h'], v: [37, 49, 'v'] } : SEGPOS;
+    for (const s in slots) {
+      const [x, y, o] = slots[s]; const on = T[i].has(s);
+      const b = h(on ? 'button' : 'div', { class: (on ? 'stick ' : 'slot ') + o, style: { left: x + 'px', top: y + 'px' }, 'aria-label': on ? 'Matchstick' : 'Empty place for a stick' });
+      if (on) draggable(b, { i, s }); else droppable(b, d => move(d, i, s));
+      el.append(b);
+    }
+    return el;
+  }
+  function draw() {
+    eqEl.innerHTML = '';
+    eqEl.append(tokEl(0), tokEl(1), tokEl(2), h('div', { class: 'mtok eq' }, h('div', { class: 'stick h fixed', style: { left: '10px', top: '58px' } }), h('div', { class: 'stick h fixed', style: { left: '10px', top: '94px' } })), tokEl(3));
+    says.innerHTML = `It says: <b>${txt(read(T))}</b>`;
+  }
+  function move(d, i, s) {
+    if (api.done() || busy) return;
+    T[d.i].delete(d.s); T[i].add(s); snd.drop(); draw();
+    const r = read(T);
+    if (r.ok) { setTimeout(() => api.win(), 500); return; }
+    busy = true;
+    api.nudge(r.a == null || r.b == null || r.c == null || !r.op ? 'Hmm, that does not make a number or a sign. The stick will hop back. Try another one!' : `Now it says ${txt(r)}. That is not true. The stick will hop back. Try another one!`);
+    setTimeout(() => { busy = false; if (api.done()) return; T = init(); draw(); }, 1700);
+  }
+  st.append(eqEl, says, h('p', { class: 'note' }, 'Drag a matchstick to an empty dotted place. Or click a stick, then click a dotted place. You may move only one stick.'));
+  draw();
+  return {
+    hint(l) { if (l >= 2) { const t = $$('.mtok', eqEl)[p.hintTok]; t && t.classList.add('hl'); } },
+    solve() { T = init(); const [a, s, b, u] = p.sol; T[a].delete(s); T[b].add(u); draw(); setTimeout(() => api.win(), 600); },
+    read: () => read(T),
+  };
+};
+
+R.mirror = (st, p, api) => {
+  const W = p.W, H = p.H; const key = (c, r) => c + ',' + r;
+  const given = new Set(p.cells.map(([c, r]) => key(c, r)));
+  const target = new Set(p.cells.map(([c, r]) => p.axis === 'v' ? key(W - 1 - c, r) : key(c, H - 1 - r)));
+  const mine = (c, r) => p.axis === 'v' ? c >= W / 2 : r >= H / 2;
+  const paint = new Set(); let showOne = null;
+  const grid = h('div', { class: 'mgrid ' + p.axis, style: { gridTemplateColumns: `repeat(${W}, 46px)` } });
+  function draw() {
+    grid.innerHTML = '';
+    for (let r = 0; r < H; r++) for (let c = 0; c < W; c++) {
+      const k = key(c, r), m = mine(c, r);
+      const cls = 'mcell' + (given.has(k) ? ' given' : '') + (paint.has(k) ? ' paint' : '') + (m ? ' mine' : ' theirs') + (showOne === k ? ' tip' : '') + (p.axis === 'v' && c === W / 2 - 1 ? ' edgeR' : '') + (p.axis === 'h' && r === H / 2 - 1 ? ' edgeB' : '');
+      const b = h(m ? 'button' : 'div', { class: cls, style: given.has(k) || paint.has(k) ? { background: p.col } : {}, 'aria-label': m ? `Square row ${r + 1}, column ${c + 1}${paint.has(k) ? ', colored' : ''}` : null });
+      if (m) b.onclick = () => { if (api.done()) return; paint.has(k) ? paint.delete(k) : paint.add(k); showOne = null; snd.pop(); draw(); auto(); };
+      grid.append(b);
+    }
+  }
+  const same = () => paint.size === target.size && [...paint].every(k => target.has(k));
+  function auto() { if (same()) setTimeout(() => api.win(), 400); }
+  api.button('🔍 Check', () => {
+    if (same()) return api.win();
+    const miss = [...target].filter(k => !paint.has(k)).length, extra = [...paint].filter(k => !target.has(k)).length;
+    api.nudge(`${miss ? `${miss} ${miss === 1 ? 'square is' : 'squares are'} missing` : 'Nothing is missing'}${extra ? ` and ${extra} ${extra === 1 ? 'square is' : 'squares are'} extra` : ''}. Check how far each square is from the mirror line.`);
+  });
+  st.append(h('div', { class: 'mwrap' }, grid), h('p', { class: 'note' }, 'Click a square to color it. Click again to clear it.'));
+  draw();
+  return {
+    hint(l) { if (l >= 2) { const m = [...target].find(k => !paint.has(k)); if (m) { showOne = m; draw(); } } },
+    solve() { paint.clear(); target.forEach(k => paint.add(k)); draw(); setTimeout(() => api.win(), 600); }
+  };
+};
+
+R.fold = (st, p, api) => {
+  const N = 4, key = (c, r) => c + ',' + r;
+  const exp = new Set(); p.holes.forEach(([c, r]) => { exp.add(key(c, r)); exp.add(key(N - 1 - c, r)); if (p.folds === 'vh') { exp.add(key(c, N - 1 - r)); exp.add(key(N - 1 - c, N - 1 - r)); } });
+  const marks = new Set(); let opened = false;
+  const cell = 34;
+  const paperSVG = (cols, rows, holes, extra = '') => { let s = `<svg width="${cols * cell + 8}" height="${rows * cell + 8}" aria-hidden="true"><rect x="4" y="4" width="${cols * cell}" height="${rows * cell}" fill="#fffaf0" stroke="#c9b48a" stroke-width="3" rx="4"/>`; holes.forEach(([c, r]) => s += `<circle cx="${4 + c * cell + cell / 2}" cy="${4 + r * cell + cell / 2}" r="10" fill="#3aa3c4"/>`); return s + extra + '</svg>'; };
+  const half = p.folds === 'vh' ? 2 : 4;
+  const steps = h('div', { class: 'fsteps' });
+  const full = paperSVG(4, 4, [], `<line x1="${4 + 2 * cell}" y1="0" x2="${4 + 2 * cell}" y2="${4 * cell + 8}" stroke="#ef6a4a" stroke-width="3" stroke-dasharray="6 5"/>` + (p.folds === 'vh' ? `<line x1="0" y1="${4 + 2 * cell}" x2="${4 * cell + 8}" y2="${4 + 2 * cell}" stroke="#ef6a4a" stroke-width="3" stroke-dasharray="6 5"/>` : ''));
+  const folded = paperSVG(2, half, p.holes.map(([c, r]) => [c - 2, r]));
+  steps.append(h('div', { class: 'fstep' }, h('div', { html: full }), h('div', { class: 'note' }, p.folds === 'vh' ? '1. Fold left onto right, then bottom onto top.' : '1. Fold the left half onto the right half.')),
+    h('div', { class: 'farrow' }, '⟶'),
+    h('div', { class: 'fstep' }, h('div', { html: folded }), h('div', { class: 'note' }, p.holes.length > 1 ? '2. Punch these holes.' : '2. Punch a hole.')));
+  const grid = h('div', { class: 'fgrid' });
+  function draw() {
+    grid.innerHTML = '';
+    for (let r = 0; r < N; r++) for (let c = 0; c < N; c++) {
+      const k = key(c, r);
+      const b = h('button', { class: 'fcell' + (marks.has(k) ? ' mark' : '') + (opened && exp.has(k) ? ' hole' : '') + (c === 1 ? ' vline' : '') + (p.folds === 'vh' && r === 1 ? ' hline' : ''), 'aria-label': `Row ${r + 1}, column ${c + 1}${marks.has(k) ? ', marked' : ''}` });
+      b.onclick = () => { if (api.done()) return; marks.has(k) ? marks.delete(k) : marks.add(k); snd.pop(); draw(); };
+      grid.append(b);
+    }
+  }
+  api.button('📄 Unfold!', () => {
+    const ok = marks.size === exp.size && [...marks].every(k => exp.has(k));
+    if (ok) { opened = true; draw(); return setTimeout(() => api.win(), 500); }
+    if (!marks.size) return api.nudge('Click the squares where you think the holes will be first.');
+    if (marks.size !== exp.size) return api.nudge(`You marked ${marks.size} ${marks.size === 1 ? 'hole' : 'holes'}. How many layers of paper did the punch go through?`);
+    api.nudge('The right number of holes! But look at where they are. Each fold line is like a mirror.');
+  });
+  st.append(steps, h('div', { class: 'fopen' }, h('div', { class: 'asklabel' }, '3. The open paper. Click where the holes will be:'), grid));
+  draw();
+  return { solve() { marks.clear(); exp.forEach(k => marks.add(k)); opened = true; draw(); setTimeout(() => api.win(), 600); } };
+};
+
+/* ============ World 8: pigeonhole ============ */
+R.grab = (st, p, api) => {
+  const goal = arr => { const cnt = {}; arr.forEach(c => cnt[c] = (cnt[c] || 0) + 1);
+    if (p.goal === 'pair') return Object.values(cnt).some(v => v >= 2);
+    if (p.goal === 'each') return p.colors.every(c => cnt[c.c] >= 1);
+    if (p.goal.same) return Object.values(cnt).some(v => v >= p.goal.same);
+    if (p.goal.color) return (cnt[p.goal.color] || 0) >= p.goal.k;
+    return false; };
+  const answer = range(p.worst.length + 1).find(n => goal(p.worst.slice(0, n)));
+  let n = 1, busy = false;
+  const cave = h('div', { class: 'cave' }, h('div', { class: 'cavein' }, h('span', { class: 'cq' }, '❓'), h('div', { class: 'cfish', html: p.colors.map(c => `<span class="cchip">${fishSVG(c.c, 40)} ${c.n === 'many' ? 'lots of ' + c.c : c.n + ' ' + c.c}</span>`).join('') })), h('div', { class: 'octo' }, '🐙'));
+  const out = h('div', { class: 'grabbed' });
+  const num = h('div', { class: 'gnum' });
+  const drawNum = () => { num.textContent = n; gb.textContent = `🤲 Grab ${n} ${n === 1 ? 'fish' : 'fish'}`; };
+  const gb = h('button', { class: 'btn big coral', onclick: () => grab() });
+  const dial = h('div', { class: 'numrow' }, h('button', { class: 'btn alt sq', 'aria-label': 'One less', onclick: () => { if (busy) return; n = Math.max(1, n - 1); snd.pop(); drawNum(); } }, '−'), num, h('button', { class: 'btn alt sq', 'aria-label': 'One more', onclick: () => { if (busy) return; n = Math.min(p.worst.length, n + 1); snd.pop(); drawNum(); } }, '+'), gb);
+  async function grab() {
+    if (api.done() || busy) return; busy = true; out.innerHTML = '';
+    const got = p.worst.slice(0, n);
+    for (const c of got) { out.append(h('span', { class: 'gf', html: fishSVG(c, 54) })); snd.pop(); await sleep(260); }
+    busy = false; if (api.done()) return;
+    const names = got.join(', ');
+    if (!goal(got)) api.nudge(`The sneaky octopus gave you: ${names}. ${n === 1 ? 'One fish is not enough.' : p.fail} So ${n} is not enough to be sure.`);
+    else if (n > answer) api.nudge(`Yes, ${n} always works! But could you be sure with fewer fish? Try a smaller number.`);
+    else api.win();
+  }
+  st.append(h('div', { class: 'grow' }, cave, h('div', { class: 'gside' }, h('div', { class: 'asklabel', html: p.q }), dial, out)));
+  drawNum();
+  return { solve() { n = answer; drawNum(); grab(); }, answer };
+};
+
+R.caves = (st, p, api) => {
+  const where = range(p.fish).map(() => -1);
+  const pool = h('div', { class: 'cpool' }); const caves = range(p.caves).map(i => { const el = h('div', { class: 'cavebox' }); droppable(el, d => put(d.f, i), `Cave ${i + 1}`); return el; });
+  droppable(pool, d => put(d.f, -1), 'Outside the caves');
+  const info = h('div', { class: 'ginfo' });
+  const fishBtn = f => { const b = h('button', { class: 'cfb', 'aria-label': 'A fish', html: fishSVG(pick2(f), 46) }); draggable(b, { f }); return b; };
+  const COLS = ['blue', 'orange', 'green', 'purple', 'red', 'yellow'];
+  const pick2 = f => COLS[f % COLS.length];
+  function put(f, c) { if (api.done()) return; where[f] = c; snd.drop(); draw(); }
+  function draw() {
+    pool.innerHTML = ''; where.forEach((c, f) => { if (c < 0) pool.append(fishBtn(f)); });
+    if (!pool.children.length) pool.append(h('span', { class: 'note' }, 'All fish are in caves.'));
+    caves.forEach((el, i) => { el.innerHTML = ''; const inside = where.map((c, f) => c === i ? f : -1).filter(f => f >= 0); el.append(h('div', { class: 'cavelab' }, `Cave ${i + 1}: ${inside.length}`)); const fr = h('div', { class: 'cavef' }); inside.forEach(f => fr.append(fishBtn(f))); el.append(fr); el.classList.toggle('two', inside.length >= 2); });
+    const counts = caves.map((_, i) => where.filter(c => c === i).length);
+    info.innerHTML = `Fish outside: <b>${where.filter(c => c < 0).length}</b> &nbsp; Fullest cave: <b>${Math.max(...counts)}</b>`;
+  }
+  st.append(h('div', { class: 'cavesrow' }, caves), info, pool, h('p', { class: 'note' }, 'Drag fish into the caves. Or click a fish, then click a cave.'));
+  let ask = null;
+  if (p.mode === 'spread') {
+    api.button('✅ Check', () => {
+      if (where.some(c => c < 0)) return api.nudge('Some fish are still outside the caves.');
+      const i = caves.findIndex((_, i) => where.filter(c => c === i).length >= 2);
+      if (i >= 0) return api.nudge(`Cave ${i + 1} has more than 1 fish. Can you fix it?`);
+      api.win();
+    });
+    api.button("🚫 It can't be done!", () => p.fish > p.caves ? api.win() : api.nudge('It can be done! Keep trying.'), 'btn coral');
+  } else {
+    const ans = Math.ceil(p.fish / p.caves);
+    ask = numAsk(api, { label: p.q, answer: ans, wrong: x => x < ans ? `If every cave had only ${x}, how many fish would fit? Is that enough for ${p.fish}?` : `Can you spread the fish so the fullest cave has fewer than ${x}?` });
+    st.append(ask);
+  }
+  draw();
+  return { solve() { range(p.fish).forEach(f => where[f] = f % p.caves); draw(); if (ask) ask.set(Math.ceil(p.fish / p.caves)); setTimeout(() => api.win(), 600); } };
+};
+
+/* ============ World 9: magic sums ============ */
+function sumSolutions(p, limit = 50) {
+  const empty = p.slots.map((s, i) => s.v == null ? i : -1).filter(i => i >= 0); const out = [];
+  for (const pr of perms(p.tiles)) {
+    const v = p.slots.map(s => s.v); empty.forEach((i, k) => v[i] = pr[k]);
+    if (p.lines.every(l => l.s.reduce((a, i) => a + v[i], 0) === p.T)) { out.push(v); if (out.length >= limit) break; }
+  }
+  return out;
+}
+R.sums = (st, p, api) => {
+  const v = p.slots.map(s => s.v); const fixed = p.slots.map(s => s.v != null);
+  const area = h('div', { class: 'sarea', style: { width: p.W + 'px', height: p.H + 'px' } });
+  const tray = h('div', { class: 'stray' }); droppable(tray, d => { if (d.from >= 0 && !api.done()) { v[d.from] = null; snd.pop(); draw(); } }, 'Number tray');
+  const used = () => v.filter((x, i) => !fixed[i] && x != null);
+  function draw() {
+    let sv = `<svg width="${p.W}" height="${p.H}" aria-hidden="true">`;
+    (p.draw || []).forEach(([a, b]) => { sv += `<line x1="${p.slots[a].x}" y1="${p.slots[a].y}" x2="${p.slots[b].x}" y2="${p.slots[b].y}" stroke="#9fdcea" stroke-width="12" stroke-linecap="round"/>`; });
+    sv += '</svg>'; area.innerHTML = sv;
+    p.slots.forEach((s, i) => {
+      const el = h('div', { class: 'sslot' + (fixed[i] ? ' fixed' : ''), style: { left: s.x + 'px', top: s.y + 'px' } });
+      if (v[i] != null) { if (fixed[i]) el.append(h('span', { class: 'snum' }, String(v[i]))); else { const b = h('button', { class: 'stile', 'aria-label': 'Number ' + v[i] }, String(v[i])); draggable(b, { n: v[i], from: i }); el.append(b); } }
+      if (!fixed[i]) droppable(el, d => place(d, i), `Empty circle ${i + 1}`);
+      area.append(el);
+    });
+    p.lines.forEach(l => {
+      const full = l.s.every(i => v[i] != null); const s = l.s.reduce((a, i) => a + (v[i] || 0), 0);
+      area.append(h('div', { class: 'ssum' + (full ? (s === p.T ? ' ok' : ' no') : ''), style: { left: l.lx + 'px', top: l.ly + 'px' } }, (l.pre || '') + (full ? String(s) : '?')));
+    });
+    tray.innerHTML = '';
+    const left = p.tiles.slice(); used().forEach(x => { const k = left.indexOf(x); if (k >= 0) left.splice(k, 1); });
+    left.forEach(x => { const b = h('button', { class: 'stile', 'aria-label': 'Number ' + x }, String(x)); draggable(b, { n: x, from: -1 }); tray.append(b); });
+    if (!left.length) tray.append(h('span', { class: 'note' }, 'All numbers are placed.'));
+  }
+  function place(d, i) {
+    if (api.done() || fixed[i]) return;
+    const old = v[i]; v[i] = d.n; if (d.from >= 0 && d.from !== i) v[d.from] = old; snd.drop(); draw();
+    if (v.every(x => x != null)) {
+      if (p.lines.every(l => l.s.reduce((a, k) => a + v[k], 0) === p.T)) setTimeout(() => api.win(), 400);
+      else api.nudge(`All the numbers are in, but some lines do not add up to ${p.T} yet. The red numbers show which. Try swapping.`);
+    }
+  }
+  st.append(h('div', { class: 'grow' }, area, h('div', { class: 'gside' }, h('div', { class: 'asklabel' }, `Every line must add up to ${p.T}.`), tray, h('p', { class: 'note' }, 'Drag numbers into the circles. Drag one onto another to swap. Drag back to the tray to remove.'))));
+  draw();
+  return { solve() { const s = sumSolutions(p, 1)[0]; s.forEach((x, i) => v[i] = x); draw(); setTimeout(() => api.win(), 600); } };
+};
+/* ============ puzzle content ============ */
+const F = k => Array(k).fill('fish');
+const TRI1 = { pts: { A: [300, 40], B: [70, 360], D: [300, 360], C: [530, 360] }, lines: [['A', 'B'], ['A', 'C'], ['A', 'D'], ['B', 'D', 'C']] };
+const TRI2 = { pts: { A: [300, 40], B: [70, 360], D: [220, 360], E: [380, 360], C: [530, 360] }, lines: [['A', 'B'], ['A', 'D'], ['A', 'E'], ['A', 'C'], ['B', 'D', 'E', 'C']] };
+const SQ2 = { pts: { A: [150, 50], B: [300, 50], C: [450, 50], D: [150, 200], E: [300, 200], F: [450, 200], G: [150, 350], H: [300, 350], I: [450, 350] }, lines: [['A', 'B', 'C'], ['D', 'E', 'F'], ['G', 'H', 'I'], ['A', 'D', 'G'], ['B', 'E', 'H'], ['C', 'F', 'I']] };
+const PLUS = { W: 480, H: 420, slots: [{ x: 230, y: 50 }, { x: 80, y: 190 }, { x: 230, y: 190 }, { x: 380, y: 190 }, { x: 230, y: 330 }], lines: [{ s: [1, 2, 3], lx: 448, ly: 190 }, { s: [0, 2, 4], lx: 230, ly: 397 }], draw: [[1, 3], [0, 4]] };
+const TRI = { W: 480, H: 430, slots: [{ x: 240, y: 50 }, { x: 150, y: 205 }, { x: 60, y: 360 }, { x: 240, y: 360 }, { x: 420, y: 360 }, { x: 330, y: 205 }], lines: [{ s: [0, 1, 2], lx: 92, ly: 165 }, { s: [2, 3, 4], lx: 240, ly: 412 }, { s: [4, 5, 0], lx: 388, ly: 165 }], draw: [[0, 2], [2, 4], [4, 0]] };
+const SQX = [110, 220, 330], SQY = [60, 170, 280];
+const MAGIC = { W: 460, H: 400, slots: range(9).map(i => ({ x: SQX[i % 3], y: SQY[Math.floor(i / 3)] })),
+  lines: [...[0, 1, 2].map(r => ({ s: [r * 3, r * 3 + 1, r * 3 + 2], lx: 410, ly: SQY[r] })), ...[0, 1, 2].map(c => ({ s: [c, c + 3, c + 6], lx: SQX[c], ly: 362 })), { s: [0, 4, 8], lx: 410, ly: 362, pre: '↘ ' }, { s: [2, 4, 6], lx: 34, ly: 362, pre: '↙ ' }],
+  draw: [[0, 2], [3, 5], [6, 8], [0, 6], [1, 7], [2, 8], [0, 8], [2, 6]] };
+const withVals = (base, vals) => ({ ...base, slots: base.slots.map((s, i) => ({ ...s, v: vals ? vals[i] : null })) });
+
+const WORLDS = [
+{ id: 'scale', name: 'Balance Bay', emoji: '⚖️', creature: '🦀', prize: '🐋', prizeName: 'whale', concept: 'Balance scales and equations',
+  teaches: 'Equations as a balance: a level scale means equal; swapping equal things (substitution); taking the same thing off both sides.',
+  puzzles: [
+  { type: 'scale', w: { crab: 3 }, L: ['crab'], R: [], lockAll: true, tray: ['fish'], addTo: 'R', goal: 'balance',
+    task: 'How many fish weigh the same as one crab? Put fish on the right pan until the scale is level.',
+    hints: ['Drag a fish from the sea onto the right pan. Watch the scale move.', 'Add fish one at a time until the beam is flat.'],
+    walk: 'Put 3 fish on the right pan. Then the scale is level.',
+    explain: 'When the scale is level, both sides weigh the same. So 1 crab weighs as much as 3 fish.' },
+  { type: 'scale', w: { octo: 5 }, L: ['octo'], R: [], lockAll: true, tray: ['fish'], addTo: 'R', goal: 'balance',
+    task: 'Now an octopus. How many fish balance it?',
+    hints: ['Add fish to the right pan, one at a time.', 'The octopus is heavier than a crab. Keep going past 3.'],
+    walk: 'Put 5 fish on the right pan.',
+    explain: 'The octopus weighs 5 fish. A level scale is like an = sign: 🐙 = 5 🐟.' },
+  { type: 'scale', w: { crab: 2 }, L: ['crab', 'crab'], R: [], lockAll: true, tray: ['fish'], addTo: 'R', goal: 'balance',
+    task: 'Two crabs this time. Balance them with fish.',
+    hints: ['Add fish until the scale is level.', 'It takes 4 fish. How many is that for each crab?'],
+    walk: 'Put 4 fish on the right pan.',
+    explain: '2 crabs weigh 4 fish. Share the 4 fish fairly between the 2 crabs: each crab weighs 2 fish.' },
+  { type: 'scale', w: { crab: 3 }, L: ['crab', 'crab'], R: [], lockAll: true, tray: ['fish'], addTo: 'R', goal: 'balance', blind: true, facts: [{ L: ['crab'], R: F(3) }],
+    task: 'Fog! The big scale will not move until you press Check. The small scale shows that 1 crab weighs 3 fish. How many fish balance 2 crabs?',
+    hints: ['Each crab weighs the same as 3 fish.', '2 crabs are 3 fish and 3 more fish.'],
+    walk: '3 + 3 = 6. Put 6 fish on the right pan, then press Check.',
+    explain: 'You did not need to see the scale. 1 crab = 3 fish, so 2 crabs = 6 fish. Swapping something for what it weighs is called substitution.' },
+  { type: 'scale', w: { crab: 3, octo: 6 }, L: ['octo'], R: [], lockAll: true, tray: ['fish'], addTo: 'R', goal: 'balance', blind: true, facts: [{ L: ['octo'], R: ['crab', 'crab'] }, { L: ['crab'], R: F(3) }],
+    task: 'More fog. Use the two small scales to work out how many fish balance the octopus.',
+    hints: ['The first small scale shows the octopus weighs the same as 2 crabs.', 'Swap each crab for 3 fish.'],
+    walk: '🐙 = 🦀🦀, and each 🦀 = 3 🐟. So 🐙 = 3 + 3 = 6 fish.',
+    explain: 'You swapped the octopus for crabs, then the crabs for fish. Swapping step by step turns a hard question into an easy one.' },
+  { type: 'scale', w: { crab: 4 }, L: ['crab', 'fish'], R: F(5), lock: ['crab'], tray: [], goal: 'crab',
+    task: 'This scale is level. Take fish off to find out what the crab weighs. Try to keep the scale level!',
+    hints: ['If you take a fish off only one side, the scale tips.', 'Take one fish off the left and one fish off the right.'],
+    walk: 'Drag the fish next to the crab into the sea, and one fish from the right side too. The crab balances 4 fish.',
+    explain: 'If you take the same thing off both sides, the scale stays level. Crab + 1 fish = 5 fish, so the crab = 4 fish.' },
+  { type: 'scale', w: { crab: 3 }, L: ['crab', 'crab', 'fish'], R: ['crab', ...F(4)], tray: [], goal: 'crab',
+    task: 'Crabs on both sides! Take the same things off each side until one crab is alone. What does a crab weigh?',
+    hints: ['There is a crab on each side. You can take one crab off each side.', 'Then there is a fish on each side to take off.'],
+    walk: 'Take 1 crab off each side, then 1 fish off each side. Now 1 crab balances 3 fish.',
+    explain: 'Crabs on both sides cancel out. Taking the same from both sides is the main trick for solving equations.' },
+  { type: 'scale', w: { crab: 2, octo: 4 }, L: ['octo', 'crab'], R: F(6), tray: [], goal: 'crab', trades: [{ from: 'octo', to: ['crab', 'crab'] }],
+    task: 'Find what one crab weighs. The swap card says one octopus weighs the same as 2 crabs. Drop the octopus on the card to swap it.',
+    hints: ['Swap the octopus for 2 crabs. The scale stays level.', 'Now 3 crabs balance 6 fish. Take 1 crab and 2 fish off, and do it again.'],
+    walk: 'After the swap, 3 crabs balance 6 fish. Take off 1 crab and 2 fish, two times. 1 crab = 2 fish.',
+    explain: '3 crabs = 6 fish, so each crab weighs 2 fish. You used swapping and taking away together, like a real mathematician.' },
+  ] },
+{ id: 'pattern', name: 'Pattern Reef', emoji: '🐚', creature: '🐠', prize: '🐳', prizeName: 'spouting whale', concept: 'Patterns and sequences',
+  teaches: 'Finding the rule in shape and number sequences (+2, +3, doubling, two mixed patterns, Fibonacci) and using a repeating cycle to jump far ahead.',
+  puzzles: [
+  { type: 'pattern', seq: ['🐟', '🐠', '🐟', '🐠', '🐟', '🐠', '🐟', '🐠'], blanks: [7], choices: ['🐟', '🐠', '🐡'], unit: 2, hfx: 'unit',
+    task: 'What comes next? Drag it into the empty spot.',
+    hints: ['Say the pattern out loud: fish, stripy fish, fish…', 'Two fish take turns again and again.'],
+    walk: 'It goes 🐟 🐠, 🐟 🐠… After 🐟 comes 🐠.',
+    explain: 'This pattern repeats every 2. Finding the part that repeats is the key to every pattern.' },
+  { type: 'pattern', seq: ['🐚', '🐚', '🦀', '🐚', '🐚', '🦀', '🐚', '🐚', '🦀'], blanks: [7, 8], choices: ['🐚', '🦀', '🐟'], unit: 3, hfx: 'unit',
+    task: 'Fill in the two empty spots.',
+    hints: ['Look for the part that repeats. How long is it?', 'The repeating part is 🐚 🐚 🦀.'],
+    walk: 'After 🐚 comes 🐚, then 🦀.',
+    explain: 'The repeating part is 🐚 🐚 🦀. Once you find it, you can fill in any spot.' },
+  { type: 'pattern', seq: ['🐡', '🐡🐡', '🐡🐡🐡', '🐡🐡🐡🐡'], blanks: [3], choices: ['🐡🐡🐡', '🐡🐡🐡🐡', '🐡🐡🐡🐡🐡'],
+    task: 'This pattern grows. What comes next?',
+    hints: ['Count the pufferfish in each spot.', '1, then 2, then 3…'],
+    walk: '1, 2, 3, so next is 4 pufferfish.',
+    explain: 'Each step adds one more pufferfish. A growing pattern changes by the same rule every time.' },
+  { type: 'pattern', seq: [2, 4, 6, 8, 10], blanks: [4], choices: [9, 10, 12], hfx: 'diff',
+    task: 'What number comes next?',
+    hints: ['How much bigger is each number than the one before?', 'It goes up by 2 each time.'],
+    walk: '8 + 2 = 10.',
+    explain: 'The rule is +2 each time. These are the even numbers.' },
+  { type: 'pattern', seq: [1, 4, 7, 10, 13], blanks: [4], choices: [11, 12, 13, 14], hfx: 'diff',
+    task: 'What number comes next?',
+    hints: ['How much does it jump each time?', 'It goes up by 3 each time.'],
+    walk: '10 + 3 = 13.',
+    explain: 'The rule is +3 each time. Once you know the rule, you can keep going forever.' },
+  { type: 'pattern', seq: [1, 2, 4, 8, 16], blanks: [4], choices: [10, 12, 16], hfx: 'diff',
+    task: 'What number comes next? This one is sneaky.',
+    hints: ['The jumps are not the same. Look at how the jumps change.', '1 → 2 → 4 → 8. Each number is double the one before.'],
+    walk: '8 doubled is 16.',
+    explain: 'Each number doubles. Doubling grows very fast: 16, 32, 64, 128…' },
+  { type: 'pattern', seq: [1, 9, 2, 8, 3, 7, 4], blanks: [6], choices: [4, 5, 6], hfx: 'alt',
+    task: 'What number comes next?',
+    hints: ['Look at every other number.', 'The 1st, 3rd and 5th numbers are 1, 2, 3. What comes next in that row?'],
+    walk: 'Two patterns are mixed: 1, 2, 3, 4 and 9, 8, 7. Next is 4.',
+    explain: 'Two patterns were mixed together: 1, 2, 3, 4 going up and 9, 8, 7 going down.' },
+  { type: 'pattern', cycle: ['🐚', '🦀', '🐟'], show: 6, target: 20, choices: ['🐚', '🦀', '🐟'], hfx: 'groups',
+    task: 'This necklace keeps going in the same pattern. What is on spot number 20?',
+    hints: ['The pattern 🐚 🦀 🐟 repeats every 3 spots.', 'Spots 3, 6, 9, 12, 15 and 18 are all 🐟. What comes after spot 18?'],
+    walk: 'Spot 18 is a 🐟 because 18 = 6 groups of 3. Spot 19 is 🐚 and spot 20 is 🦀.',
+    explain: 'You did not need to draw 20 things. The pattern repeats every 3, so you can jump ahead in 3s.' },
+  { type: 'pattern', cycle: ['🐠', '🐡', '🐙', '🦀'], show: 8, target: 15, choices: ['🐠', '🐡', '🐙', '🦀'], hfx: 'groups',
+    task: 'A new necklace. What is on spot number 15?',
+    hints: ['This one repeats every 4 spots.', 'Spots 4, 8 and 12 are all 🦀. Count on from 12.'],
+    walk: 'Spot 12 is 🦀. Then 13 is 🐠, 14 is 🐡 and 15 is 🐙.',
+    explain: 'Jump in 4s to 12, then count the last few. Repeating patterns let you skip ahead.' },
+  { type: 'pattern', seq: [1, 1, 2, 3, 5, 8, 13], blanks: [6], choices: [11, 13, 16], hfx: 'fib',
+    task: 'A famous pattern. What number comes next?',
+    hints: ['It is not +1 or +2 every time. Look at two numbers at once.', '1 + 1 = 2. 1 + 2 = 3. 2 + 3 = 5.'],
+    walk: 'Each number is the two before it added up. 5 + 8 = 13.',
+    explain: 'Each number is the sum of the two before it. It is called the Fibonacci pattern, and it shows up in shells and flowers.' },
+  ] },
+{ id: 'count', name: 'Counting Cove', emoji: '🧮', creature: '🐟', prize: '🦭', prizeName: 'seal', concept: 'Counting smartly',
+  teaches: 'Counting without counting one by one: rows × columns, making tens, and listing every case in order (outfits, handshakes, paths).',
+  puzzles: [
+  { type: 'array', rows: 4, cols: 5, e: '🐟',
+    task: 'How many fish are there? Try not to count them one by one.',
+    hints: ['Click a row. How many fish are in one row?', 'There are 4 rows with 5 fish in each. Count by 5s.'],
+    walk: '5, 10, 15, 20. There are 20 fish.',
+    explain: '4 rows of 5 make 20. Counting in rows is much faster than counting one by one. This is multiplication: 4 × 5 = 20.' },
+  { type: 'pairs', nums: [3, 7, 6, 4, 8, 2, 5, 5], target: 10,
+    task: 'Add up all the numbers. Here is a trick: drag two bubbles together to make 10.',
+    hints: ['Which number goes with 3 to make 10?', '3 and 7, 6 and 4, 8 and 2, 5 and 5.'],
+    walk: 'There are four 10s. 10 + 10 + 10 + 10 = 40.',
+    explain: 'Making tens first makes adding easy. Four tens make 40.' },
+  { type: 'pairs', nums: [1, 2, 3, 4, 5, 6, 7, 8, 9], target: 10,
+    task: 'Add 1 + 2 + 3 + 4 + 5 + 6 + 7 + 8 + 9. Make tens first!',
+    hints: ['1 and 9 make 10. What goes with 2?', 'You get four 10s and a 5 left over.'],
+    walk: '(1+9) + (2+8) + (3+7) + (4+6) + 5 = 40 + 5 = 45.',
+    explain: 'Pairing the numbers from both ends makes tens. A boy named Gauss used this trick to add 1 to 100 really fast.' },
+  { type: 'outfits', hats: ['🎩', '👑', '🧢'], scarves: ['red', 'blue'],
+    task: 'Finn has 3 hats and 2 scarves. Dress Finn and take a photo of every different outfit.',
+    hints: ['Pick one hat and try it with each scarf.', 'Each hat goes with 2 scarves, and there are 3 hats.'],
+    walk: '🎩 with red, 🎩 with blue, 👑 with red, 👑 with blue, 🧢 with red, 🧢 with blue. That is 6 outfits.',
+    explain: 'Every hat goes with every scarf. 3 hats × 2 scarves = 6 outfits. The grid shows them all.' },
+  { type: 'outfits', ask: true, hats: ['🎩', '👑', '🧢', '🎓'], scarves: ['red', 'blue', 'yellow'],
+    task: 'Now there are 4 hats and 3 scarves. How many different outfits can Finn make? You can dress Finn to help you think.',
+    hints: ['Each hat can go with 3 scarves.', 'Here is a grid: 4 rows of hats, 3 columns of scarves.'],
+    walk: '4 rows of 3 is 3 + 3 + 3 + 3 = 12.',
+    explain: 'Hats × scarves gives all the outfits: 4 × 3 = 12. You can count them without taking 12 photos!' },
+  { type: 'shake', n: 4, mode: 'all',
+    task: '4 sharks meet. Every shark shakes fins with every other shark once. Draw all the handshakes!',
+    hints: ['Start with Ava. She shakes fins with each of the other 3.', 'Then Ben still needs to meet Cal and Dot. Then Cal meets Dot.'],
+    walk: 'Ava meets 3, Ben meets 2 new sharks, Cal meets 1 new shark. 3 + 2 + 1 = 6 handshakes.',
+    explain: 'Count the new handshakes for each shark: 3, then 2, then 1. That makes 6, and nobody is counted twice.' },
+  { type: 'shake', n: 5, mode: 'ask',
+    task: '5 sharks meet, and everyone shakes fins with everyone once. How many handshakes is that? You can draw them to check.',
+    hints: ['The first shark shakes 4 fins. The next one has 3 new sharks to meet.', '4 + 3 + 2 + 1'],
+    walk: '4 + 3 + 2 + 1 = 10 handshakes.',
+    explain: 'Going in order, shark by shark, makes sure you count each handshake once. 4 + 3 + 2 + 1 = 10.' },
+  { type: 'paths', c: 2, r: 1, more: 'Where else could the ↓ go?',
+    task: 'Finn swims to the castle 🏰. Finn can only swim right → or down ↓. Find every different way!',
+    hints: ['A way is a list of moves, like → → ↓.', 'The ↓ can come first, in the middle, or last.'],
+    walk: '↓ → →, then → ↓ →, then → → ↓. That is 3 ways.',
+    explain: 'You listed every way by thinking about where the ↓ goes. Listing in order means none get lost.' },
+  { type: 'paths', c: 2, r: 2, pascal: true,
+    task: 'A bigger reef. Find every way to the castle, swimming only right → or down ↓.',
+    hints: ['Each way has 2 rights and 2 downs, in some order.', 'Look at the numbers on the corners: each one is the number from the left plus the number from above.'],
+    walk: '→→↓↓, →↓→↓, →↓↓→, ↓→→↓, ↓→↓→, ↓↓→→. That is 6 ways.',
+    explain: 'Each corner gets the number on its left plus the number above it. The castle gets 3 + 3 = 6.' },
+  { type: 'array', rows: 5, cols: 5, e: '🐠', hole: [1, 1, 3, 3],
+    task: 'Fish swim around the edge of a square rock. How many fish are there?',
+    hints: ['Pretend the middle is full of fish too. How many would that be?', '5 rows of 5 is 25. The empty middle is 3 rows of 3.'],
+    walk: '25 − 9 = 16. Or: 5 on top, 5 on the bottom, and 3 on each side: 5 + 5 + 3 + 3 = 16.',
+    wrongTxt: 'Not quite. Try counting the full square, then take away the hole.',
+    explain: 'Sometimes it is easier to count the full square and take away the hole: 25 − 9 = 16.' },
+  ] },
+{ id: 'parity', name: 'Odd & Even Lagoon', emoji: '🐡', creature: '🐡', prize: '🦈', prizeName: 'baby shark', concept: 'Odd and even numbers',
+  teaches: 'Parity: pairing up, odd + odd = even, things that flip back and forth, and using odd and even to prove something is impossible.',
+  puzzles: [
+  { type: 'pairup', groups: [{ n: 6, col: 'blue' }],
+    task: 'Help the fish find buddies. Drag a fish onto another fish to make a pair.',
+    hints: ['Drag one fish onto another one.', 'Keep pairing until nobody else can pair up.'],
+    walk: '6 fish make 3 pairs, with nobody left over. So 6 is even.',
+    explain: 'A number is even if everyone can have a buddy. 6 = 3 pairs, so 6 is even.' },
+  { type: 'pairup', groups: [{ n: 7, col: 'green' }],
+    task: 'More fish! Pair them up again.',
+    hints: ['Drag one fish onto another one.', 'After 3 pairs, how many fish are left?'],
+    walk: '7 fish make 3 pairs, and one fish is left alone. So 7 is odd.',
+    explain: '7 makes 3 pairs and one fish is left alone. Numbers with one left over are odd: 1, 3, 5, 7, 9…' },
+  { type: 'pairup', groups: [{ n: 3, col: 'blue' }, { n: 5, col: 'orange' }], q: '3 + 5 = 8. Is that odd or even?',
+    task: '3 blue fish and 5 orange fish. 3 and 5 are both odd. Pair up all the fish together.',
+    hints: ['Pair blue with blue and orange with orange first.', 'One blue fish and one orange fish are left alone. Can they be buddies?'],
+    walk: 'Each colour has one fish left over. The two lonely fish pair up, so 3 + 5 is even.',
+    explain: 'Odd + odd = even. The two lonely fish become buddies.' },
+  { type: 'toggle', kind: 'lamp', start: 0, max: 10, ask: 20, labels: ['OFF', 'ON'], answers: ['It will be OFF 🌑', 'It will be ON 💡'], verb: '👆 Press the switch', verb2: 'Presses',
+    tired: 'The switch is tired after 10 presses! Can you work out the rest in your head?', q: 'After <b>20</b> presses, is the jellyfish on or off?', no: 'Look at the list. Is it on or off after an even number of presses?',
+    task: 'The jellyfish starts OFF. Each press of the switch turns it on or off. Press the switch and watch.',
+    hints: ['Press a few times. Look at the list: when is it on?', 'It is ON after 1, 3 and 5 presses. Those are odd numbers. What about even numbers?'],
+    walk: 'After an even number of presses the jellyfish is off. 20 is even, so it is off.',
+    explain: 'Every 2 presses bring it back to the start. Even = off, odd = on. You did not need to press 20 times!' },
+  { type: 'toggle', kind: 'swim', start: 0, max: 10, ask: 13, labels: ['left', 'right'], answers: ['On the left rock', 'On the right rock'], verb: '🏊 Swim!', verb2: 'Swims',
+    tired: 'Finn is tired after 10 swims! Can you work out the rest in your head?', q: 'After <b>13</b> swims, where is Finn?', no: 'Look at the list. Where is Finn after an odd number of swims?',
+    task: 'Finn swims from rock to rock. Each swim goes to the other rock. Finn starts on the left rock.',
+    hints: ['After 1 swim Finn is on the right. After 2 swims?', 'Odd numbers of swims end on the right rock.'],
+    walk: '13 is odd, so Finn ends on the right rock.',
+    explain: 'Back-and-forth things flip every time. Knowing odd or even tells you where you end up.' },
+  { type: 'shake', n: 4, mode: 'degree', d: 2, canMsg: 'It can be done! Try making a ring.',
+    task: '4 sharks. Can each shark shake fins with exactly 2 others? Draw the handshakes.',
+    hints: ['Try making a ring.', 'Ava–Ben, Ben–Cal, Cal–Dot and Dot–Ava.'],
+    walk: 'A ring works: every shark holds fins with the shark on each side.',
+    explain: 'In a ring, every shark has exactly 2 neighbours. 4 sharks × 2 fins = 8 fins, and 8 is even, so the fins can all pair up.' },
+  { type: 'shake', n: 5, mode: 'degree', d: 3,
+    task: '5 sharks. Can each shark shake fins with exactly 3 others? Try it! If you think it can never work, press “It can’t be done!”',
+    hints: ['Every handshake uses 2 fins, one from each shark.', '5 sharks × 3 fins = 15 fins. Can 15 fins all be put into pairs?'],
+    walk: '5 × 3 = 15 fins. Fins in handshakes always come in pairs, and 15 is odd, so one fin is always left out. It cannot be done!',
+    explain: 'Each handshake uses 2 fins, so the number of fins used is always even. 5 × 3 = 15 is odd, so it is impossible. Odd and even can prove that something can never happen!' },
+  { type: 'picksum', nums: [1, 3, 5, 7, 9, 11], k: 2, target: 12,
+    task: 'Pick 2 shells that add up to 12.',
+    hints: ['Try 1 and the biggest shell.', '1 + 11, 3 + 9 or 5 + 7.'],
+    walk: 'Pick 5 and 7.',
+    explain: 'There are 3 ways: 1 + 11, 3 + 9 and 5 + 7. Two odd numbers always make an even number.' },
+  { type: 'picksum', nums: [1, 3, 5, 7, 9, 11], k: 3, target: 20,
+    task: 'Pick 3 shells that add up to 20. If you think it can’t be done, press “It can’t be done!”',
+    hints: ['Every shell has an odd number on it.', 'Odd + odd = even. Then even + odd = ?'],
+    walk: 'Odd + odd + odd is always odd. 20 is even. So no 3 shells can make 20.',
+    explain: 'Three odd numbers always add up to an odd number. So you can be sure it never works, without trying every way.' },
+  ] },
+{ id: 'logic', name: 'Detective Deep', emoji: '🕵️', creature: '🐬', prize: '🦞', prizeName: 'lobster', concept: 'Logic and clues',
+  teaches: 'Logic: truth-tellers and liars (testing a case and finding a contradiction) and seating puzzles where clues rule options out.',
+  puzzles: [
+  { type: 'liars', chars: [{ n: 'Pip', known: 'D', say: 'Bo is an eel.', f: a => a.Bo === 'E' }, { n: 'Bo' }],
+    task: 'Pip is a dolphin. Is Bo a dolphin or an eel?',
+    hints: ['Dolphins always tell the truth.', 'Pip says Bo is an eel, and Pip tells the truth.'],
+    walk: 'Pip is a dolphin, so what Pip says is true. Bo is an eel.',
+    explain: 'If you know someone always tells the truth, you can believe what they say.' },
+  { type: 'liars', chars: [{ n: 'Ella', known: 'E', say: 'Gus is an eel.', f: a => a.Gus === 'E' }, { n: 'Gus' }],
+    task: 'Ella is an eel. Is Gus a dolphin or an eel?',
+    hints: ['Eels always fib.', 'Ella says Gus is an eel. That must be false.'],
+    walk: 'Ella is an eel, so her words are false. Gus is not an eel: Gus is a dolphin.',
+    explain: 'What an eel says is always false, so the opposite is true.' },
+  { type: 'liars', chars: [{ n: 'Coco', known: 'D', say: 'Dex is a dolphin.', f: a => a.Dex === 'D' }, { n: 'Dex', say: 'Eve is an eel.', f: a => a.Eve === 'E' }, { n: 'Eve' }],
+    task: 'Coco is a dolphin. Who are Dex and Eve?',
+    hints: ['Start with Coco. Coco tells the truth.', 'So Dex is a dolphin. Then what Dex says is true too.'],
+    walk: 'Coco tells the truth, so Dex is a dolphin. Dex tells the truth, so Eve is an eel.',
+    explain: 'One clue led to the next, like dominoes. Start with what you know for sure.' },
+  { type: 'seats', n: 3, chars: [{ id: 'O', e: '🐙', name: 'Olly' }, { id: 'C', e: '🦀', name: 'Cora' }, { id: 'T', e: '🐢', name: 'Tito' }],
+    clues: [{ t: 'Cora sits in the middle seat.', f: C_.at('C', 1) }, { t: 'Olly does not sit at the left end.', f: C_.notAt('O', 0) }],
+    task: 'Three friends are going to the movies. Drag each friend into a seat so that all the clues are true.',
+    hints: ['Put Cora in the middle first.', 'Olly cannot be on the left, so Olly goes on the right.'],
+    walk: 'Tito, Cora, Olly.',
+    explain: 'Each clue rules some seats out. When only one choice is left, it must be right.' },
+  { type: 'liars', chars: [{ n: 'Kai', say: 'Lu is an eel.', f: a => a.Lu === 'E' }, { n: 'Lu', say: 'Kai and I are both dolphins.', f: a => a.Kai === 'D' && a.Lu === 'D' }],
+    task: 'Nobody knows who Kai and Lu are. Read what they say and work it out.',
+    hints: ['Imagine Lu is a dolphin. Then Kai and Lu are both dolphins. But then Kai says something false…', 'So Lu must be an eel. Is what Kai says true, then?'],
+    walk: 'If Lu were a dolphin, Kai would be a dolphin who says something false. That can’t happen. So Lu is an eel, and Kai tells the truth: Kai is a dolphin.',
+    explain: '“Imagine it, and see if it breaks” is a strong trick. If an idea leads to nonsense, it must be wrong.' },
+  { type: 'seats', n: 4, chars: [{ id: 'O', e: '🐙', name: 'Olly' }, { id: 'C', e: '🦀', name: 'Cora' }, { id: 'T', e: '🐢', name: 'Tito' }, { id: 'F', e: '🐠', name: 'Fifi' }],
+    clues: [{ t: 'Olly sits at the left end.', f: C_.at('O', 0) }, { t: 'Tito sits next to Cora.', f: C_.next('T', 'C') }, { t: 'Fifi does not sit next to Olly.', f: C_.notNext('F', 'O') }],
+    task: 'Four friends now. Seat them so that all the clues are true.',
+    hints: ['Olly goes at the left end. Fifi cannot be next to Olly.', 'Tito and Cora must sit together, so Fifi goes at the right end.'],
+    walk: 'Olly, Cora, Tito, Fifi works. Olly, Tito, Cora, Fifi works too!',
+    explain: 'Some puzzles have more than one answer. Olly, Cora, Tito, Fifi and Olly, Tito, Cora, Fifi both follow every clue.' },
+  { type: 'liars', chars: [{ n: 'Mo', say: 'Nia and I are both eels.', f: a => a.Mo === 'E' && a.Nia === 'E' }, { n: 'Nia' }],
+    task: 'Mo says something strange. Who are Mo and Nia?',
+    hints: ['Could Mo be a dolphin? Then “we are both eels” would be true, so Mo would be an eel. That makes no sense!', 'So Mo is an eel, and the words are false. They are NOT both eels.'],
+    walk: 'A dolphin would never say it is an eel. So Mo is an eel. Mo fibs, so they are not both eels: Nia is a dolphin.',
+    explain: 'Nobody can truthfully say “I am an eel”, so Mo must be fibbing. Then the opposite of what Mo said is true.' },
+  { type: 'seats', n: 5, chars: [{ id: 'O', e: '🐙', name: 'Olly' }, { id: 'C', e: '🦀', name: 'Cora' }, { id: 'T', e: '🐢', name: 'Tito' }, { id: 'F', e: '🐠', name: 'Fifi' }, { id: 'P', e: '🐡', name: 'Puff' }],
+    clues: [{ t: 'Fifi sits in the middle seat.', f: C_.at('F', 2) }, { t: 'Olly and Cora sit at the two ends.', f: C_.ends('O', 'C', 5) }, { t: 'Tito sits next to Olly.', f: C_.next('T', 'O') }, { t: 'Puff sits somewhere to the right of Tito.', f: C_.rightOf('P', 'T') }],
+    task: 'Five friends! Seat them so that all the clues are true.',
+    hints: ['Put Fifi in the middle. Olly and Cora go at the ends, but which end is which?', 'If Olly is at the right end, Tito is next to him, and then Puff can’t be to the right of Tito.'],
+    walk: 'Olly, Tito, Fifi, Puff, Cora.',
+    explain: 'Trying one case and seeing it fail tells you the other case is right.' },
+  { type: 'liars', chars: [{ n: 'Rex', say: 'Sky is an eel.', f: a => a.Sky === 'E' }, { n: 'Sky', say: 'Taz is an eel.', f: a => a.Taz === 'E' }, { n: 'Taz', say: 'Rex and Sky are both eels.', f: a => a.Rex === 'E' && a.Sky === 'E' }],
+    task: 'The hardest one. Who is a dolphin and who is an eel?',
+    hints: ['Imagine Taz tells the truth. Then Rex and Sky are both eels. Does Rex’s sentence work then?', 'If Sky is an eel, Rex’s words “Sky is an eel” are true, but Rex would be an eel too! So Taz must be fibbing.'],
+    walk: 'Taz is an eel. So “Taz is an eel” is true, and Sky is a dolphin. Then “Sky is an eel” is false, so Rex is an eel.',
+    explain: 'Try an idea, follow it, and throw it away if it breaks. That is how detectives think.' },
+  ] },
+{ id: 'back', name: 'Rewind Rocks', emoji: '⏪', creature: '🐢', prize: '🦐', prizeName: 'giant shrimp', concept: 'Working backwards',
+  teaches: 'Working backwards: undoing steps with the opposite operation in reverse order, and planning a winning game strategy from the end.',
+  puzzles: [
+  { type: 'back', steps: [{ op: '-', n: 3, t: 'Finn eats 3' }], end: 5,
+    task: 'Finn ate 3 fish. Now 5 fish are left. How many fish were there at the start? Undo the step to find out.',
+    hints: ['Finn ate 3 fish. To go back, the 3 fish come back.', 'Undo it by adding 3.'],
+    walk: 'Put the 3 fish back: 5 + 3 = 8.',
+    explain: 'To go backwards, do the opposite. The opposite of eating 3 is adding 3.' },
+  { type: 'back', steps: [{ op: '+', n: 4, t: '4 fish swim in' }, { op: '-', n: 2, t: 'Finn eats 2' }], end: 7,
+    task: 'Some fish were playing. 4 more swam in. Then Finn ate 2. Now there are 7. How many were there at the start?',
+    hints: ['Start at the end and undo the last step first.', 'Undo “eats 2” by adding 2. Undo “4 swim in” by taking away 4.'],
+    walk: '7 + 2 = 9. Then 9 − 4 = 5.',
+    explain: 'Undo the steps in the opposite order, last step first. It is like taking off your shoes before your socks!' },
+  { type: 'back', steps: [{ op: '/', t: 'Finn eats half' }], end: 4,
+    task: 'Finn ate half of the fish. Now 4 are left. How many were there at the start?',
+    hints: ['Finn ate half. The half that is left is 4.', 'If half is 4, the whole is 4 + 4.'],
+    walk: 'Double 4 to get 8.',
+    explain: 'The opposite of halving is doubling.' },
+  { type: 'back', steps: [{ op: '/', t: 'Finn eats half' }, { op: '-', n: 3, t: 'Finn eats 3 more' }], end: 2,
+    task: 'Finn ate half of the fish, and then 3 more. Now 2 are left. How many fish were there at the start?',
+    hints: ['Undo “eats 3 more” first.', '2 + 3 = 5. Then undo “eats half” by doubling.'],
+    walk: '2 + 3 = 5, and 5 doubled is 10.',
+    explain: 'Go back one step at a time: 2 → 5 → 10. Check it forwards: half of 10 is 5, and 5 − 3 = 2.' },
+  { type: 'back', steps: [{ op: '*', t: 'the school doubles' }, { op: '-', n: 5, t: 'Finn eats 5' }], end: 9,
+    task: 'A school of fish doubled in size. Then Finn ate 5. Now there are 9. How many were there at the start?',
+    hints: ['Undo “eats 5” first.', '9 + 5 = 14. Then undo the doubling by halving.'],
+    walk: '9 + 5 = 14. Half of 14 is 7.',
+    explain: 'Going back: 9 → 14 → 7. Check forwards: 7 doubled is 14, and 14 − 5 = 9.' },
+  { type: 'back', steps: [{ op: '/', t: 'Finn eats half' }, { op: '+', n: 3, t: '3 fish swim in' }, { op: '/', t: 'Finn eats half' }], end: 5,
+    task: 'Three things happened: Finn ate half, then 3 fish swam in, then Finn ate half again. Now 5 are left. How many were there at the start?',
+    hints: ['Undo the last step first: double the 5.', '10, then take away 3, then double again.'],
+    walk: '5 doubled is 10. 10 − 3 = 7. 7 doubled is 14.',
+    explain: 'Three steps, undone one at a time: 5 → 10 → 7 → 14. Long chains are easy backwards.' },
+  { type: 'back', numbers: true, steps: [{ op: '+', n: 6, t: 'add 6' }, { op: '*', t: 'double it' }], end: 20,
+    task: 'Finn thinks of a number. Finn adds 6, then doubles it, and gets 20. What was Finn’s number?',
+    hints: ['Undo “double it” first.', 'Half of 20 is 10. Then undo “add 6”.'],
+    walk: 'Half of 20 is 10, and 10 − 6 = 4.',
+    explain: 'Number tricks can be undone too: 20 → 10 → 4.' },
+  { type: 'nim', n: 4, k: 2, lose: 'Think about the end. What if Finn has 3 fish left on his turn?',
+    task: 'A game! There are 4 fish. You and Finn take turns eating 1 or 2 fish. Whoever eats the last fish wins. You go first. Can you beat Finn?',
+    hints: ['What happens if Finn has 3 fish left on his turn? Try it in your head.', 'With 3 left, whatever Finn eats, you can eat the rest. So leave Finn 3: eat 1 fish first.'],
+    walk: 'Eat 1. Finn has 3 left. If Finn eats 1, you eat 2. If Finn eats 2, you eat 1. You win!',
+    explain: 'Think backwards from the end. Having 3 fish on your turn is a losing spot, so give it to Finn.' },
+  { type: 'nim', n: 7, k: 2, lose: 'Leaving Finn 3 fish wins. What number before that also wins?',
+    task: 'Same game, more fish. There are 7 fish. Eat 1 or 2 each turn. Whoever eats the last fish wins. You go first.',
+    hints: ['Leaving Finn 3 fish wins. Which bigger number works the same way?', 'Leave Finn 6, then 3. With 7, eat 1 first.'],
+    walk: 'Eat 1 to leave 6. Whatever Finn eats, eat enough to leave 3. Then you get the last fish.',
+    explain: 'The safe numbers to leave are 3, 6, 9… Leave Finn one of those every time and you always win.' },
+  { type: 'nim', n: 10, k: 3, lose: 'With 1, 2 or 3 allowed, which number is bad to face? Try 4.',
+    task: 'Harder! 10 fish, and now you can eat 1, 2 or 3 each turn. Last fish wins. You go first.',
+    hints: ['With 1, 2 or 3 allowed, which number of fish is bad to face? Try 4.', 'Leave Finn 8, then 4. So eat 2 first.'],
+    walk: 'Eat 2 to leave 8. Then each round, you and Finn eat 4 together. Leave 4, then take the last fish.',
+    explain: 'When you can eat up to 3, the numbers to leave are 4, 8, 12… Working backwards finds them.' },
+  ] },
+{ id: 'shape', name: 'Shape Shoals', emoji: '🔺', creature: '🦑', prize: '🦦', prizeName: 'sea otter', concept: 'Shapes and space',
+  teaches: 'Counting hidden shapes in an organised way, matchstick equations, mirror symmetry and paper folding.',
+  puzzles: [
+  { type: 'find', kind: 'tri', ...TRI1, more: 'Is the whole shape a triangle too?',
+    task: 'How many triangles can you find? Click the 3 corners of a triangle to mark it. Press “I found them all!” when you are done.',
+    hints: ['There are two small triangles. Is there a bigger one?', 'The whole shape is a triangle too!'],
+    walk: 'ABD, ADC and the big one ABC. That is 3 triangles.',
+    explain: 'Small shapes can join to make bigger shapes. Count the small ones, then look for bigger ones.' },
+  { type: 'find', kind: 'tri', ...TRI2,
+    task: 'Now there are two lines inside. How many triangles can you find?',
+    hints: ['Every triangle has its top corner at A.', 'Its bottom side goes between two of the dots B, D, E and C.'],
+    walk: 'Small: ABD, ADE, AEC. Medium: ABE, ADC. Big: ABC. That makes 3 + 2 + 1 = 6.',
+    explain: 'Every triangle uses 2 of the 4 bottom dots. Counting the pairs in order gives 3 + 2 + 1 = 6, just like the handshakes!' },
+  { type: 'match', eq: [1, '+', 2, 4], sol: [2, 'e', 2, 'c'], hintTok: 2,
+    task: 'This sum is wrong! Move just one matchstick to make it true.',
+    hints: ['The 1 and the 4 can stay. Look at the 2.', 'Can one stick of the 2 hop over to make a 3?'],
+    walk: 'Move the bottom-left stick of the 2 to the bottom-right. Now it says 1 + 3 = 4.',
+    explain: 'Numbers made of sticks can change into each other. Here 2 became 3, and 1 + 3 = 4.' },
+  { type: 'mirror', W: 8, H: 6, axis: 'v', col: '#2fb3ac', cells: [[3, 0], [2, 1], [3, 1], [1, 2], [2, 2], [3, 2], [3, 3], [3, 4]],
+    task: 'The dashed line is a mirror. Color squares on the right so they match the left side.',
+    hints: ['A square right next to the mirror has a twin right next to it on the other side.', 'Count how far each square is from the mirror. Its twin is the same distance away on the other side.'],
+    walk: 'Each colored square gets a twin at the same distance on the right.',
+    explain: 'In a mirror picture, each square has a twin the same distance from the line. This is called symmetry.' },
+  { type: 'find', kind: 'sq', ...SQ2,
+    task: 'How many squares are hiding here? Click 2 opposite corners of a square to mark it.',
+    hints: ['There are 4 small squares.', 'Is the whole thing a square too?'],
+    walk: '4 small squares and 1 big one: 5 squares.',
+    explain: '4 small + 1 big = 5 squares. Big shapes hide around small ones.' },
+  { type: 'match', eq: [6, '+', 4, 4], sol: [0, 'g', 0, 'b'], hintTok: 0,
+    task: 'Another wrong sum. Move one matchstick to make it true.',
+    hints: ['Try changing the 6.', 'The middle stick of the 6 can move up to make a 0. (There is another answer too!)'],
+    walk: 'Move the middle stick of the 6 to the top right. Now it says 0 + 4 = 4.',
+    explain: '0 + 4 = 4 works. 8 − 4 = 4 works too! Puzzles can have more than one answer.' },
+  { type: 'fold', folds: 'v', holes: [[3, 1]],
+    task: 'Fold a paper in half and punch one hole. Where are the holes when you open it? Click the squares, then press “Unfold!”',
+    hints: ['The punch goes through 2 layers of paper.', 'The fold line works like a mirror.'],
+    walk: 'One hole where you punched, and its mirror twin on the left half.',
+    explain: 'Folding makes layers. One punch through 2 layers makes 2 holes that are mirror twins.' },
+  { type: 'mirror', W: 8, H: 6, axis: 'h', col: '#ef6a4a', cells: [[4, 0], [3, 1], [4, 1], [1, 2], [2, 2], [3, 2], [4, 2], [5, 2], [6, 2]],
+    task: 'A boat on calm water. Color its reflection below the dashed line.',
+    hints: ['The bottom of the boat touches the water line. Its reflection touches it too.', 'The top of the mast is the farthest from the water, so its reflection is the farthest down.'],
+    walk: 'Row 3 copies row 2 (the boat), row 4 copies row 1, and row 5 copies row 0.',
+    explain: 'This mirror line goes across. Things near the line stay near it, and the top of the mast ends up at the bottom.' },
+  { type: 'match', eq: [3, '+', 5, 4], sol: [1, 'v', 0, 'f'], hintTok: 1,
+    task: 'One more. Move one matchstick to make it true. Every part can change!',
+    hints: ['What if the + became a −?', 'Take the standing stick of the + and give it to the 3.'],
+    walk: 'Move the standing stick of the + to the top-left of the 3. Now it says 9 − 5 = 4.',
+    explain: 'Changing the sign is allowed too: 9 − 5 = 4. Good puzzlers look at every part.' },
+  { type: 'fold', folds: 'vh', holes: [[3, 0]],
+    task: 'Now fold the paper twice and punch one hole. Where are the holes when you open it?',
+    hints: ['Folded twice, the paper has 4 layers.', 'Each fold line is a mirror. Mirror across one line, then the other.'],
+    walk: 'There are 4 holes, one in each corner of the paper.',
+    explain: '2 folds make 4 layers, so 1 punch makes 4 holes.' },
+  ] },
+{ id: 'sure', name: 'Sure-Thing Shore', emoji: '🧦', creature: '🐙', prize: '🐧', prizeName: 'penguin', concept: 'Being sure (the pigeonhole idea)',
+  teaches: 'The pigeonhole principle and worst-case thinking: how many you must grab to be certain.',
+  puzzles: [
+  { type: 'grab', colors: [{ c: 'red', n: 'many' }, { c: 'blue', n: 'many' }], goal: 'pair', worst: ['red', 'blue', 'red', 'blue', 'red'],
+    q: 'How many fish must you grab to be <b>sure</b> to get 2 of the same colour?', fail: 'No two are the same colour!',
+    task: 'The dark cave is full of red and blue fish. You grab fish without looking. The sneaky octopus always hands you the unluckiest fish!',
+    hints: ['Think about the worst luck. What if your first fish are all different?', 'With only 2 colours, the first 2 fish could be different. What about the next one?'],
+    walk: 'Worst luck: red, then blue. The 3rd fish must match one of them. So 3.',
+    explain: 'With 2 colours, 3 fish always make a pair. Thinking about the worst luck is how you become sure.' },
+  { type: 'grab', colors: [{ c: 'red', n: 'many' }, { c: 'blue', n: 'many' }, { c: 'yellow', n: 'many' }], goal: 'pair', worst: ['red', 'blue', 'yellow', 'red', 'blue', 'yellow'],
+    q: 'Now there are 3 colours. How many must you grab to be <b>sure</b> of 2 the same?', fail: 'No two are the same colour!',
+    task: 'This cave has red, blue and yellow fish.',
+    hints: ['Worst luck: one of each colour first.', 'After red, blue and yellow, the next fish must match one.'],
+    walk: '3 different fish, then the 4th must match. So 4.',
+    explain: 'One of each colour first, then one more: 3 + 1 = 4.' },
+  { type: 'grab', colors: [{ c: 'red', n: 3 }, { c: 'blue', n: 3 }], goal: 'each', worst: ['red', 'red', 'red', 'blue', 'blue', 'blue'],
+    q: 'How many must you grab to be <b>sure</b> to have at least one of <b>each</b> colour?', fail: 'You do not have both colours yet!',
+    task: 'This cave has exactly 3 red fish and 3 blue fish.',
+    hints: ['Worst luck: all the red fish come first.', 'After all 3 red fish, the next fish must be blue.'],
+    walk: '3 red fish first, then the 4th must be blue. So 4.',
+    explain: 'The worst luck is getting all 3 reds first. Then one more is sure to be blue: 3 + 1 = 4.' },
+  { type: 'grab', colors: [{ c: 'red', n: 5 }, { c: 'blue', n: 4 }], goal: { color: 'red', k: 2 }, worst: ['blue', 'blue', 'blue', 'blue', 'red', 'red', 'red', 'red', 'red'],
+    q: 'How many must you grab to be <b>sure</b> to have 2 <b>red</b> fish?', fail: 'Not 2 red fish yet!',
+    task: 'This cave has 5 red fish and 4 blue fish.',
+    hints: ['Worst luck: you get every blue fish first.', 'All 4 blue fish, then 2 red ones.'],
+    walk: '4 blue fish, then 2 red: 4 + 2 = 6.',
+    explain: 'All 4 blue fish could come first. Then you need 2 red ones: 4 + 2 = 6.' },
+  { type: 'grab', colors: [{ c: 'red', n: 'many' }, { c: 'blue', n: 'many' }, { c: 'yellow', n: 'many' }, { c: 'green', n: 'many' }], goal: 'pair', worst: ['red', 'blue', 'yellow', 'green', 'red', 'blue', 'yellow'],
+    q: '4 colours! How many must you grab to be <b>sure</b> of 2 the same?', fail: 'No two are the same colour!',
+    task: 'This cave has red, blue, yellow and green fish.',
+    hints: ['Worst luck: one of each colour first.', 'How many colours are there? Add one.'],
+    walk: '4 different fish, then the 5th must match. So 5.',
+    explain: 'One of each colour, then one more: 4 + 1 = 5. The rule is: number of colours + 1.' },
+  { type: 'grab', colors: [{ c: 'red', n: 'many' }, { c: 'blue', n: 'many' }], goal: { same: 3 }, worst: ['red', 'blue', 'red', 'blue', 'red', 'blue'],
+    q: 'How many must you grab to be <b>sure</b> of 3 fish of the same colour?', fail: 'No 3 of the same colour yet!',
+    task: 'Back to red and blue fish. This time you want 3 the same.',
+    hints: ['Worst luck: red, blue, red, blue…', 'After 2 red and 2 blue, the next fish makes 3 of one colour.'],
+    walk: '2 red and 2 blue, then the 5th makes 3 of a colour. So 5.',
+    explain: 'Worst luck gives 2 red and 2 blue. The 5th fish makes 3 of one colour.' },
+  { type: 'caves', fish: 5, caves: 4, mode: 'spread',
+    task: 'Put 5 fish into 4 caves so that no cave has 2 fish. If you think it can’t be done, press “It can’t be done!”',
+    hints: ['Put one fish in each cave. How many fish are left?', 'The last fish has to go into a cave that already has a fish.'],
+    walk: 'After 1 fish in each of the 4 caves, 1 fish is left over. It must share a cave.',
+    explain: '5 fish and only 4 caves: some cave must get 2 fish. This is called the pigeonhole principle.' },
+  { type: 'caves', fish: 8, caves: 3, mode: 'max', q: 'The fullest cave must have at least how many fish?',
+    task: '8 fish swim into 3 caves. Spread them out as evenly as you can.',
+    hints: ['Share the fish fairly, one cave at a time, round and round.', '3 + 3 + 2 = 8.'],
+    walk: 'With 2 in each cave, only 6 fish fit. So some cave needs 3.',
+    explain: '3 caves × 2 fish = 6, which is less than 8. So some cave must hold at least 3 fish.' },
+  ] },
+{ id: 'magic', name: 'Magic Pools', emoji: '✨', creature: '🪼', prize: '🐉', prizeName: 'sea dragon', concept: 'Magic squares and sums',
+  teaches: 'Magic squares and sum puzzles: numbers in the middle or corners count in more than one line, and opposite pairs balance.',
+  puzzles: [
+  { type: 'sums', ...withVals(PLUS), tiles: [1, 2, 3, 4, 5], T: 10,
+    task: 'Put the numbers 1 to 5 in the circles so that both lines add up to 10.',
+    hints: ['The middle circle is in both lines. Try a big number there.', 'Put 5 in the middle. Then each line needs two numbers that make 5.'],
+    walk: '5 in the middle. 1 and 4 on one line, 2 and 3 on the other.',
+    explain: 'The middle number counts in both lines. That is why it had to be 5.' },
+  { type: 'sums', ...withVals(TRI), tiles: [1, 2, 3, 4, 5, 6], T: 9,
+    task: 'Put 1 to 6 in the circles so that each side of the triangle adds up to 9.',
+    hints: ['The corner circles are on two sides each.', 'Try 1, 2 and 3 in the corners.'],
+    walk: 'Corners 1, 2 and 3. Between 1 and 2 put 6, between 2 and 3 put 4, between 3 and 1 put 5.',
+    explain: 'Small numbers in the corners keep the sides small, because each corner counts for two sides.' },
+  { type: 'sums', ...withVals(MAGIC, [2, null, 6, null, 5, null, 4, null, 8]), tiles: [1, 3, 7, 9], T: 15,
+    task: 'A magic square! Every row, every column and both diagonals must add up to 15.',
+    hints: ['Look at the top row: 2 + ? + 6 = 15.', 'The top row needs 7. The left column, 2 + ? + 4, needs 9.'],
+    walk: '7 on top, 9 on the left, 1 on the right, 3 at the bottom.',
+    explain: 'Every line adds to 15. The middle is 5, and numbers opposite each other across the middle add up to 10.' },
+  { type: 'sums', ...withVals(MAGIC, [4, null, null, null, 5, null, null, null, null]), tiles: [1, 2, 3, 6, 7, 8, 9], T: 15,
+    task: 'A harder magic square. Every row, column and diagonal must add up to 15.',
+    hints: ['Numbers opposite each other across the middle add up to 10. What goes opposite the 4?', 'The 6 goes in the bottom-right corner. The even numbers 2 and 8 go in the other corners.'],
+    walk: 'One answer is: 4 9 2 on top, 3 5 7 in the middle, 8 1 6 at the bottom.',
+    explain: 'Opposite pairs make 10, and the even numbers sit in the corners. Magic squares follow rules you can discover.' },
+  { type: 'sums', ...withVals(TRI), tiles: [1, 2, 3, 4, 5, 6], T: 12,
+    task: 'Put 1 to 6 in the circles so that each side adds up to 12.',
+    hints: ['Now the sides must be big. Which numbers should go in the corners?', 'Try 4, 5 and 6 in the corners.'],
+    walk: 'Corners 4, 5 and 6. Between 4 and 5 put 3, between 5 and 6 put 1, between 6 and 4 put 2.',
+    explain: 'Big numbers in the corners make big sides, because each corner counts for two sides.' },
+  ] },
+];
+
+/* ============ aquarium and wardrobe ============ */
+const SHOP = {
+  hats: [['none', '', 0], ['flower', '🌸', 3], ['cap', '🧢', 4], ['bow', '🎀', 4], ['top', '🎩', 6], ['grad', '🎓', 10], ['sun', '👒', 10], ['helmet', '⛑️', 12], ['crown', '👑', 20]],
+  colors: [['blue', 0], ['grey', 0], ['teal', 5], ['green', 6], ['pink', 6], ['purple', 8], ['orange', 8], ['gold', 20]],
+  decor: [['weed', '🌿', 2], ['coral', '🪸', 3], ['shell', '🐚', 3], ['rock', '🪨', 3], ['anchor', '⚓', 5], ['statue', '🗿', 8], ['castle', '🏰', 12], ['gem', '💎', 15], ['ship', '🚢', 15]],
+};
+let aqTab = 'hats';
+function showAquarium() {
+  cur = null; clearSel(); setNav('aq'); updateTop();
+  const app = $('#app'); app.innerHTML = '';
+  const tank = h('div', { class: 'tank', role: 'img', 'aria-label': `Your aquarium with ${S.creatures.length} sea friends` });
+  tank.append(h('div', { class: 'sandbed' }));
+  S.decor.forEach((d, i) => { const it = SHOP.decor.find(x => x[0] === d); if (it) tank.append(h('span', { class: 'decor', style: { left: (4 + (i * 11) % 88) + '%' } }, it[1])); });
+  range(10).forEach(i => tank.append(h('span', { class: 'bub', style: { left: (5 + i * 9.5) + '%', animationDuration: (5 + (i % 4) * 2) + 's', animationDelay: (-i * 1.3) + 's' } })));
+  const list = S.creatures.slice(-40);
+  const swimmers = list.map((e, i) => { const s = h('span', { class: 'swim' }, e); s.style.top = (e === '🦀' ? 84 : 10 + ((i * 37) % 60)) + '%'; tank.append(s); return s; });
+  const me = h('span', { class: 'swim me', html: sharkSVG() }); me.style.top = '38%'; tank.append(me);
+  const counts = {}; S.creatures.forEach(c => counts[c] = (counts[c] || 0) + 1);
+  tank.append(h('div', { class: 'tankinfo' }, S.creatures.length ? `Sea friends: ${Object.entries(counts).map(([e, n]) => `${e}×${n}`).join('  ')}` : 'Your aquarium is empty. Every puzzle you solve brings a new sea friend!'));
+  const shop = h('div', { class: 'shop' });
+  app.append(h('div', { class: 'aqscreen' }, tank, shop));
+  const W = tank.clientWidth - 60;
+  swimmers.forEach((s, i) => { const dur = 9000 + ((i * 2917) % 12000); s.animate([{ transform: 'translateX(0) scaleX(-1)' }, { transform: `translateX(${W}px) scaleX(-1)`, offset: .49 }, { transform: `translateX(${W}px) scaleX(1)`, offset: .5 }, { transform: 'translateX(0) scaleX(1)' }], { duration: dur, iterations: Infinity, delay: -((i * 1777) % dur) }); });
+  me.animate([{ transform: 'translateX(0) scaleX(1)' }, { transform: `translateX(${W - 100}px) scaleX(1)`, offset: .49 }, { transform: `translateX(${W - 100}px) scaleX(-1)`, offset: .5 }, { transform: 'translateX(0) scaleX(-1)' }], { duration: 16000, iterations: Infinity });
+  drawShop(shop);
+}
+function drawShop(shop) {
+  shop.innerHTML = '';
+  shop.append(h('h2', {}, 'Finn’s wardrobe'), h('div', { class: 'mini', html: sharkSVG() }), h('div', { class: 'note' }, `You have 🦷 ${S.teeth} teeth to spend.`));
+  const tabs = h('div', { class: 'tabs', role: 'tablist' });
+  [['hats', 'Hats'], ['colors', 'Colours'], ['decor', 'Decorations']].forEach(([k, l]) => tabs.append(h('button', { class: 'tab', role: 'tab', 'aria-selected': aqTab === k ? 'true' : 'false', onclick: () => { aqTab = k; snd.pop(); drawShop(shop); } }, l)));
+  shop.append(tabs);
+  const grid = h('div', { class: 'shopgrid' });
+  const buy = (key, price, after) => {
+    if (!S.owned.includes(key)) { if (S.teeth < price) { snd.soft(); return; } S.teeth -= price; S.owned.push(key); snd.good(); }
+    else snd.pop();
+    after(); save(); updateTop();
+    if (aqTab === 'decor') showAquarium(); else drawShop(shop);
+  };
+  if (aqTab === 'hats') SHOP.hats.forEach(([id, em, pr]) => {
+    const key = 'h-' + id, own = S.owned.includes(key) || pr === 0, on = S.hat === em;
+    grid.append(h('button', { class: 'item' + (on ? ' on' : ''), disabled: !own && S.teeth < pr, onclick: () => buy(key, pr, () => { S.hat = em; }) }, h('span', { class: 'ic' }, em || '🚫'), h('span', {}, on ? 'Wearing' : own ? 'Wear' : `🦷 ${pr}`)));
+  });
+  if (aqTab === 'colors') SHOP.colors.forEach(([id, pr]) => {
+    const key = 'c-' + id, own = S.owned.includes(key) || pr === 0, on = S.color === id;
+    grid.append(h('button', { class: 'item' + (on ? ' on' : ''), disabled: !own && S.teeth < pr, 'aria-label': id + ' colour', onclick: () => buy(key, pr, () => { S.color = id; }) }, h('span', { class: 'ic' }, h('span', { class: 'sw', style: { background: COLORS[id][0] } })), h('span', {}, on ? 'Wearing' : own ? id : `🦷 ${pr}`)));
+  });
+  if (aqTab === 'decor') SHOP.decor.forEach(([id, em, pr]) => {
+    const key = 'd-' + id, own = S.owned.includes(key), on = S.decor.includes(id);
+    grid.append(h('button', { class: 'item' + (on ? ' on' : ''), disabled: !own && S.teeth < pr, onclick: () => buy(key, pr, () => { if (on) S.decor = S.decor.filter(x => x !== id); else S.decor.push(id); }) }, h('span', { class: 'ic' }, em), h('span', {}, on ? 'In the tank' : own ? 'Put in' : `🦷 ${pr}`)));
+  });
+  shop.append(grid, h('div', { class: 'note' }, 'Solve puzzles to earn teeth: 3 with no hints, 2 with hints, 1 if Finn shows you how.'));
+}
+
+/* ============ grown-ups corner ============ */
+function showParent() {
+  const m = $('#modal'); m.innerHTML = ''; m.hidden = false;
+  const close = () => { m.hidden = true; showMap(); };
+  const tb = h('table', { class: 'ptable' }, h('tr', {}, h('th', {}, 'Island'), h('th', {}, 'What it teaches'), h('th', {}, 'Solved'), h('th', {}, 'Used hints')));
+  WORLDS.forEach((w, wi) => {
+    const hinted = w.puzzles.filter((_, i) => (S.hints[pid(wi, i)] || 0) > 0).length;
+    tb.append(h('tr', {}, h('td', {}, `${w.emoji} ${w.name}`), h('td', {}, w.teaches), h('td', {}, `${solvedIn(wi)} / ${w.puzzles.length}`), h('td', {}, String(hinted))));
+  });
+  const unlock = h('input', { type: 'checkbox', id: 'unl' }); unlock.checked = !!S.unlockAll;
+  unlock.onchange = () => { S.unlockAll = unlock.checked; save(); };
+  const reset = h('button', { class: 'btn coral' }, 'Reset all progress');
+  reset.onclick = () => {
+    if (reset.dataset.sure) { localStorage.removeItem(KEY); S = load(); save(); m.hidden = true; updateTop(); showMap(); return; }
+    reset.dataset.sure = '1'; reset.textContent = 'Click again to erase everything';
+  };
+  m.append(h('div', { class: 'mbox', role: 'dialog', 'aria-label': 'Grown-ups corner' },
+    h('h2', {}, 'Grown-ups corner'),
+    h('p', {}, `Puzzles solved: ${totalSolved()} of ${totalPuzzles()}. Teeth earned in total: ${S.earned}. Progress is saved in this browser.`),
+    h('p', { class: 'note', style: { textAlign: 'left' } }, 'Each island introduces one idea from early maths olympiads through a hands-on puzzle. After each solve, Finn names the idea in a sentence or two. Hints come in levels and never block progress. A new island opens for every 3 puzzles solved anywhere.'),
+    tb,
+    h('p', {}, h('label', { for: 'unl' }, unlock, ' Open all islands and puzzles (skip the unlock rule)')),
+    h('div', { class: 'row', style: { justifyContent: 'space-between' } }, reset, h('button', { class: 'btn big', onclick: close }, 'Close'))));
+}
+
+/* ============ boot ============ */
+updateTop();
+showMap();
+window.SM = { get S() { return S; }, WORLDS, openPuzzle, showMap, showAquarium, showParent, get cur() { return cur; }, liarSolutions, seatSolutions, sumSolutions, pid };
+</script>
+</body>
+</html>
