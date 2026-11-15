@@ -1,0 +1,1369 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Reef Keeper</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Marcellus&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#dcebee; --surface:#f8fbfa; --surface2:#e9f2f2; --text:#14262c; --muted:#56696f; --line:#c3d7da;
+  --sea1:#2f8098; --sea2:#1b5a70; --cell:#eef5f1; --accent:#d26a2a; --good:#23805a; --bad:#c0392b; --sky:#2563a8; --gold:#a8790a;
+  --shadow:0 6px 18px rgba(20,38,44,.14);
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0b171b; --surface:#13242a; --surface2:#1a2f36; --text:#e6f0ee; --muted:#9db1b3; --line:#2a434b;
+    --sea1:#17506a; --sea2:#0d3343; --cell:#234852; --accent:#f0954f; --good:#5fd09a; --bad:#f07a6c; --sky:#7fb6f0; --gold:#e8c35a;
+    --shadow:0 6px 18px rgba(0,0,0,.4);
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0b171b; --surface:#13242a; --surface2:#1a2f36; --text:#e6f0ee; --muted:#9db1b3; --line:#2a434b;
+  --sea1:#17506a; --sea2:#0d3343; --cell:#234852; --accent:#f0954f; --good:#5fd09a; --bad:#f07a6c; --sky:#7fb6f0; --gold:#e8c35a;
+  --shadow:0 6px 18px rgba(0,0,0,.4);
+  color-scheme:dark;
+}
+body[data-season="autumn"]{--accent:#c2562b}
+body[data-season="winter"]{--accent:#4f7fbf}
+body[data-season="spring"]{--accent:#b04f8f}
+*,*::before,*::after{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;font-size:15px;line-height:1.45;-webkit-tap-highlight-color:transparent}
+h1,h2,h3{font-family:Marcellus,Georgia,serif;font-weight:400;margin:0}
+h1{font-size:26px}
+h2{font-size:20px}
+h3{font-size:15px;margin:12px 0 4px;color:var(--accent)}
+p{margin:6px 0}
+button{font:inherit;color:inherit}
+button:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.muted{color:var(--muted)}
+.small{font-size:12.5px}
+.good{color:var(--good)} .bad{color:var(--bad)}
+
+/* the playing screen: header, goal, board that takes the free space, and the dock with every control */
+.game{height:100vh;height:100dvh;max-width:780px;margin:0 auto;display:flex;flex-direction:column;gap:6px;padding:8px 10px max(8px,env(safe-area-inset-bottom))}
+.hud{display:flex;align-items:center;gap:6px}
+.ib{border:1.5px solid var(--line);background:var(--surface);border-radius:10px;width:34px;height:34px;display:grid;place-items:center;cursor:pointer;flex:none;padding:0}
+.dn{font-family:Marcellus,Georgia,serif;font-size:19px;white-space:nowrap;line-height:1.1}
+.dn small{display:block;font-family:system-ui,sans-serif;font-size:11px;color:var(--muted)}
+.air{flex:1;min-width:70px;font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+.air b{color:var(--text)}
+.bar{height:6px;background:var(--line);border-radius:3px;margin-top:2px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--sky);transition:width .3s}
+.air.low .bar i{background:var(--bad)}
+.pill{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:3px 8px;font-size:12px;color:var(--muted);text-align:center;white-space:nowrap;line-height:1.2}
+.pill b{display:block;font-size:15px;color:var(--text);font-variant-numeric:tabular-nums}
+.goal{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:6px 10px 4px}
+.gl{display:flex;justify-content:space-between;align-items:baseline;gap:8px;font-size:13px}
+.gl b{font-size:18px;font-variant-numeric:tabular-nums}
+.gl .gm{font-size:12.5px;font-weight:600;text-align:center}
+.gbar{position:relative;height:9px;background:var(--line);border-radius:5px;margin:4px 0 13px}
+.gbar i{position:absolute;left:0;top:0;bottom:0;border-radius:5px;background:var(--accent);transition:width .25s}
+.gbar.ok i{background:var(--good)}
+.gbar s{position:absolute;top:-2px;bottom:-2px;width:2px;background:var(--surface);text-decoration:none}
+.gbar s span{position:absolute;top:12px;left:50%;transform:translateX(-50%);font-size:10px;color:var(--muted);white-space:nowrap}
+.gs{font-size:11.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.banner{background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--accent);border-radius:10px;padding:4px 10px;font-size:12.5px;cursor:pointer;text-align:left;width:100%}
+.banner b{color:var(--accent)}
+.boardwrap{flex:1;min-height:120px;container-type:size;display:grid;place-items:center}
+.board{display:grid;gap:4px;padding:6px;border-radius:16px;background:linear-gradient(160deg,var(--sea1),var(--sea2));box-shadow:var(--shadow);
+  width:min(100cqw, calc((100cqh - 12px) * var(--w) / var(--h) + 12px));grid-template-columns:repeat(var(--w),1fr);touch-action:manipulation}
+.cell{position:relative;aspect-ratio:1;border:none;border-radius:9px;background:var(--cell);display:grid;place-items:center;cursor:pointer;padding:0;line-height:1;
+  font-size:min(calc(100cqw / var(--w) * .5), calc(100cqh / var(--h) * .5));transition:transform .08s}
+.cell:active{transform:scale(.95)}
+.cell.fixed{cursor:default;background:color-mix(in srgb,var(--cell) 25%,transparent)}
+.cell.open{box-shadow:inset 0 0 0 2px color-mix(in srgb,var(--accent) 55%,transparent)}
+.cell.pin{box-shadow:inset 0 0 0 3px var(--sky)}
+.cell .pt{position:absolute;right:4px;bottom:3px;font-size:max(10px,min(calc(100cqw / var(--w) * .17), 14px));font-weight:700;font-variant-numeric:tabular-nums;color:var(--good);font-family:system-ui,sans-serif}
+.cell .pt.neg{color:var(--bad)}
+.cell .pt.zero{color:var(--muted)}
+.cell .hot{position:absolute;inset:0;border-radius:9px;display:grid;place-items:center;font-size:max(12px,min(calc(100cqw / var(--w) * .22), 18px));font-weight:700;color:var(--text);font-family:system-ui,sans-serif}
+.dock{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:6px 8px;display:flex;flex-direction:column;gap:6px}
+.info{font-size:12.5px;color:var(--muted);min-height:2.6em;line-height:1.3;text-align:center}
+.info b{color:var(--text)}
+.hand{display:flex;flex-wrap:wrap;gap:5px;justify-content:center}
+.htile{display:flex;align-items:center;gap:3px;border:1.5px solid var(--line);background:var(--surface2);border-radius:11px;padding:3px 8px;font-size:22px;cursor:pointer;line-height:1.2}
+.htile span{font-size:12.5px;font-weight:700;color:var(--muted)}
+.htile.sel{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent);background:var(--surface)}
+.htile.none{opacity:.35;cursor:default}
+.tools{display:flex;gap:4px;justify-content:center;flex-wrap:wrap}
+.tb{border:1.5px solid var(--line);background:var(--surface2);border-radius:10px;padding:6px 8px;min-width:34px;justify-content:center;cursor:pointer;font-size:13px;font-weight:600;white-space:nowrap;display:flex;align-items:center;gap:3px}
+.tb:disabled{opacity:.4;cursor:default}
+.tb.pouch{border-style:dashed;padding:6px 5px}
+.tb.fin{background:var(--accent);border-color:var(--accent);color:#fff;font-size:15px;padding:7px 16px;flex:1;justify-content:center;max-width:220px}
+.tb.fin.ok{background:var(--good);border-color:var(--good)}
+
+/* scrolling pages (results, market, prizes, title) keep their main buttons in a bar fixed to the bottom */
+.page{max-width:620px;margin:0 auto;padding:12px 16px 120px}
+.page .hud{margin-bottom:8px}
+.actions{position:fixed;left:0;right:0;bottom:0;background:var(--surface);border-top:1px solid var(--line);padding:10px 16px max(10px,env(safe-area-inset-bottom));z-index:20}
+.actions .in{max-width:620px;margin:0 auto;display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+.row{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.row.c{justify-content:center}
+.btn{border:1.5px solid var(--line);background:var(--surface);border-radius:12px;padding:8px 14px;cursor:pointer;font-weight:600}
+.btn.pri{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn.sm{padding:5px 10px;font-size:13px;border-radius:10px}
+.btn:disabled{opacity:.45;cursor:default}
+.btn.big{padding:11px 22px;font-size:16px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin:10px 0}
+.rules{display:grid;gap:4px;font-size:13px}
+.rules div{display:flex;gap:8px}
+.rules .e{width:24px;text-align:center;flex:none;font-size:16px}
+.rules .n{color:var(--muted);font-size:12px;white-space:nowrap}
+.ilist{display:grid;gap:6px}
+.irow{display:flex;align-items:center;gap:10px;border:1px solid var(--line);background:var(--surface2);border-radius:10px;padding:6px 10px;font-size:13.5px;text-align:left;width:100%}
+button.irow{cursor:pointer}
+.irow .ie{font-size:22px;flex:none}
+.irow .it{flex:1;display:flex;flex-direction:column;min-width:0}
+.irow .iv{flex:none;text-align:right;font-size:13.5px;font-variant-numeric:tabular-nums}
+.irow .iv small{display:block;font-size:11px;color:var(--muted)}
+.irow.empty{border-style:dashed;background:transparent;color:var(--muted);justify-content:center}
+.tag{font-size:12px;background:var(--surface2);border:1px solid var(--line);border-radius:6px;padding:0 4px}
+.offers{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+@media (min-width:560px){.offers{grid-template-columns:1fr 1fr 1fr}}
+.offer{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:10px;display:flex;flex-direction:column;gap:4px;min-height:150px}
+.offer .oe{font-size:28px}
+.offer .on{font-weight:700}
+.offer .od{font-size:12.5px;color:var(--muted);flex:1}
+.offer.empty{align-items:center;justify-content:center;color:var(--muted);border-style:dashed}
+.offer.pack{background:var(--surface2)}
+.rar{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.04em}
+.rar-C{color:var(--muted)} .rar-U{color:var(--good)} .rar-R{color:var(--sky)} .rar-M{color:var(--accent)} .rar-X{color:var(--bad)} .rar-K{color:#8e44ad}
+.log{font-size:13px;padding:4px 0;border-bottom:1px dashed var(--line)}
+.log:last-child{border-bottom:none}
+.res{display:grid;grid-template-columns:1fr 1fr;gap:10px;align-items:start}
+.mini{display:grid;gap:2px;padding:4px;border-radius:10px;background:var(--sea2)}
+.mini i{aspect-ratio:1;border-radius:4px;background:var(--cell);display:grid;place-items:center;font-style:normal;font-size:clamp(10px,3vw,17px)}
+.mini i.f{background:transparent}
+.big-num{font-size:34px;font-family:Marcellus,Georgia,serif;font-variant-numeric:tabular-nums}
+.badge{display:inline-block;border-radius:8px;padding:2px 8px;font-size:13px;font-weight:700;background:var(--gold);color:#fff;margin:2px}
+.titles{display:grid;grid-template-columns:auto 1fr auto;gap:2px 10px;font-size:13.5px}
+.bagrow{display:flex;align-items:center;gap:8px;padding:4px 0;border-bottom:1px dashed var(--line);font-size:13.5px}
+.bagrow:last-child{border-bottom:none}
+.bagrow .e{font-size:22px;width:28px;text-align:center}
+.bagrow .t{flex:1;min-width:0}
+.tip{position:fixed;left:50%;bottom:90px;transform:translateX(-50%);background:var(--text);color:var(--bg);padding:8px 14px;border-radius:12px;font-size:13.5px;max-width:min(92vw,480px);z-index:60;box-shadow:var(--shadow);text-align:center}
+input[type=text]{font:inherit;border:1.5px solid var(--line);background:var(--surface);color:var(--text);border-radius:10px;padding:7px 10px;width:150px}
+.sheet-bg{position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:flex-end;justify-content:center;padding:12px;z-index:40}
+.sheet{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:14px 16px;width:100%;max-width:560px;max-height:84vh;overflow:auto;box-shadow:var(--shadow)}
+.sheet .sh{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:6px}
+.sheet p{font-size:14px}
+.help ol{margin:4px 0 6px;padding-left:20px}
+.help li{margin:3px 0}
+footer{margin-top:24px;font-size:12px;color:var(--muted);text-align:center}
+@media (prefers-reduced-motion: reduce){.cell,.bar i,.gbar i{transition:none}}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+'use strict';
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;'}[c]));
+
+/* ---------------- seeded randomness ---------------- */
+function seedOf(str) {
+  let h = 1779033703 ^ str.length;
+  for (let i = 0; i < str.length; i++) { h = Math.imul(h ^ str.charCodeAt(i), 3432918353); h = h << 13 | h >>> 19; }
+  h = Math.imul(h ^ h >>> 16, 2246822507); h = Math.imul(h ^ h >>> 13, 3266489909);
+  return (h ^ h >>> 16) >>> 0;
+}
+function rngFor(...parts) {
+  let a = seedOf(parts.join(':'));
+  return function () {
+    a |= 0; a = a + 0x6D2B79F5 | 0;
+    let t = Math.imul(a ^ a >>> 15, 1 | a);
+    t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+    return ((t ^ t >>> 14) >>> 0) / 4294967296;
+  };
+}
+const pick = (r, a) => a[Math.floor(r() * a.length)];
+function wpick(r, entries) {
+  let tot = 0; for (const e of entries) tot += e[1];
+  let x = r() * tot;
+  for (const e of entries) { if ((x -= e[1]) < 0) return e[0]; }
+  return entries[entries.length - 1][0];
+}
+function shuffle(r, a) { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(r() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+
+/* ---------------- creatures, decorations and the sea floor ---------------- */
+const KINDS = {
+  coral:   {e: '🪸', name: 'Coral'},
+  clown:   {e: '🐠', name: 'Clownfish'},
+  kelp:    {e: '🌿', name: 'Kelp'},
+  sardine: {e: '🐟', name: 'Sardines'},
+  crab:    {e: '🦀', name: 'Crab'},
+  octo:    {e: '🐙', name: 'Octopus'},
+  puffer:  {e: '🐡', name: 'Pufferfish'},
+  star:    {e: '⭐', name: 'Starfish'},
+  squid:   {e: '🦑', name: 'Squid'},
+  lobster: {e: '🦞', name: 'Lobster'},
+  dolphin: {e: '🐬', name: 'Dolphin'},
+  shrimp:  {e: '🦐', name: 'Shrimp'},
+  jelly:   {e: '🪼', name: 'Jellyfish'},
+  turtle:  {e: '🐢', name: 'Turtle'},
+  shark:   {e: '🦈', name: 'Shark'}
+};
+const KIND_IDS = Object.keys(KINDS);
+const BIT = Object.fromEntries(KIND_IDS.map((k, i) => [k, 1 << i]));
+/* every run starts with coral, clownfish and two of these */
+const STARTERS = ['kelp', 'sardine', 'crab', 'octo', 'puffer', 'star', 'squid', 'lobster', 'dolphin', 'shrimp'];
+/* decorations come from items: you place them like creatures, they score nothing themselves and help what is around them */
+const DECOR = {
+  amphora: {e: '🏺', name: 'Amphora', desc: 'Counts as a rock. Creatures next to it score +1.'},
+  statue:  {e: '🗿', name: 'Statue', desc: 'Creatures in its row and column score +1.'},
+  lantern: {e: '🏮', name: 'Lantern', desc: 'Creatures in the eight cells around it score +1.'},
+  clam:    {e: '🦪', name: 'Pearl Clam', desc: 'When you finish, +1 shell for each creature next to it.'}
+};
+const FEAT = {
+  rock:   {e: '🪨', name: 'Rock'},
+  litter: {e: '🛢️', name: 'Litter'},
+  vent:   {e: '🫧', name: 'Bubble vent'}
+};
+const tileOf = t => KINDS[t] || DECOR[t] || FEAT[t];
+const ORDER = KIND_IDS.concat(Object.keys(DECOR));
+const ROCKY = {rock: 1, amphora: 1};
+
+function baseRules() {
+  const R = {base: {}, adj: {}, row: {}, col: {}, diag: {}, edge: {}, corner: {}, inner: {}, alone: {}, div: {}, divDiag: {}, mult: {},
+    near: {vent: 1, litter: -1}, dnear: {}, line: {},
+    empty: 0, all: 0, edgeAll: 0, innerAll: 0, cornerAll: 0, cornerMul: 1, mix: 0, sameAll: 0};
+  for (const k of KIND_IDS) {
+    R.base[k] = 0; R.adj[k] = {}; R.row[k] = {}; R.col[k] = {}; R.diag[k] = {};
+    R.edge[k] = 0; R.corner[k] = 0; R.inner[k] = 0; R.alone[k] = 0; R.div[k] = 0; R.mult[k] = 1;
+  }
+  const B = R.base, A = R.adj;
+  B.coral = 1; A.coral.coral = 1;
+  A.clown.coral = 2;
+  B.kelp = 1; R.col.kelp.kelp = 1;
+  R.row.sardine.sardine = 1;
+  R.edge.crab = 3;
+  B.octo = 1; A.octo.empty = 1;
+  B.puffer = 1; R.alone.puffer = 4;
+  B.star = 1; R.corner.star = 4;
+  B.squid = 1; R.diag.squid.any = 1;
+  B.lobster = 1; A.lobster.rock = 2;
+  B.dolphin = 1; A.dolphin.any = 1;
+  R.div.shrimp = 1;
+  B.jelly = 4;
+  B.turtle = 1; A.turtle.jelly = 3;
+  B.shark = 1; R.row.shark = {clown: 1, sardine: 1}; R.col.shark = {clown: 1, sardine: 1};
+  A.clown.shark = -2; A.sardine.shark = -2;
+  for (const k of KIND_IDS) if (k !== 'turtle') A[k].jelly = (A[k].jelly || 0) - 1;
+  return R;
+}
+/* which kinds need their row and column, or their diagonals, looked at */
+function prep(R) {
+  R.L = {}; R.Dg = {};
+  const lineDec = Object.values(R.line).some(Boolean), dDec = Object.values(R.dnear).some(Boolean);
+  for (const k of KIND_IDS) {
+    R.L[k] = lineDec || Object.values(R.row[k]).some(Boolean) || Object.values(R.col[k]).some(Boolean);
+    R.Dg[k] = dDec || Object.values(R.diag[k]).some(Boolean) || !!R.divDiag[k];
+  }
+  return R;
+}
+function neighbours(w, h) {
+  const n4 = [], nd = [], row = [], col = [], edge = [], corner = [], aff3 = [], affL = [];
+  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+    const i = y * w + x, a = [], d = [], ro = [], co = [];
+    for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { const X = x + dx, Y = y + dy; if (X >= 0 && Y >= 0 && X < w && Y < h) a.push(Y * w + X); }
+    for (const [dx, dy] of [[1, 1], [-1, 1], [1, -1], [-1, -1]]) { const X = x + dx, Y = y + dy; if (X >= 0 && Y >= 0 && X < w && Y < h) d.push(Y * w + X); }
+    for (let X = 0; X < w; X++) if (X !== x) ro.push(y * w + X);
+    for (let Y = 0; Y < h; Y++) if (Y !== y) co.push(Y * w + x);
+    n4.push(a); nd.push(d); row.push(ro); col.push(co);
+    edge.push(x === 0 || y === 0 || x === w - 1 || y === h - 1);
+    corner.push((x === 0 || x === w - 1) && (y === 0 || y === h - 1));
+    const s3 = [i, ...a, ...d];
+    aff3.push(s3); affL.push([...new Set([...s3, ...ro, ...co])]);
+  }
+  return {n4, nd, row, col, edge, corner, aff3, affL};
+}
+const NB = {};
+function nbFor(D) { const k = D.w + 'x' + D.h; return NB[k] || (NB[k] = neighbours(D.w, D.h)); }
+const pop = m => { let c = 0; while (m) { m &= m - 1; c++; } return c; };
+
+/* The rules are compiled into number tables indexed by tile code, so the layout search runs on plain arrays.
+   Code 0 is an empty cell, then the species, the decorations and the sea floor features. */
+const CODES = [null, ...KIND_IDS, ...Object.keys(DECOR), ...Object.keys(FEAT)];
+const CODE = Object.fromEntries(CODES.map((t, i) => [t, i]));
+const NK = KIND_IDS.length, NT = CODES.length;
+const toCodes = g => Uint8Array.from(g, t => t ? CODE[t] : 0);
+function compile(R) {
+  const T = () => new Float64Array(NT * NT), V = () => new Float64Array(NT);
+  const C = {adj: T(), dg: T(), row: T(), col: T(), base: V(), alone: V(), div: V(), edge: V(), inner: V(), corner: V(), mult: V(),
+    Dg: new Uint8Array(NT), L: new Uint8Array(NT), dd: new Uint8Array(NT), empty: R.empty, mix: R.mix, same: R.sameAll, cornerMul: R.cornerMul, lineDecor: 0};
+  for (let n = NK + 1; n < NT; n++) if (R.line[CODES[n]]) C.lineDecor = 1;
+  for (let t = 1; t <= NK; t++) {
+    const k = CODES[t], A = R.adj[k], G = R.diag[k], Ro = R.row[k], Co = R.col[k], o = t * NT;
+    C.base[t] = R.base[k] + R.all; C.alone[t] = R.alone[k]; C.div[t] = R.div[k]; C.mult[t] = R.mult[k];
+    C.edge[t] = R.edge[k] + R.edgeAll; C.inner[t] = R.inner[k] + R.innerAll; C.corner[t] = R.corner[k] + R.cornerAll;
+    C.Dg[t] = R.Dg[k] ? 1 : 0; C.L[t] = R.L[k] ? 1 : 0; C.dd[t] = R.divDiag[k] ? 1 : 0;
+    C.adj[o] = A.empty || 0;
+    for (let n = 1; n < NT; n++) {
+      const m = CODES[n];
+      if (n <= NK) {
+        C.adj[o + n] = (A[m] || 0) + (A.any || 0); C.dg[o + n] = (G[m] || 0) + (G.any || 0);
+        C.row[o + n] = (Ro[m] || 0) + (Ro.any || 0); C.col[o + n] = (Co[m] || 0) + (Co.any || 0);
+      } else {
+        C.adj[o + n] = (ROCKY[m] ? A.rock || 0 : 0) + (R.near[m] || 0); C.dg[o + n] = R.dnear[m] || 0;
+        C.row[o + n] = C.col[o + n] = R.line[m] || 0;
+      }
+    }
+  }
+  return C;
+}
+const compiled = R => R.C || (R.C = compile(R));
+
+/* points one cell earns; g holds tile codes */
+function scoreAt(g, i, C, N) {
+  const t = g[i];
+  if (t === 0) return C.empty;
+  if (t > NK) return 0;
+  const o = t * NT;
+  let v = C.base[t], crit = 0, same = 0, mask = 0;
+  const a = N.n4[i];
+  for (let q = 0; q < a.length; q++) { const n = g[a[q]]; v += C.adj[o + n]; if (n >= 1 && n <= NK) { crit++; mask |= 1 << n; if (n === t) same++; } }
+  if (C.Dg[t]) {
+    const d = N.nd[i], dd = C.dd[t];
+    for (let q = 0; q < d.length; q++) { const n = g[d[q]]; v += C.dg[o + n]; if (dd && n >= 1 && n <= NK) mask |= 1 << n; }
+  }
+  if (C.L[t]) {
+    const ro = N.row[i], co = N.col[i];
+    for (let q = 0; q < ro.length; q++) v += C.row[o + g[ro[q]]];
+    for (let q = 0; q < co.length; q++) v += C.col[o + g[co[q]]];
+  }
+  if (!crit) v += C.alone[t];
+  if (mask) { const k = pop(mask); v += C.div[t] * k; if (k >= 2) v += C.mix; }
+  v += C.same * same;
+  v += N.edge[i] ? C.edge[t] : C.inner[t];
+  if (N.corner[i]) v += C.corner[t];
+  v *= C.mult[t];
+  if (N.corner[i]) v *= C.cornerMul;
+  return v;
+}
+function cellScore(g, i, D, R, N) { return scoreAt(toCodes(g), i, compiled(R), N); }
+function scoreGrid(g, D, R, per) {
+  const N = nbFor(D), G = toCodes(g), C = compiled(R); let tot = 0;
+  for (let i = 0; i < G.length; i++) { const v = scoreAt(G, i, C, N); if (per) per[i] = v; tot += v; }
+  return tot;
+}
+
+/* Best layout for a hand: simulated annealing over swaps, with a bench for tiles left unplaced. */
+function solve(D, hand, R, seed) {
+  const N = nbFor(D), rng = rngFor(seed, 'solve'), C = compiled(R);
+  const free = []; for (let i = 0; i < D.w * D.h; i++) if (!D.fixed[i]) free.push(i);
+  const F = free.length, H = hand.map(t => CODE[t]), P = F + H.length;
+  const g = toCodes(D.fixed);
+  const AFF = C.lineDecor || H.some(t => C.L[t]) ? N.affL : N.aff3;
+  let bestTot = -1e9, bestG = null;
+  const stamp = new Int32Array(g.length); let mark = 0;
+  const local = (a, b) => {
+    mark++; let s = 0;
+    if (a >= 0) { const L = AFF[a]; for (let q = 0; q < L.length; q++) { const j = L[q]; stamp[j] = mark; s += scoreAt(g, j, C, N); } }
+    if (b >= 0) { const L = AFF[b]; for (let q = 0; q < L.length; q++) { const j = L[q]; if (stamp[j] !== mark) s += scoreAt(g, j, C, N); } }
+    return s;
+  };
+  const iters = Math.max(10000, P * 1100), restarts = 4, pos = new Uint8Array(P), cool = Math.pow(0.02, 1 / iters);
+  for (let r = 0; r < restarts; r++) {
+    const start = shuffle(rng, H.concat(new Array(F).fill(0)));
+    for (let k = 0; k < P; k++) pos[k] = start[k];
+    for (let k = 0; k < F; k++) g[free[k]] = pos[k];
+    let cur = 0; for (let i = 0; i < g.length; i++) cur += scoreAt(g, i, C, N);
+    if (cur > bestTot) { bestTot = cur; bestG = g.slice(); }
+    let T = 3;
+    for (let it = 0; it < iters; it++) {
+      T *= cool;
+      const a = Math.floor(rng() * P), b = Math.floor(rng() * P);
+      if (a === b || pos[a] === pos[b] || (a >= F && b >= F)) continue;
+      const ca = a < F ? free[a] : -1, cb = b < F ? free[b] : -1;
+      const before = local(ca, cb);
+      let x = pos[a]; pos[a] = pos[b]; pos[b] = x;
+      if (ca >= 0) g[ca] = pos[a]; if (cb >= 0) g[cb] = pos[b];
+      const delta = local(ca, cb) - before;
+      if (delta >= 0 || rng() < Math.exp(delta / T)) {
+        cur += delta;
+        if (cur > bestTot + 1e-9) { bestTot = cur; bestG = g.slice(); }
+      } else {
+        x = pos[a]; pos[a] = pos[b]; pos[b] = x;
+        if (ca >= 0) g[ca] = pos[a]; if (cb >= 0) g[cb] = pos[b];
+      }
+    }
+  }
+  return {score: Math.round(bestTot * 100) / 100, grid: Array.from(bestG, c => CODES[c])};
+}
+
+/* ---------------- days, currents and festivals ---------------- */
+function dayShape(d) {
+  if (d <= 3) return {w: 5, h: 5, hand: 8};
+  if (d <= 10) return {w: 5, h: 5, hand: 10};
+  if (d <= 20) return {w: 6, h: 6, hand: 12};
+  if (d <= 35) return {w: 6, h: 6, hand: 14};
+  if (d <= 60) return {w: 6, h: 7, hand: 16};
+  return {w: 7, h: 7, hand: 18};
+}
+const CURRENTS = {
+  swell:    {e: '🌊', name: 'Swell', bad: true, desc: 'Creatures on the edge of the reef score −1.', apply: R => { R.edgeAll -= 1; }},
+  warm:     {e: '🌡️', name: 'Warm water', bad: true, desc: 'Coral scores −1.', apply: R => { R.base.coral -= 1; }},
+  murky:    {e: '🌫️', name: 'Murky water', desc: 'You can’t see scores until you finish the day.'},
+  plankton: {e: '🦠', name: 'Plankton bloom', desc: 'Clownfish, sardines and pufferfish score +1.', apply: R => { R.base.clown++; R.base.sardine++; R.base.puffer++; }},
+  moon:     {e: '🌕', name: 'Full moon', desc: '+2 tiles in your hand today.'}
+};
+const EVENTS = {
+  spot:     {name: 'Species spotlight', desc: e => `${KINDS[e.k].e} ${KINDS[e.k].name} score double.`, apply: (R, e) => { R.mult[e.k] *= 2; }},
+  tidy:     {name: 'Clean-up contest', desc: () => 'Every empty cell costs 1 point.', apply: R => { R.empty -= 1; }},
+  tide:     {name: 'High tide', desc: () => 'Every creature on the edge scores +1.', apply: R => { R.edgeAll += 1; }},
+  treasure: {name: 'Treasure hunt', desc: () => 'Every creature in a corner scores +3.', apply: R => { R.cornerAll += 3; }},
+  shoal:    {name: 'Shoal day', desc: () => 'Every creature gets +1 for each creature of its own kind next to it.', apply: R => { R.sameAll += 1; }},
+  heart:    {name: 'Heart of the reef', desc: () => 'Every creature away from the edge scores +1.', apply: R => { R.innerAll += 1; }}
+};
+const isFest = d => d % 5 === 0;
+const isMarket = d => d <= 30 ? (d % 5 === 2 || d % 5 === 4) : d % 5 === 4;
+/* the target, as a share of the best layout of a standard hand with no items: it passes 100% around day 7 and doubles by day 30 */
+function quota(d) { const q = d <= 30 ? 0.85 * Math.pow(2 / 0.85, (d - 1) / 29) : 2 * Math.pow(1.035, d - 30); return isFest(d) ? q * 1.2 : q; }
+function dmgScale(d) { return d <= 30 ? 0.8 + 0.5 * (d - 1) / 29 : 1.3 * Math.pow(1.02, d - 30); }
+function season(d) { return d <= 30 ? 'summer' : d <= 60 ? 'autumn' : d <= 90 ? 'winter' : 'spring'; }
+const SEASON_NAME = {summer: 'Summer', autumn: 'Autumn', winter: 'Winter', spring: 'Spring'};
+const TITLES = [[10, 'Snorkeller'], [20, 'Diver'], [30, 'Reef Keeper'], [50, 'Marine Biologist'], [75, 'Ocean Guardian'], [100, 'Legend of the Deep'], [150, 'Tidecaller'], [200, 'Leviathan']];
+function titleFor(days) { let t = 'Beachcomber'; for (const [n, name] of TITLES) if (days >= n) t = name; return t; }
+
+/* shells for a finished day: more the further past the target, up to 2.5 times it */
+const OVER_CAP = 12;
+function overShells(ratio) { return ratio >= 1 ? Math.min(OVER_CAP, Math.floor((ratio - 1) * 8 + 1e-9)) : 0; }
+
+/* ---------------- items ---------------- */
+const PRICE = {C: 5, U: 8, R: 12, M: 20, K: 9, X: 0};
+const RARITY = {C: 'Common', U: 'Uncommon', R: 'Rare', M: 'Mythic', K: 'Cursed', X: 'Pest'};
+const ITEMS = [
+  // shells
+  {id: 'tipjar', e: '🫙', name: 'Tip Jar', r: 'C', desc: '+1 shell each night.', night: c => c.shells(1)},
+  {id: 'purse', e: '👛', name: 'Coin Purse', r: 'U', desc: '+2 shells each night.', night: c => c.shells(2)},
+  {id: 'vault', e: '🏦', name: 'Sunken Vault', r: 'R', desc: '+4 shells each night.', night: c => c.shells(4)},
+  {id: 'piggy', e: '🐷', name: 'Piggy Bank', r: 'U', desc: 'Interest can go 3 shells higher, up to +7 a day.', stat: {interestCap: 3}},
+  {id: 'bean', e: '🌰', name: 'Sea Bean', r: 'C', desc: 'Sells for 1 more shell for each night you keep it.', night: (c, it) => { it.n = (it.n || 0) + 1; }, sellBonus: it => it.n || 0},
+  {id: 'spinner', e: '🎰', name: 'Lucky Spinner', r: 'U', desc: 'Each night, a 1 in 8 chance of +15 shells.', night: c => { if (c.r() < 0.125) c.shells(15); }},
+  {id: 'coupon', e: '🧾', name: 'Coupon Book', r: 'C', desc: 'Everything at the market costs 1 shell less.', stat: {discount: 1}},
+  {id: 'dice', e: '🎲', name: 'Lucky Dice', r: 'U', desc: 'Your first reroll at each market is free.', stat: {freeReroll: 1}},
+  {id: 'stall', e: '🛍️', name: 'Bigger Stall', r: 'R', desc: 'The market shows one more item.', stat: {offers: 1}},
+  {id: 'stock', e: '📈', name: 'Stock Tip', r: 'R', desc: 'Shells for beating the target are doubled.', stat: {overMul: 2}},
+  {id: 'trophy', e: '🏆', name: 'Trophy', r: 'U', desc: '+6 shells when you win a festival.', festWin: c => c.shells(6)},
+  {id: 'magnet', e: '🧲', name: 'Magnet', r: 'C', desc: '+2 shells for each 🛢️ litter on the reef when you finish.', after: c => c.shells(2 * c.day.D.fixed.filter(x => x === 'litter').length)},
+  {id: 'doubloon', e: '🪙', name: 'Doubloon', r: 'C', pirate: true, desc: '+2 shells whenever you score 1.5 times the target or more. Pirate.', after: (c, res) => { if (res.ratio >= 1.5) c.shells(2); }},
+  {id: 'map', e: '🗺️', name: 'Treasure Map', r: 'U', pirate: true, desc: '+5 shells whenever you score double the target or more. Pirate.', after: (c, res) => { if (res.ratio >= 2) c.shells(5); }},
+  // one species
+  {id: 'coralfood', e: '🍯', name: 'Coral Food', r: 'C', need: 'coral', desc: 'Coral scores +1.', rules: R => { R.base.coral += 1; }},
+  {id: 'anemone', e: '🌺', name: 'Anemone', r: 'U', need: 'clown', desc: 'Clownfish get +1 for each other clownfish next to them.', rules: R => { R.adj.clown.clown = (R.adj.clown.clown || 0) + 1; }},
+  {id: 'longnet', e: '🥅', name: 'Long Net', r: 'U', need: 'sardine', desc: 'Sardines also count the sardines in their column.', rules: R => { R.col.sardine.sardine = (R.col.sardine.sardine || 0) + 1; }},
+  {id: 'fert', e: '🌱', name: 'Kelp Fertiliser', r: 'C', need: 'kelp', desc: 'Kelp scores +1.', rules: R => { R.base.kelp += 1; }},
+  {id: 'sandbar', e: '🏖️', name: 'Sandbar', r: 'U', need: 'crab', desc: 'Crabs on the edge score +2 more.', rules: R => { R.edge.crab += 2; }},
+  {id: 'den', e: '🕳️', name: 'Octopus Den', r: 'U', need: 'octo', desc: 'Octopuses get +2 for each rock next to them.', rules: R => { R.adj.octo.rock = (R.adj.octo.rock || 0) + 2; }},
+  {id: 'cove', e: '🏞️', name: 'Quiet Cove', r: 'U', need: 'puffer', desc: 'A pufferfish with no creature next to it scores +3 more.', rules: R => { R.alone.puffer += 3; }},
+  {id: 'chart', e: '🌠', name: 'Star Chart', r: 'U', need: 'star', desc: 'Starfish score +2 anywhere on the edge.', rules: R => { R.edge.star += 2; }},
+  {id: 'ink', e: '🖋️', name: 'Ink Cloud', r: 'U', need: 'squid', desc: 'Squid also get +1 for each creature next to them.', rules: R => { R.adj.squid.any = (R.adj.squid.any || 0) + 1; }},
+  {id: 'pot', e: '🪤', name: 'Lobster Pot', r: 'U', need: 'lobster', desc: 'Lobsters score double.', rules: R => { R.mult.lobster *= 2; }},
+  {id: 'horn', e: '📯', name: 'Echo Horn', r: 'U', need: 'dolphin', desc: 'Dolphins get +2 for each other dolphin in the same row.', rules: R => { R.row.dolphin.dolphin = (R.row.dolphin.dolphin || 0) + 2; }},
+  {id: 'station', e: '🧼', name: 'Cleaning Station', r: 'U', need: 'shrimp', desc: 'Shrimp also count the different kinds on their diagonals.', rules: R => { R.divDiag.shrimp = 1; }},
+  {id: 'gloves', e: '🧤', name: 'Sting Gloves', r: 'U', need: 'jelly', desc: 'Jellyfish no longer sting.', rules: R => { for (const k of KIND_IDS) if (R.adj[k].jelly < 0) R.adj[k].jelly = 0; }},
+  {id: 'seagrass', e: '🌾', name: 'Seagrass', r: 'U', need: 'turtle', desc: 'Turtles score +2.', rules: R => { R.base.turtle += 2; }},
+  {id: 'tooth', e: '🦷', name: 'Shark Tooth', r: 'R', need: 'shark', desc: 'Sharks score double.', rules: R => { R.mult.shark *= 2; }},
+  // the whole reef
+  {id: 'sponge', e: '🧽', name: 'Sea Sponge', r: 'C', desc: 'Litter does no harm.', rules: R => { R.near.litter = 0; }},
+  {id: 'spring', e: '♨️', name: 'Hot Spring', r: 'U', desc: 'Bubble vents give +2 instead of +1.', rules: R => { R.near.vent += 1; }},
+  {id: 'breakwater', e: '🚧', name: 'Breakwater', r: 'U', desc: 'Creatures on the edge score +1.', rules: R => { R.edgeAll += 1; }},
+  {id: 'shelter', e: '⛺', name: 'Shelter', r: 'U', desc: 'Creatures away from the edge score +1.', rules: R => { R.innerAll += 1; }},
+  {id: 'guide', e: '📘', name: 'Reef Guide', r: 'R', desc: 'A creature with at least two different kinds next to it scores +1.', rules: R => { R.mix += 1; }},
+  {id: 'candles', e: '🕯️', name: 'Corner Candles', r: 'R', desc: 'Creatures in the four corners score double.', rules: R => { R.cornerMul *= 2; }},
+  {id: 'family', e: '👪', name: 'Big Family', r: 'R', desc: 'Every creature gets +1 for each creature of its own kind next to it.', rules: R => { R.sameAll += 1; }},
+  {id: 'mutation', e: '🧬', name: 'Mutation', r: 'M', desc: 'The species you have most of in today’s hand scores double.', rules: (R, day) => { const k = topOf(day && day.hand); if (k) R.mult[k] *= 2; }},
+  {id: 'symb', e: '🤝', name: 'Symbiosis', r: 'M', desc: 'Every creature gets +1 for each different kind next to it.', rules: R => { for (const k of KIND_IDS) R.div[k] += 1; }},
+  // score
+  {id: 'rowboat', e: '🛶', name: 'Rowboat', r: 'C', desc: '+4 score each day.', bonus: () => ({add: 4})},
+  {id: 'tidepool', e: '🪣', name: 'Tide Pool', r: 'C', desc: '+1 score for each creature on the edge.', bonus: (c, res) => ({add: res.edgeN})},
+  {id: 'camera', e: '📸', name: 'Camera', r: 'U', desc: '+2 score for each different species on the reef.', bonus: (c, res) => ({add: 2 * res.kinds})},
+  {id: 'lagoon', e: '🏝️', name: 'Lagoon', r: 'U', desc: '+1 score for every two empty cells.', bonus: (c, res) => ({add: Math.floor(res.empty / 2)})},
+  {id: 'telescope', e: '🔭', name: 'Telescope', r: 'U', desc: '+3 score for each creature that scores 5 or more.', bonus: (c, res) => ({add: 3 * res.big})},
+  {id: 'comb', e: '🪮', name: 'Mermaid’s Comb', r: 'R', desc: '+1 score for every night you have owned it.', night: (c, it) => { it.n = (it.n || 0) + 1; }, bonus: (c, res, it) => ({add: it.n || 0})},
+  {id: 'crown', e: '👑', name: 'Reef Crown', r: 'M', desc: 'Your best-scoring creature counts three times.', bonus: (c, res) => ({add: 2 * Math.max(0, res.top)})},
+  {id: 'song', e: '🎻', name: 'Whale Song', r: 'U', desc: 'Score ×1.25 when you place every tile in your hand.', bonus: (c, res) => ({mul: res.unused ? 1 : 1.25})},
+  {id: 'ribbon', e: '🎀', name: 'Blue Ribbon', r: 'U', desc: 'Score ×1.3 on festival days.', bonus: c => ({mul: c.day.event ? 1.3 : 1})},
+  {id: 'cutlass', e: '🗡️', name: 'Cutlass', r: 'U', pirate: true, desc: 'Score ×1.2. Pirate.', bonus: () => ({mul: 1.2})},
+  {id: 'motor', e: '⚙️', name: 'Old Motor', r: 'R', desc: 'Score ×1.5. Each night, a 1 in 10 chance it breaks for good.', bonus: () => ({mul: 1.5}), night: (c, it) => { if (c.r() < 0.1) c.breakItem(it, 'broke down'); }},
+  {id: 'medals', e: '🎖️', name: 'Medal Case', r: 'R', desc: 'Score +10% for each festival you have won.', bonus: c => ({mul: 1 + 0.1 * c.st.festsWon})},
+  {id: 'eye', e: '💎', name: 'Keeper’s Eye', r: 'R', desc: 'Score ×1.4 on days you match the best layout. You find out when you finish.', bonus: (c, res) => ({mul: res.perfect ? 1.4 : 1, secret: true})},
+  {id: 'rainbow', e: '🌈', name: 'Rainbow Reef', r: 'R', desc: 'Score ×1.5 when the reef has 5 or more different species.', bonus: (c, res) => ({mul: res.kinds >= 5 ? 1.5 : 1})},
+  {id: 'flag', e: '🏴‍☠️', name: 'Jolly Roger', r: 'R', pirate: true, desc: 'Score +15% for each pirate item you own, this one included.', bonus: c => ({mul: 1 + 0.15 * c.st.items.filter(i => ITEM[i.id].pirate).length})},
+  // cursed: strong, with a cost
+  {id: 'dynamite', e: '🧨', name: 'Dynamite', r: 'K', desc: 'Score ×2. Each night you lose 8 air.', bonus: () => ({mul: 2}), night: c => c.air(-8)},
+  {id: 'mask', e: '👺', name: 'Cursed Mask', r: 'K', desc: 'Score ×1.6, but missing a target costs twice as much air.', bonus: () => ({mul: 1.6}), stat: {dmgMul: 2}},
+  {id: 'skull', e: '💀', name: 'Pirate Skull', r: 'K', pirate: true, desc: '+6 shells each night, but targets are 10% higher. Pirate.', night: c => c.shells(6), stat: {targetMul: 1.1}},
+  {id: 'hook', e: '🪝', name: 'Greedy Hook', r: 'K', desc: 'Shells for beating the target are tripled, but each night you lose 4 air.', stat: {overMul: 3}, night: c => c.air(-4)},
+  // more tiles
+  {id: 'rod', e: '🎣', name: 'Fishing Rod', r: 'C', desc: '+1 tile in your hand each day, from the species in your bag.', start: c => c.addTile(bagPick(c.r))},
+  {id: 'bignet', e: '🕸️', name: 'Big Net', r: 'U', desc: '+2 tiles in your hand each day, from the species in your bag.', start: c => { c.addTile(bagPick(c.r)); c.addTile(bagPick(c.r)); }},
+  {id: 'nursery', e: '🍼', name: 'Nursery', r: 'U', desc: '+1 tile of the species you have most of in your bag, each day.', start: c => c.addTile(topBag())},
+  // decorations
+  {id: 'amphora', e: '🏺', name: 'Amphora', r: 'U', desc: 'Gives you an amphora tile every day. It counts as a rock, and creatures next to it score +1.', start: c => c.addTile('amphora'), rules: R => { R.near.amphora = 1; }},
+  {id: 'lantern', e: '🏮', name: 'Paper Lantern', r: 'U', desc: 'Gives you a lantern tile every day. Creatures in the eight cells around it score +1.', start: c => c.addTile('lantern'), rules: R => { R.near.lantern = 1; R.dnear.lantern = 1; }},
+  {id: 'clam', e: '🦪', name: 'Pearl Clam', r: 'U', desc: 'Gives you a clam tile every day. When you finish, +1 shell for each creature next to it.', start: c => c.addTile('clam'), after: (c, res) => c.shells(res.clam)},
+  {id: 'statue', e: '🗿', name: 'Old Statue', r: 'R', desc: 'Gives you a statue tile every day. Creatures in its row and column score +1.', start: c => c.addTile('statue'), rules: R => { R.line.statue = 1; }},
+  // air
+  {id: 'snorkel', e: '🤿', name: 'Snorkel', r: 'C', desc: '+5 air each night.', night: c => c.air(5)},
+  {id: 'charm', e: '🧿', name: 'Lucky Eye', r: 'C', desc: 'Daily targets are 6% lower.', stat: {targetMul: 0.94}},
+  {id: 'lungs', e: '🫁', name: 'Big Lungs', r: 'U', desc: '+25 maximum air.', stat: {maxAir: 25}},
+  {id: 'ring', e: '🛟', name: 'Life Ring', r: 'U', desc: 'Missing a target costs 30% less air.', stat: {dmgMul: 0.7}},
+  {id: 'medal', e: '🥇', name: 'Gold Medal', r: 'U', desc: '+25 air when you win a festival.', festWin: c => c.air(25)},
+  {id: 'calm', e: '🪷', name: 'Calm Waters', r: 'U', desc: 'Swell and warm water no longer affect you.'},
+  {id: 'balloon', e: '🎈', name: 'Air Balloon', r: 'U', desc: 'If your air would drop to 0, keep 1 instead. Then it pops.', save: (c, it) => { st.air = 1; c.breakItem(it, 'popped and saved you'); return true; }},
+  {id: 'rescue', e: '⛑️', name: 'Rescue Kit', r: 'R', desc: 'If your air would drop to 0, go back to 50 instead. Then it’s used up.', save: (c, it) => { st.air = 50; c.breakItem(it, 'saved you'); return true; }},
+  {id: 'rope', e: '🪢', name: 'Safety Rope', r: 'R', desc: 'Missing a festival target costs half as much air.', stat: {festDmgMul: 0.5}},
+  // hints
+  {id: 'torch', e: '🔦', name: 'Torch', r: 'C', desc: 'Murky water no longer hides your score.', stat: {fogProof: 1}},
+  {id: 'glass', e: '🔎', name: 'Magnifying Glass', r: 'C', desc: '+1 peek on festival days.', start: c => { if (c.day.event) c.charge('peek', 1); }},
+  {id: 'gull', e: '🐦', name: 'Gull', r: 'U', desc: '+1 hotspot each day.', start: c => c.charge('hot', 1)},
+  {id: 'fieldguide', e: '📖', name: 'Field Guide', r: 'U', desc: 'Shows the best possible score every day.', start: c => { c.day.measured = true; }},
+  {id: 'crystal', e: '🔮', name: 'Crystal Ball', r: 'R', desc: '+1 peek each day.', start: c => c.charge('peek', 1)},
+  // breaking and space
+  {id: 'recycler', e: '♻️', name: 'Recycler', r: 'R', desc: 'When another item breaks: +15 maximum air and +3 shells.', onBreak: (c, it) => { it.n = (it.n || 0) + 15; c.shells(3); }, statFn: it => ({maxAir: it.n || 0})},
+  {id: 'locker', e: '🗄️', name: 'Bigger Locker', r: 'M', upgrade: true, desc: '+1 item slot for the rest of the run. It doesn’t take a slot itself.', eat: () => { st.slotBonus = (st.slotBonus || 0) + 1; }},
+  {id: 'pouchup', e: '👝', name: 'Bigger Pouch', r: 'U', upgrade: true, desc: '+1 pouch space for the rest of the run. It doesn’t take a slot itself.', eat: () => { st.pouchBonus = (st.pouchBonus || 0) + 1; }},
+  {id: 'raffle', e: '🎟️', name: 'Raffle Ticket', r: 'U', ticket: true, desc: 'When bought, it draws a random item. It might be a pest or a cursed one.'},
+  // pests
+  {id: 'sludge', e: '🫗', name: 'Sludge', r: 'X', desc: 'One more 🛢️ litter on the reef each day. Getting rid of it costs 3 shells.', stat: {litter: 1}},
+  {id: 'eel', e: '🐍', name: 'Moray Eel', r: 'X', desc: '−1 shell each night. Getting rid of it costs 3 shells.', night: c => c.shells(-1)},
+  // pouch: kept until you use them, and don't take an item slot
+  {id: 'tank', e: '💨', name: 'Air Tank', r: 'C', food: true, desc: '+20 air.', eat: c => c.air(20)},
+  {id: 'bento', e: '🍱', name: 'Bento Box', r: 'U', food: true, desc: '+45 air.', eat: c => c.air(45)},
+  {id: 'coconut', e: '🥥', name: 'Coconut', r: 'U', food: true, desc: '+10 maximum air, and +10 air.', eat: c => { st.maxBonus += 10; c.air(10); }},
+  {id: 'cake', e: '🎂', name: 'Party Cake', r: 'M', food: true, desc: '+20 maximum air, then full air.', eat: () => { st.maxBonus += 20; st.air = maxAir(st); }},
+  {id: 'coffee', e: '☕', name: 'Coffee', r: 'C', food: true, desc: '+1 peek.', eat: c => c.charge('peek', 1)},
+  {id: 'tea', e: '🍵', name: 'Mint Tea', r: 'C', food: true, desc: '+2 hotspots.', eat: c => c.charge('hot', 2)},
+  {id: 'lemonade', e: '🍋', name: 'Lemonade', r: 'C', food: true, desc: '+2 measures.', eat: c => c.charge('measure', 2)},
+  {id: 'choc', e: '🍫', name: 'Chocolate', r: 'R', food: true, desc: '+3 peeks.', eat: c => c.charge('peek', 3)},
+  {id: 'bag', e: '🎁', name: 'Mystery Bag', r: 'C', food: true, desc: '0, 3, 5 or 9 shells.', eat: c => c.shells(pick(c.r, [0, 3, 5, 9]))},
+  {id: 'mushroom', e: '🍄', name: 'Odd Mushroom', r: 'C', food: true, desc: 'Either +2 peeks or −15 air.', eat: c => { if (c.r() < 0.5) c.charge('peek', 2); else c.air(-15); }},
+  {id: 'chili', e: '🌶️', name: 'Chili Jam', r: 'U', food: true, desc: 'Your next festival score ×1.5.', eat: () => { st.temp.chili = (st.temp.chili || 1) * 1.5; }},
+  {id: 'tonic', e: '🧪', name: 'Growth Tonic', r: 'R', food: true, desc: 'Score +10% for the rest of the run.', eat: () => { st.permMul += 0.1; }},
+  {id: 'beans', e: '🫘', name: 'Magic Beans', r: 'R', food: true, desc: 'Breaks 2 of your items at random and gives you a random Mythic item.', eat: c => {
+    for (let k = 0; k < 2 && st.items.length; k++) c.breakItem(pick(c.r, st.items), 'was eaten by the beanstalk');
+    c.gain(pick(c.r, toolPool('M', st)));
+  }},
+  {id: 'line', e: '🧵', name: 'Fishing Line', r: 'C', food: true, when: 'day', reshape: true, desc: 'Today only: +2 tiles in your hand, from the species in your bag.', eat: c => { c.addTile(bagPick(c.r)); c.addTile(bagPick(c.r)); }},
+  {id: 'tideturn', e: '🔄', name: 'Tide Turn', r: 'C', food: true, when: 'day', reshape: true, desc: 'Draw a new hand for today. The reef is cleared.', eat: c => redraw(c)},
+  {id: 'broom', e: '🧹', name: 'Clean-up Kit', r: 'C', food: true, when: 'day', reshape: true, desc: 'Removes all litter from today’s reef.', eat: () => clearFixed('litter')},
+  {id: 'pickaxe', e: '⛏️', name: 'Pickaxe', r: 'U', food: true, when: 'day', reshape: true, desc: 'Removes all rocks from today’s reef.', eat: () => clearFixed('rock')},
+  {id: 'clone', e: '🧫', name: 'Clone Jar', r: 'U', food: true, when: 'day', reshape: true, needSel: true, desc: 'Today only: +2 copies of the creature you are holding.', eat: c => { c.addTile(ui.sel); c.addTile(ui.sel); }},
+  {id: 'egg', e: '🥚', name: 'Hatchery Egg', r: 'U', food: true, when: 'day', reshape: true, needSel: true, desc: 'Adds 2 of the creature you are holding to your bag for good, and 1 to today’s hand.', eat: c => { st.bag[ui.sel] = (st.bag[ui.sel] || 0) + 2; c.addTile(ui.sel); }},
+  {id: 'hourglass', e: '⏳', name: 'Hourglass', r: 'U', food: true, when: 'day', desc: 'Today’s target −15%.', eat: c => { c.day.target = Math.max(1, Math.ceil(c.day.target * 0.85)); }},
+  {id: 'clover', e: '🍀', name: 'Four-leaf Clover', r: 'U', food: true, when: 'day', desc: 'Today’s shells are doubled.', eat: c => { c.day.shellMul = 2; }},
+  {id: 'firework', e: '🎆', name: 'Fireworks', r: 'R', food: true, when: 'day', desc: 'Today’s score ×1.5.', eat: c => { c.day.scoreMul = (c.day.scoreMul || 1) * 1.5; }}
+];
+const ITEM = Object.fromEntries(ITEMS.map(i => [i.id, i]));
+
+/* ---------------- run state ---------------- */
+const KEY = 'reef-keeper-v1', REC = 'reef-keeper-records-v1';
+let st = null, ui = {sel: null, tip: '', hist: [], sheet: null};
+let rec = {best: 0, runs: 0, titles: {}};
+try { rec = Object.assign(rec, JSON.parse(localStorage.getItem(REC) || '{}')); } catch (e) {}
+try { st = JSON.parse(localStorage.getItem(KEY) || 'null'); } catch (e) {}
+if (st && st.v !== 1) st = null;
+function save() { try { localStorage.setItem(KEY, JSON.stringify(st)); localStorage.setItem(REC, JSON.stringify(rec)); } catch (e) {} }
+
+function stats(s) {
+  const o = {targetMul: 1, dmgMul: 1, maxAir: 0, slots: 5 + (s.slotBonus || 0), pouch: 3 + (s.pouchBonus || 0), discount: 0, freeReroll: 0, fogProof: 0,
+    festDmgMul: 1, litter: 0, interestCap: 0, overMul: 1, offers: 0};
+  for (const it of s.items) {
+    const def = ITEM[it.id];
+    for (const src of [def.stat, def.statFn && def.statFn(it)]) {
+      if (!src) continue;
+      for (const k in src) { if (/Mul$/.test(k)) o[k] *= src[k]; else o[k] += src[k]; }
+    }
+  }
+  return o;
+}
+const maxAir = s => 100 + stats(s).maxAir + s.maxBonus;
+const has = id => st.items.some(i => i.id === id);
+const bagSize = bag => Object.values(bag).reduce((a, b) => a + b, 0);
+function bagPick(r) { return wpick(r, Object.entries(st.bag).filter(e => e[1] > 0)); }
+function topBag() { let best = null; for (const k of KIND_IDS) if ((st.bag[k] || 0) > (st.bag[best] || 0)) best = k; return best || 'coral'; }
+function topOf(list) {
+  if (!list) return null;
+  const n = {}; let best = null;
+  for (const t of list) if (KINDS[t]) { n[t] = (n[t] || 0) + 1; if (!best || n[t] > n[best]) best = t; }
+  return best;
+}
+/* A hand that follows the bag closely: each species gets its share, rounded down, and the leftover places are drawn at random.
+   With no random source the leftovers go to the largest remainders, which is how the standard hand for the target is made. */
+function drawHand(r, bag, n) {
+  const ks = KIND_IDS.filter(k => bag[k] > 0), T = bagSize(bag), out = [], rem = [];
+  if (!T) return out;
+  for (const k of ks) { const x = n * bag[k] / T, b = Math.floor(x); for (let i = 0; i < b; i++) out.push(k); rem.push([k, x - b]); }
+  while (out.length < n && rem.length) {
+    let k;
+    if (r) k = wpick(r, rem.map(e => [e[0], e[1] + 1e-6]));
+    else k = rem.slice().sort((a, b) => b[1] - a[1])[0][0];
+    out.push(k);
+    const i = rem.findIndex(e => e[0] === k); rem.splice(i, 1);
+  }
+  return out;
+}
+
+/* today's scoring rules; `except` leaves one item out, to work out what that item adds */
+function rulesFor(s, day, withItems, except) {
+  const R = baseRules(), cur = day.current && CURRENTS[day.current];
+  const calm = withItems && s.items.some(i => i.id === 'calm' && i !== except);
+  if (cur && cur.apply && !(calm && cur.bad)) cur.apply(R);
+  if (day.event) EVENTS[day.event.id].apply(R, day.event);
+  if (withItems) for (const it of s.items) { const def = ITEM[it.id]; if (def.rules && it !== except) def.rules(R, day); }
+  return prep(R);
+}
+function newRun(seed) {
+  seed = seed || Math.random().toString(36).slice(2, 8);
+  const r = rngFor(seed, 'bag'), two = shuffle(r, STARTERS.slice()).slice(0, 2);
+  const bag = {coral: 4, clown: 3}; for (const k of two) bag[k] = 3;
+  st = {v: 1, seed, day: 1, air: 100, maxBonus: 0, shells: 6, items: [], pouch: [], bag, startBag: Object.assign({}, bag),
+    charges: {peek: 1, measure: 1, hot: 1}, festsWon: 0, visits: 0, permMul: 1, temp: {}, totalScore: 0, best2x: 0, uses: 0,
+    phase: 'day', pending: null, shop: null, reward: null, result: null, milestone: false};
+  rec.runs++;
+  startDay();
+}
+
+/* effect context handed to item hooks; c.it is the item whose hook is running, so its name goes in the log and its totals grow */
+function ctx(r, log) {
+  const tag = text => (c.it ? ITEM[c.it.id].e + ' ' + ITEM[c.it.id].name + ': ' : c.who ? c.who + ': ' : '') + text;
+  const c = {
+    st, day: st.dayState, r, it: null, who: '',
+    shells(n) { if (!n) return; st.shells = Math.max(0, st.shells + n); if (c.it) c.it.g = (c.it.g || 0) + n; log && log.push(tag((n > 0 ? '+' : '') + n + ' shell' + (Math.abs(n) === 1 ? '' : 's'))); },
+    air(n) {
+      const m = maxAir(st), was = st.air; st.air = Math.max(0, Math.min(m, st.air + n));
+      if (c.it && n > 0) c.it.en = (c.it.en || 0) + st.air - was;
+      log && log.push(tag((n > 0 ? '+' : '') + n + ' air'));
+    },
+    charge(k, n) { st.charges[k] = (st.charges[k] || 0) + n; c.note('+' + n + ' ' + SPELL[k].name.toLowerCase()); log && log.push(tag('+' + n + ' ' + SPELL[k].name.toLowerCase())); },
+    addTile(t) { if (!t) return; st.dayState.hand.push(t); c.note('+1 ' + tileOf(t).e); log && log.push(tag('+1 ' + tileOf(t).e + ' in your hand')); },
+    note(text) { if (c.it && st.dayState && st.phase === 'day') { const n = st.dayState.notes = st.dayState.notes || {}; n[c.it.id] = n[c.it.id] ? n[c.it.id] + ', ' + text : text; } },
+    breakItem(it, why) {
+      const i = st.items.indexOf(it); if (i < 0) return;
+      st.items.splice(i, 1);
+      (log || []).push(ITEM[it.id].e + ' ' + ITEM[it.id].name + ' ' + (why || 'broke'));
+      const was = c.it;
+      for (const o of st.items.slice()) { const d = ITEM[o.id]; if (d.onBreak) { c.it = o; d.onBreak(c, o); } }
+      c.it = was;
+    },
+    gain(id) { gainItem(id, log); }
+  };
+  return c;
+}
+const SPELL = {
+  peek: {e: '🔍', name: 'Peek', desc: 'Places one tile where the best layout has it.'},
+  measure: {e: '📏', name: 'Measure', desc: 'Shows the best possible reef score for today.'},
+  hot: {e: '🧭', name: 'Hotspot', desc: 'For the rest of the day, shows how many points the tile you hold would add on each empty cell.'}
+};
+function each(hook, c, ...args) {
+  for (const it of st.items.slice()) { const d = ITEM[it.id]; if (d[hook] && st.items.includes(it)) { c.it = it; d[hook](c, ...args, it); c.it = null; } }
+}
+
+function startDay() {
+  const d = st.day, r = rngFor(st.seed, 'day', d), S = dayShape(d), s = stats(st);
+  const D = {w: S.w, h: S.h, fixed: new Array(S.w * S.h).fill(null)};
+  const cells = shuffle(r, [...Array(S.w * S.h).keys()]);
+  const litter = Math.min(7, Math.floor(d / 6) + (d > 30 ? Math.floor((d - 30) / 12) : 0) + s.litter);
+  const rocks = d < 3 ? 1 : 1 + Math.floor(r() * 2.6);
+  const vents = d < 2 ? 0 : (r() < 0.4 ? 1 : 0) + (r() < 0.12 ? 1 : 0);
+  let k = 0;
+  for (let n = 0; n < litter; n++) D.fixed[cells[k++]] = 'litter';
+  for (let n = 0; n < rocks; n++) D.fixed[cells[k++]] = 'rock';
+  for (let n = 0; n < vents; n++) D.fixed[cells[k++]] = 'vent';
+  let event = null, current = null;
+  if (isFest(d)) {
+    const id = wpick(r, [['spot', 3], ['tidy', 1], ['tide', 1], ['treasure', 1], ['shoal', 1], ['heart', 1]]);
+    event = {id};
+    if (id === 'spot') event.k = pick(r, KIND_IDS.filter(x => st.bag[x] > 0));
+  } else if (d >= 3 && r() < 0.32) current = pick(r, Object.keys(CURRENTS));
+  const n = S.hand + (current === 'moon' ? 2 : 0);
+  const hand = drawHand(r, st.bag, Math.min(n, bagSize(st.bag)));
+  st.dayState = {D, hand0: hand.slice(), hand, g: D.fixed.slice(), pinned: {}, current, event, measured: false, hotOn: false, notes: {}, n};
+  st.phase = 'day';
+  const log = [];
+  each('start', ctx(rngFor(st.seed, 'start', d), log));
+  const day = st.dayState;
+  day.startLog = log;
+  resolveBest(day);
+  // the target comes from the best layout of a standard hand from the bag you started with, with no items
+  const ref = drawHand(null, st.startBag, n);
+  const base = solve(D, ref, rulesFor(st, day, false), st.seed + ':' + d + ':base');
+  day.base = base.score;
+  day.target0 = Math.max(4, Math.ceil(base.score * quota(d)));
+  day.target = Math.max(4, Math.ceil(day.target0 * s.targetMul));
+  ui.sel = nextSel(day); ui.hist = [];
+  save();
+}
+function resolveBest(day) {
+  const best = solve(day.D, day.hand, rulesFor(st, day, true), st.seed + ':' + st.day + ':' + (st.uses || 0));
+  day.best = best.score; day.bestGrid = best.grid;
+}
+
+/* ---------------- playing a day ---------------- */
+function handLeft(day) {
+  const left = {};
+  for (const t of day.hand) left[t] = (left[t] || 0) + 1;
+  for (const t of day.g) if (KINDS[t] || DECOR[t]) left[t] = (left[t] || 0) - 1;
+  return left;
+}
+function nextSel(day, prefer) {
+  const left = handLeft(day);
+  if (prefer && left[prefer] > 0) return prefer;
+  return ORDER.find(t => left[t] > 0) || null;
+}
+function remember() { ui.hist.push(st.dayState.g.slice()); if (ui.hist.length > 60) ui.hist.shift(); }
+function tapCell(i) {
+  const day = st.dayState, cur = day.g[i];
+  if (day.D.fixed[i]) return;
+  if (cur && (!ui.sel || ui.sel === cur)) { remember(); day.g[i] = null; delete day.pinned[i]; ui.sel = cur; }
+  else if (ui.sel) {
+    const left = handLeft(day);
+    if (left[ui.sel] > 0) { remember(); day.g[i] = ui.sel; delete day.pinned[i]; if (left[ui.sel] === 1) ui.sel = cur || nextSel(day); }
+  }
+  save(); render();
+}
+function undo() { const g = ui.hist.pop(); if (!g) return; st.dayState.g = g; ui.sel = nextSel(st.dayState, ui.sel); save(); render(); }
+function castPeek() {
+  const day = st.dayState, R = rulesFor(st, day, true), N = nbFor(day.D);
+  if (!st.charges.peek) return;
+  let bestI = -1, bestV = -1e9;
+  for (let i = 0; i < day.g.length; i++) {
+    const t = day.bestGrid[i];
+    if (!(KINDS[t] || DECOR[t]) || day.g[i] === t) continue;
+    const v = KINDS[t] ? cellScore(day.bestGrid, i, day.D, R, N) : 3;
+    if (v > bestV) { bestV = v; bestI = i; }
+  }
+  if (bestI < 0) { toast('Your reef already matches the best layout.'); return; }
+  const t = day.bestGrid[bestI];
+  remember();
+  if (!(handLeft(day)[t] > 0)) {
+    // take one from a cell where the best layout doesn't have it
+    const j = day.g.findIndex((x, k) => x === t && day.bestGrid[k] !== t);
+    if (j >= 0) day.g[j] = null;
+  }
+  day.g[bestI] = t; day.pinned[bestI] = true;
+  st.charges.peek--; ui.sel = nextSel(day, ui.sel); save(); render();
+}
+function castMeasure() { const day = st.dayState; if (!st.charges.measure || day.measured) return; st.charges.measure--; day.measured = true; save(); render(); }
+function castHot() { const day = st.dayState; if (!st.charges.hot || day.hotOn) return; st.charges.hot--; day.hotOn = true; save(); render(); }
+
+/* pouch things that change today's reef or hand */
+function clearFixed(kind) {
+  const day = st.dayState;
+  for (let i = 0; i < day.g.length; i++) if (day.D.fixed[i] === kind) { day.D.fixed[i] = null; day.g[i] = null; }
+}
+function redraw(c) {
+  const day = st.dayState, keep = day.hand.filter(t => DECOR[t]), n = day.hand.length - keep.length;
+  const fresh = drawHand(c.r, st.bag, Math.min(n, bagSize(st.bag)));
+  while (fresh.length < n) fresh.push(bagPick(c.r));
+  day.hand = fresh.concat(keep); day.g = day.D.fixed.slice(); day.pinned = {};
+}
+
+/* What a reef scores today and where each part comes from. `live` is the preview while you place tiles. */
+function harvestCalc(day, g, live) {
+  const R = rulesFor(st, day, true), per = [], score = scoreGrid(g, day.D, R, per), N = nbFor(day.D);
+  const count = {}; let kinds = 0, empty = 0, edgeN = 0, big = 0, top = 0, clam = 0;
+  for (let i = 0; i < g.length; i++) {
+    const t = g[i];
+    if (KINDS[t]) {
+      if (!count[t]) kinds++; count[t] = (count[t] || 0) + 1;
+      if (N.edge[i]) edgeN++;
+      if (per[i] >= 5) big++;
+      top = Math.max(top, per[i]);
+    } else if (!t) empty++;
+    else if (t === 'clam') for (const j of N.n4[i]) if (KINDS[g[j]]) clam++;
+  }
+  const left = handLeft(Object.assign({}, day, {g}));
+  const unused = Object.values(left).reduce((a, b) => a + Math.max(0, b), 0);
+  const res = {score, per, count, kinds, empty, edgeN, big, top, clam, unused, perfect: score >= day.best, parts: []}, c = {st, day};
+  for (const it of st.items) {
+    if (!ITEM[it.id].rules) continue;
+    const v = score - scoreGrid(g, day.D, rulesFor(st, day, true, it));
+    if (v) res.parts.push({it, pts: v});
+  }
+  let v = score; const muls = [];
+  for (const it of st.items) {
+    const def = ITEM[it.id]; if (!def.bonus) continue;
+    const b = def.bonus(c, res, it);
+    if (b.add) { v += b.add; res.parts.push({it, add: b.add}); }
+    if (b.mul && b.mul !== 1 && !(live && b.secret)) muls.push({it, mul: b.mul});
+  }
+  if (st.permMul > 1) muls.push({name: '🧪 Growth Tonic', mul: st.permMul});
+  if (day.event && st.temp.chili) muls.push({name: '🌶️ Chili Jam', mul: st.temp.chili});
+  if (day.scoreMul) muls.push({name: '🎆 Fireworks', mul: day.scoreMul});
+  for (const m of muls) { const gain = v > 0 ? v * (m.mul - 1) : 0; v += gain; res.parts.push({it: m.it, name: m.name, mul: m.mul, add: Math.round(gain)}); }
+  res.total = Math.max(0, Math.round(v));
+  return res;
+}
+const partName = p => p.it ? ITEM[p.it.id].e + ' ' + ITEM[p.it.id].name : p.name;
+const partText = p => p.pts != null ? (p.pts > 0 ? '+' : '') + p.pts + ' points' : p.mul ? '×' + Math.round(p.mul * 100) / 100 + ' (+' + p.add + ')' : '+' + p.add;
+
+/* shells for finishing with this score; perfect and items that pay after the day are counted when you finish */
+function shellParts(day, ratio, perfect) {
+  const s = stats(st), gp = [['the day', 2]];
+  if (ratio >= 1) gp.push(['reaching the target', 2]);
+  const over = overShells(ratio);
+  if (over) gp.push(['scoring ' + Math.floor(ratio * 100 + 1e-9) + '% of the target', over * s.overMul]);
+  if (perfect) gp.push(['matching the best layout', 2]);
+  if (day.event && ratio >= 1) gp.push(['winning the festival', 4]);
+  const interest = Math.min(4 + s.interestCap, Math.floor(st.shells / 5));
+  if (interest) gp.push(['interest on ' + st.shells + ' shells', interest]);
+  let tot = gp.reduce((a, x) => a + x[1], 0);
+  if (day.shellMul > 1) { gp.push(['🍀 Four-leaf Clover doubles it', tot]); tot *= 2; }
+  return {gp, tot};
+}
+function missCost(day, ratio) {
+  const s = stats(st);
+  if (ratio >= 1) return 0;
+  return Math.round((5 + 80 * (1 - ratio)) * dmgScale(st.day) * (day.event ? 1.6 * s.festDmgMul : 1) * s.dmgMul);
+}
+
+function finish() {
+  const day = st.dayState, d = st.day;
+  const res = harvestCalc(day, day.g);
+  res.best = day.best; res.target = day.target; res.target0 = day.target0;
+  res.solverGrid = day.bestGrid.slice();
+  if (res.score > day.best) { day.best = res.score; day.bestGrid = day.g.slice(); res.beat = true; }
+  res.ratio = res.total / day.target;
+  res.reached = res.ratio >= 1;
+  res.won = !!day.event && res.reached;
+  const log = [], c = ctx(rngFor(st.seed, 'finish', d), log);
+  for (const p of res.parts) if (p.it) p.it.h = (p.it.h || 0) + (p.pts || p.add || 0);
+  const sp = shellParts(day, res.ratio, res.perfect);
+  res.goldParts = sp.gp; res.gold = sp.tot;
+  st.shells += res.gold;
+  each('after', c, res);
+  if (day.event) delete st.temp.chili;
+  res.dmg = missCost(day, res.ratio);
+  if (res.dmg) {
+    const raw = Math.round((5 + 80 * (1 - res.ratio)) * dmgScale(d) * (day.event ? 1.6 : 1));
+    const savers = st.items.filter(it => ITEM[it.id].stat && (ITEM[it.id].stat.dmgMul < 1 || (day.event && ITEM[it.id].stat.festDmgMul)));
+    if (raw > res.dmg && savers.length) log.push(savers.map(it => ITEM[it.id].e + ' ' + ITEM[it.id].name).join(' and ') + ' saved you ' + (raw - res.dmg) + ' air');
+  }
+  st.totalScore += res.total;
+  if (res.ratio >= 2) st.best2x++;
+  st.air -= res.dmg;
+  if (res.won) { st.festsWon++; each('festWin', c); }
+  if (st.air <= 0) {
+    st.air = 0;
+    for (const it of st.items.slice()) { const def = ITEM[it.id]; if (def.save && def.save(c, it)) break; }
+  }
+  res.log = log;
+  st.result = res;
+  st.phase = st.air <= 0 ? 'over' : 'result';
+  if (st.phase === 'over') endRun();
+  else if (d === 30) st.milestone = true;
+  ui.sheet = null;
+  save(); render(); window.scrollTo(0, 0);
+}
+function endRun() {
+  const days = st.day - 1;
+  rec.best = Math.max(rec.best, days);
+  for (const [n, name] of TITLES) if (days >= n) rec.titles[name] = (rec.titles[name] || 0) + 1;
+}
+function nextAfterResult() {
+  const d = st.day, log = [];
+  st.milestone = false;
+  const c = ctx(rngFor(st.seed, 'night', d), log);
+  c.who = 'A night’s rest'; c.air(3); c.who = '';
+  each('night', c);
+  st.nightLog = log;
+  rec.best = Math.max(rec.best, d);
+  if (st.air <= 0) {
+    for (const it of st.items.slice()) { const def = ITEM[it.id]; if (def.save && def.save(c, it)) break; }
+    if (st.air <= 0) { st.day++; st.phase = 'over'; st.result = null; endRun(); st.day--; save(); render(); return; }
+  }
+  if (st.result.won) { openReward(); return; }
+  afterReward();
+}
+function afterReward() {
+  if (isMarket(st.day)) openMarket();
+  else { st.day++; startDay(); }
+  save(); render(); window.scrollTo(0, 0);
+}
+
+/* ---------------- market ---------------- */
+function odds(v) {
+  const R = Math.min(30, Math.max(0, (v - 2) * 4)), M = Math.min(4, Math.max(0, (v - 5) * 0.5)), U = Math.min(52, 15 + v * 6), K = Math.min(5, Math.max(0, v - 2));
+  return [['C', 100 - U - R - M - K], ['U', U], ['R', R], ['M', M], ['K', K]];
+}
+/* items you could get; raffle tickets only turn up for sale */
+function toolPool(rar, s, forSale) {
+  const own = new Set(s.items.map(i => i.id));
+  return ITEMS.filter(i => i.r === rar && !i.food && !own.has(i.id) && (forSale || !i.ticket) && (!i.need || s.bag[i.need] > 0) && !(i.id === 'locker' && stats(s).slots >= 8) && !(i.id === 'pouchup' && stats(s).pouch >= 6)).map(i => i.id);
+}
+function foodPool(rar) { return ITEMS.filter(i => (i.r === rar || (rar === 'K' && i.r === 'R')) && i.food).map(i => i.id); }
+function rollOffer(r, v, taken) {
+  for (let k = 0; k < 30; k++) {
+    const rar = wpick(r, odds(v));
+    const pool = r() < 0.35 ? foodPool(rar) : toolPool(rar, st, true);
+    const id = pool.length ? pick(r, pool) : null;
+    if (id && !taken.includes(id)) return id;
+  }
+  return 'tank';
+}
+function rollPacks(r) {
+  const have = KIND_IDS.filter(k => st.bag[k] > 0), not = KIND_IDS.filter(k => !(st.bag[k] > 0));
+  const a = not.length ? pick(r, not) : pick(r, have);
+  const rest = have.filter(k => k !== a);
+  const b = rest.length ? pick(r, rest) : pick(r, not.filter(k => k !== a));
+  return [a, b];
+}
+function priceOf(id) {
+  const def = ITEM[id]; let p = PRICE[def.r];
+  if (def.food) p = Math.ceil(p * 0.6);
+  return Math.max(1, p - stats(st).discount);
+}
+const packPrice = k => Math.max(1, (st.bag[k] > 0 ? 4 : 6) - stats(st).discount);
+const PACK = 3;
+const sellValue = it => { const def = ITEM[it.id]; if (def.r === 'X') return -3; if (it.id === 'doubloon') return 4; return Math.floor(PRICE[def.r] / 2) + (def.sellBonus ? def.sellBonus(it) : 0); };
+function fillShop(r) {
+  const s = stats(st), offers = [];
+  for (let k = 0; k < 4 + s.offers; k++) offers.push(rollOffer(r, st.visits, offers));
+  st.shop.offers = offers; st.shop.packs = rollPacks(r);
+}
+function openMarket() {
+  st.visits++;
+  st.shop = {offers: [], packs: [], reroll: stats(st).freeReroll ? 0 : 1, rolls: 0};
+  fillShop(rngFor(st.seed, 'market', st.visits));
+  st.phase = 'market';
+}
+function reroll() {
+  const sh = st.shop; if (st.shells < sh.reroll) return;
+  st.shells -= sh.reroll; sh.rolls++;
+  sh.reroll = sh.rolls === 1 && stats(st).freeReroll ? 1 : sh.reroll + 1;
+  fillShop(rngFor(st.seed, 'market', st.visits, 'roll', sh.rolls));
+  save(); render();
+}
+function buy(k) {
+  const id = st.shop.offers[k]; if (!id) return;
+  const def = ITEM[id], p = priceOf(id), s = stats(st);
+  if (st.shells < p) return;
+  if (def.food && st.pouch.length >= s.pouch) { toast('Your pouch is full. Use something first.'); return; }
+  if (!def.food && !def.ticket && !def.upgrade && st.items.length >= s.slots) { toast('Your locker is full. Sell an item first.'); return; }
+  st.shells -= p; st.shop.offers[k] = null;
+  if (def.food) { st.pouch.push(id); toast(def.e + ' ' + def.name + ' is in your pouch.'); }
+  else if (def.ticket) {
+    const r = rngFor(st.seed, 'raffle', st.visits, k, st.shop.rolls), rar = wpick(r, [['C', 28], ['U', 28], ['R', 18], ['M', 5], ['K', 8], ['X', 13]]);
+    const pool = rar === 'X' ? ['sludge', 'eel'].filter(x => !has(x)) : toolPool(rar, st);
+    const got = pool.length ? pick(r, pool) : 'eel';
+    gainItem(got); toast('🎟️ The raffle gave you ' + ITEM[got].e + ' ' + ITEM[got].name);
+  } else { gainItem(id); if (def.upgrade) toast(def.e + ' ' + def.name + ': done.'); }
+  save(); render();
+}
+function buyPack(k) {
+  const kind = st.shop.packs[k]; if (!kind) return;
+  const p = packPrice(kind); if (st.shells < p) return;
+  st.shells -= p; st.bag[kind] = (st.bag[kind] || 0) + PACK; st.shop.packs[k] = null;
+  toast('+' + PACK + ' ' + KINDS[kind].e + ' ' + KINDS[kind].name + ' in your bag.');
+  save(); render();
+}
+const RELEASE = 1;
+function release(kind) {
+  if (st.shells < RELEASE || !(st.bag[kind] > 0) || bagSize(st.bag) <= 6) return;
+  st.shells -= RELEASE; st.bag[kind]--; if (!st.bag[kind]) delete st.bag[kind];
+  save(); render();
+}
+function gainItem(id, log) {
+  if (!id) return;
+  if (ITEM[id].upgrade) { ITEM[id].eat(ctx(null, log)); if (log) log.push('got ' + ITEM[id].e + ' ' + ITEM[id].name); return; }
+  if (st.items.length >= stats(st).slots) { st.pending = id; return; }
+  st.items.push({id, n: 0});
+  if (log) log.push('got ' + ITEM[id].e + ' ' + ITEM[id].name);
+}
+function sell(i) {
+  const it = st.items[i], v = sellValue(it);
+  if (st.shells + v < 0) { toast('You need 3 shells to get rid of a pest.'); return; }
+  st.items.splice(i, 1); st.shells += v;
+  if (st.pending && st.items.length < stats(st).slots) { st.items.push({id: st.pending, n: 0}); st.pending = null; }
+  if (st.phase === 'full' && !st.pending) { afterReward(); return; }
+  save(); render();
+}
+function usePouch(k) {
+  const id = st.pouch[k], def = ITEM[id]; if (!def) return;
+  if (def.when === 'day' && st.phase !== 'day') { toast('You can use that during a day.'); return; }
+  if (def.needSel && !KINDS[ui.sel]) { toast('Pick up a creature from your hand first.'); return; }
+  st.pouch.splice(k, 1);
+  st.uses = (st.uses || 0) + 1;
+  const log = [], c = ctx(rngFor(st.seed, 'use', st.day, st.uses), log);
+  def.eat(c);
+  if (def.reshape) { resolveBest(st.dayState); ui.hist = []; ui.sel = nextSel(st.dayState, ui.sel); }
+  ui.sheet = null;
+  const said = {}; for (const l of log) { const k = l.replace(/^.*?: /, ''); said[k] = (said[k] || 0) + 1; }
+  toast(def.e + ' ' + def.name + (log.length ? ': ' + Object.entries(said).map(([k, n]) => n > 1 ? k + ' ×' + n : k).join(', ') : ' used.'));
+  save(); render();
+}
+
+/* ---------------- festival prize ---------------- */
+function openReward() {
+  const r = rngFor(st.seed, 'reward', st.day), picks = [];
+  for (let k = 0; k < 30 && picks.length < 3; k++) {
+    const rar = wpick(r, odds(st.visits + 3).filter(e => e[0] !== 'K'));
+    const pool = toolPool(rar, st).filter(x => !picks.includes(x));
+    if (pool.length) picks.push(pick(r, pool));
+  }
+  st.reward = picks; st.phase = 'reward'; save(); render(); window.scrollTo(0, 0);
+}
+function takeReward(id) {
+  if (id) gainItem(id); else st.shells += 10;
+  st.reward = null;
+  if (st.pending) { st.phase = 'full'; save(); render(); return; }
+  afterReward();
+}
+
+/* ---------------- rendering ---------------- */
+/* an in-page question instead of confirm(): browsers let people switch confirm() off, and then it always says no */
+function ask(text, yes, fn) { ui.ask = {text, yes, fn}; render(); }
+function toast(msg) { ui.tip = msg; render(); clearTimeout(toast.t); toast.t = setTimeout(() => { ui.tip = ''; render(); }, 2600); }
+function hud() {
+  const m = maxAir(st), low = st.air < m * 0.3, d = st.day, nf = Math.ceil(d / 5) * 5;
+  return `<div class="hud">
+    <button class="ib" id="menu" aria-label="Menu">☰</button>
+    <div class="dn">Day ${d}<small>${SEASON_NAME[season(d)]}</small></div>
+    <div class="air${low ? ' low' : ''}">Air <b>${st.air}</b> / ${m}<div class="bar"><i style="width:${Math.max(0, 100 * st.air / m)}%"></i></div></div>
+    <div class="pill">Shells<b>🐚 ${st.shells}</b></div>
+    <div class="pill">Festival<b>${isFest(d) && st.phase === 'day' ? 'Today' : 'Day ' + (isFest(d) && st.phase !== 'day' ? d + 5 : nf)}</b></div>
+  </div>`;
+}
+function itemTotals(it) {
+  const a = [];
+  if (it.h) a.push((it.h > 0 ? '+' : '') + it.h + ' score');
+  if (it.g) a.push((it.g > 0 ? '+' : '') + it.g + ' shells');
+  if (it.en) a.push('+' + it.en + ' air');
+  return a.length ? 'So far: ' + a.join(', ') + '.' : '';
+}
+/* your items as a list with what each one does; `live` maps an item to what it adds today */
+function itemsHtml(selling, live) {
+  const s = stats(st), out = st.items.map((it, i) => {
+    const def = ITEM[it.id], tot = itemTotals(it);
+    const extra = def.sellBonus ? ' Sells for ' + sellValue(it) + ' now.' : def.statFn && it.n ? ' Now +' + it.n + ' maximum air.' : it.id === 'comb' ? ' Now +' + (it.n || 0) + '.' : '';
+    const right = selling ? `<b>${sellValue(it) < 0 ? 'pay 3' : 'sell ' + sellValue(it)}</b>`
+      : live && live.get(it) ? `<b class="good">${esc(live.get(it))}</b><small>today</small>` : '';
+    const tag = selling ? 'button' : 'div';
+    return `<${tag} class="irow" data-item="${i}"><span class="ie">${def.e}</span><span class="it"><b>${esc(def.name)} <span class="rar rar-${def.r}">${RARITY[def.r]}</span></b><span class="small muted">${esc(def.desc + extra)}${tot ? ' ' + esc(tot) : ''}</span></span><span class="iv">${right}</span></${tag}>`;
+  });
+  for (let k = st.items.length; k < s.slots; k++) out.push('<div class="irow empty">Empty slot</div>');
+  return `<div class="ilist">${out.join('')}</div>`;
+}
+function pouchHtml(usable) {
+  const s = stats(st), out = st.pouch.map((id, k) => {
+    const def = ITEM[id], dayOnly = def.when === 'day';
+    const can = usable && (!dayOnly || st.phase === 'day');
+    return `<div class="irow"><span class="ie">${def.e}</span><span class="it"><b>${esc(def.name)}</b><span class="small muted">${esc(def.desc)}${dayOnly ? ' Only during a day.' : ''}</span></span><span class="iv">${can ? `<button class="btn sm pri" data-use="${k}">Use</button>` : ''}</span></div>`;
+  });
+  for (let k = st.pouch.length; k < s.pouch; k++) out.push('<div class="irow empty">Empty pouch space</div>');
+  return `<div class="ilist">${out.join('')}</div>`;
+}
+function bindSell() {
+  $$('[data-item]').forEach(b => { if (b.tagName !== 'BUTTON') return; b.onclick = () => {
+    const k = +b.dataset.item, it = st.items[k], def = ITEM[it.id], v = sellValue(it);
+    ask((v < 0 ? 'Pay 3 shells to get rid of ' : 'Sell ') + def.name + (v >= 0 ? ' for ' + v + ' shell' + (v === 1 ? '' : 's') : '') + '?', v < 0 ? 'Pay 3 shells' : 'Sell', () => sell(k));
+  }; });
+}
+const pm = v => (v > 0 ? '+' : '') + v;
+function ruleParts(R, t, types) {
+  if (DECOR[t]) return DECOR[t].desc;
+  const e = x => KINDS[x].e, out = [], b = R.base[t] + R.all;
+  out.push(b + ' point' + (Math.abs(b) === 1 ? '' : 's'));
+  for (const [n, v] of Object.entries(R.adj[t])) {
+    if (!v) continue;
+    if (n === 'empty') out.push(pm(v) + ' per empty cell next to it');
+    else if (n === 'rock') out.push(pm(v) + ' per rock next to it');
+    else if (n === 'any') out.push(pm(v) + ' per creature next to it');
+    else if (types.includes(n)) out.push(pm(v) + ' per ' + e(n) + ' next to it');
+  }
+  const lines = (M, where) => {
+    for (const [n, v] of Object.entries(M)) {
+      if (!v) continue;
+      if (n === 'any') out.push(pm(v) + ' per creature ' + where);
+      else if (types.includes(n)) out.push(pm(v) + ' per ' + (n === t ? 'other ' : '') + e(n) + ' ' + where);
+    }
+  };
+  const rowS = JSON.stringify(R.row[t]), colS = JSON.stringify(R.col[t]);
+  if (rowS === colS) lines(R.row[t], 'in its row or column');
+  else { lines(R.row[t], 'in its row'); lines(R.col[t], 'in its column'); }
+  lines(R.diag[t], 'diagonal to it');
+  if (R.alone[t]) out.push(pm(R.alone[t]) + ' if no creature is next to it');
+  if (R.div[t]) out.push(pm(R.div[t]) + ' per different kind next to it' + (R.divDiag[t] ? ' or diagonal to it' : ''));
+  if (R.edge[t]) out.push(pm(R.edge[t]) + ' on the edge');
+  if (R.inner[t]) out.push(pm(R.inner[t]) + ' away from the edge');
+  if (R.corner[t]) out.push(pm(R.corner[t]) + ' in a corner');
+  if (R.mult[t] !== 1) out.push('then ×' + R.mult[t]);
+  return out.join(', ');
+}
+function everywhere(R, day) {
+  const out = [];
+  const f = day.D.fixed, present = x => f.includes(x) || day.hand.includes(x);
+  if (present('vent')) out.push(['🫧', 'Bubble vent', R.near.vent ? pm(R.near.vent) + ' to each creature next to it' : 'does nothing']);
+  if (present('litter')) out.push(['🛢️', 'Litter', R.near.litter ? pm(R.near.litter) + ' to each creature next to it' : 'does no harm']);
+  if (present('rock')) out.push(['🪨', 'Rock', 'blocks the cell']);
+  for (const k in DECOR) if (day.hand.includes(k)) out.push([DECOR[k].e, DECOR[k].name, DECOR[k].desc.replace(/\.$/, '')]);
+  if (R.edgeAll) out.push(['🌊', 'Edge', pm(R.edgeAll) + ' to every creature on the edge']);
+  if (R.innerAll) out.push(['🎯', 'Middle', pm(R.innerAll) + ' to every creature away from the edge']);
+  if (R.cornerAll) out.push(['📐', 'Corners', pm(R.cornerAll) + ' to every creature in a corner']);
+  if (R.cornerMul !== 1) out.push(['🕯️', 'Corners', 'creatures there score ×' + R.cornerMul]);
+  if (R.sameAll) out.push(['👪', 'Families', pm(R.sameAll) + ' per creature of the same kind next to it']);
+  if (R.mix) out.push(['📘', 'Mixed company', pm(R.mix) + ' to a creature with two or more different kinds next to it']);
+  if (R.empty) out.push(['⬜', 'Empty cell', String(R.empty)]);
+  return out;
+}
+function typesOf(day) { return KIND_IDS.filter(k => st.bag[k] > 0 || day.hand.includes(k)); }
+function rulesSheet() {
+  const day = st.dayState, R = rulesFor(st, day, true), types = typesOf(day), changed = {};
+  for (const it of st.items) {
+    if (!ITEM[it.id].rules) continue;
+    const R2 = rulesFor(st, day, true, it);
+    for (const t of types) if (ruleParts(R2, t, types) !== ruleParts(R, t, types)) (changed[t] = changed[t] || []).push(ITEM[it.id].e);
+  }
+  const tags = k => changed[k] ? ` <span class="tag" title="changed by your items">${changed[k].join('')}</span>` : '';
+  const left = handLeft(day);
+  const line = t => `<div><span class="e">${KINDS[t].e}</span><span><b>${KINDS[t].name}</b>${tags(t)}: ${esc(ruleParts(R, t, types))} <span class="n">· bag ${st.bag[t] || 0}${day.hand.includes(t) ? ', hand ' + Math.max(0, left[t] || 0) : ''}</span></span></div>`;
+  const ev = everywhere(R, day).map(([e, n, d]) => `<div><span class="e">${e}</span><span><b>${n}</b>: ${esc(d)}</span></div>`).join('');
+  const cur = day.current ? CURRENTS[day.current] : null, E = day.event ? EVENTS[day.event.id] : null;
+  return `<div class="sh"><h2>Scoring today</h2><span><button class="btn sm" data-sheet="help">How to play</button> <button class="btn sm" data-close>Close</button></span></div>
+    ${E ? `<p>🎪 <b>${E.name}</b>. ${esc(E.desc(day.event))} The target is higher today, and you win a prize if you reach it.</p>` : ''}
+    ${cur ? `<p>${cur.e} <b>${cur.name}</b>. ${esc(cur.desc)}${cur.bad && has('calm') ? ' Your 🪷 Calm Waters keeps it away.' : ''}</p>` : ''}
+    <div class="rules">${types.map(line).join('')}${ev}</div>
+    <p class="small muted">“Next to” means the four cells above, below, left and right. You don’t have to use every tile.${Object.keys(changed).length ? ' The icons after a name show which items changed that rule.' : ''}</p>
+    <h3>Tools</h3><div class="rules">${Object.entries(SPELL).map(([k, s]) => `<div><span class="e">${s.e}</span><span><b>${s.name}</b> ×${st.charges[k] || 0}: ${esc(s.desc)}</span></div>`).join('')}</div>
+    <h3>Shells</h3><p class="small">2 for every day, 2 more for reaching the target, and the further past it you go the more you get: +4 at 1.5 times the target, +8 at double, +12 at 2.5 times. Matching the best layout adds 2 and winning a festival adds 4. You also get 1 shell of interest for every 5 you have saved, up to 4 a day.</p>`;
+}
+function itemsSheet(live) {
+  const s = stats(st);
+  return `<div class="sh"><h2>Items</h2><button class="btn sm" data-close>Close</button></div>
+    <h3>Pouch <span class="small muted">${st.pouch.length} / ${s.pouch}</span></h3>${pouchHtml(true)}
+    <h3>Locker <span class="small muted">${st.items.length} / ${s.slots}</span></h3>${st.items.length ? '' : '<p class="small muted">Nothing yet. The market opens after day 2.</p>'}${itemsHtml(false, live)}`;
+}
+function bagSheet(canRelease) {
+  const kinds = KIND_IDS.filter(k => st.bag[k] > 0), n = bagSize(st.bag), R = prep(baseRules());
+  return `<div class="sh"><h2>Your bag · ${n} tiles</h2><button class="btn sm" data-close>Close</button></div>
+    <p class="small muted">Each day you draw ${dayShape(st.phase === 'day' ? st.day : st.day + 1).hand} tiles from your bag, close to its mix.${canRelease ? ` Releasing a tile costs ${RELEASE} shell and keeps your hands focused.` : ''}</p>
+    ${kinds.map(k => `<div class="bagrow"><span class="e">${KINDS[k].e}</span><span class="t"><b>${KINDS[k].name} ×${st.bag[k]}</b><br><span class="small muted">${esc(ruleParts(R, k, kinds))}</span></span>${canRelease ? `<button class="btn sm" data-rel="${k}" ${st.shells < RELEASE || n <= 6 ? 'disabled' : ''}>Release 1</button>` : ''}</div>`).join('')}`;
+}
+function helpSheet() {
+  return `<div class="sh help"><h2>How to play</h2><button class="btn sm" data-close>Close</button></div>
+    <div class="help"><ol>
+      <li>Your hand is the row of tiles under the reef. One is already picked up: it has the orange outline, and the line above the hand says how it scores.</li>
+      <li>Tap an empty cell to place it. The small number in each cell is what that creature scores where it is. Tap a placed creature to pick it up again.</li>
+      <li>Reach the target, then press <b>Finish</b>. The further past it you go, the more shells you get: double the target pays three times as much as just reaching it.</li>
+    </ol>
+    <p>Missing the target costs air, and the run ends when you run out. Targets grow every day, so you need items from the market and new species for your bag. 📜 Rules shows today’s scoring (and this help again), 🎒 your items and pouch, 🐚 your bag. ↶ undoes a move.</p></div>
+    <div class="row c"><button class="btn pri" id="gotit">Got it</button></div>`;
+}
+function liveMap(day, H, fog) {
+  const live = new Map();
+  for (const it of st.items) if (day.notes && day.notes[it.id]) live.set(it, day.notes[it.id]);
+  if (!fog) for (const p of H.parts) if (p.it) live.set(p.it, partText(p));
+  for (const it of st.items) {
+    if (it.id === 'eye') live.set(it, '×1.4 if best');
+    if ((it.id === 'charm' || it.id === 'skull') && day.target0 !== day.target) live.set(it, 'target ' + (day.target < day.target0 ? '−' : '+') + Math.abs(day.target0 - day.target));
+  }
+  return live;
+}
+function dayView() {
+  const day = st.dayState, d = st.day, R = rulesFor(st, day, true), s = stats(st);
+  const per = []; const score = scoreGrid(day.g, day.D, R, per);
+  const fog = day.current === 'murky' && !s.fogProof;
+  const left = handLeft(day), leftN = Object.values(left).reduce((a, b) => a + Math.max(0, b), 0);
+  const H = harvestCalc(day, day.g, true), ratio = H.total / day.target;
+  let hot = null;
+  if (day.hotOn && ui.sel && left[ui.sel] > 0) {
+    hot = {}; const g = day.g.slice();
+    for (let i = 0; i < g.length; i++) if (!g[i]) { g[i] = ui.sel; hot[i] = scoreGrid(g, day.D, R) - score; g[i] = null; }
+  }
+  let banner = '';
+  if (day.event) { const E = EVENTS[day.event.id]; banner = `<button class="banner" data-sheet="rules">🎪 <b>${E.name}</b>: ${esc(E.desc(day.event))} Higher target, prize if you reach it.</button>`; }
+  else if (day.current) { const c = CURRENTS[day.current]; banner = `<button class="banner" data-sheet="rules">${c.e} <b>${c.name}</b>: ${esc(c.desc)}${c.bad && has('calm') ? ' (🪷 keeps it away)' : ''}</button>`; }
+  const morning = (st.nightLog || []).concat(day.startLog || []);
+  if (morning.length && !ui.seenMorning) banner += `<button class="banner" id="morning">Since yesterday: ${esc(morning.join(' · '))}</button>`;
+
+  const reached = ratio >= 1 && !fog;
+  const pct = fog ? 0 : Math.min(100, 100 * ratio / 2.5);
+  const prev = fog ? 'Murky: scores show when you finish' : reached ? '+' + shellParts(day, ratio, false).tot + ' 🐚 now' + (ratio >= 2 ? ' · double!' : '') : 'Finishing now costs ' + missCost(day, ratio) + ' air';
+  const bits = [`reef ${score}`].concat(H.parts.filter(p => p.pts == null).map(p => (p.it ? ITEM[p.it.id].e : p.name.split(' ')[0]) + ' ' + (p.mul ? '×' + Math.round(p.mul * 100) / 100 : '+' + p.add)));
+  const goal = `<div class="goal">
+      <div class="gl"><span>Score <b>${fog ? '?' : H.total}</b></span><span class="gm ${reached ? 'good' : ''}">${prev}</span><span>Target <b>${day.target}</b></span></div>
+      <div class="gbar${reached ? ' ok' : ''}"><i style="width:${pct}%"></i>${[1, 1.5, 2].map(x => `<s style="left:${x / 2.5 * 100}%"><span>${x === 1 ? day.target : x + '×'}</span></s>`).join('')}</div>
+      <div class="gs">${fog ? '' : esc(bits.join(' · ')) + (bits.length > 1 ? ' = ' + H.total : '')}${day.measured ? ' · best reef possible today: ' + day.best : ''}</div>
+    </div>`;
+  const cells = day.g.map((t, i) => {
+    if (day.D.fixed[i]) return `<button class="cell fixed" disabled aria-label="${FEAT[day.D.fixed[i]].name}">${FEAT[day.D.fixed[i]].e}</button>`;
+    const pt = KINDS[t] && !fog ? `<span class="pt${per[i] < 0 ? ' neg' : per[i] === 0 ? ' zero' : ''}">${pm(per[i])}</span>` : '';
+    const h = hot && hot[i] != null && !fog ? `<span class="hot" style="background:color-mix(in srgb,${hot[i] >= 0 ? 'var(--good)' : 'var(--bad)'} ${Math.min(60, 12 + Math.abs(hot[i]) * 7)}%,transparent)">${pm(hot[i])}</span>` : '';
+    return `<button class="cell${day.pinned[i] ? ' pin' : ''}${!t && ui.sel ? ' open' : ''}" data-c="${i}" aria-label="cell ${i + 1}${t ? ': ' + tileOf(t).name : ''}">${t ? tileOf(t).e : ''}${pt}${h}</button>`;
+  }).join('');
+  const hand = ORDER.filter(t => day.hand.includes(t)).map(t =>
+    `<button class="htile${ui.sel === t ? ' sel' : ''}${left[t] > 0 ? '' : ' none'}" data-t="${t}" aria-label="${tileOf(t).name}">${tileOf(t).e}<span>${Math.max(0, left[t])}</span></button>`).join('');
+  const info = ui.sel && left[ui.sel] > 0 ? `<b>${tileOf(ui.sel).e} ${tileOf(ui.sel).name}</b>: ${esc(ruleParts(R, ui.sel, typesOf(day)))}. Tap an empty cell to place it.`
+    : leftN ? 'Tap a tile in your hand to pick it up.' : 'Everything is placed. Tap a creature on the reef to pick it up and move it, or finish the day.';
+  const spells = Object.keys(SPELL).map(k => {
+    const used = (k === 'measure' && day.measured) || (k === 'hot' && day.hotOn);
+    return `<button class="tb" data-spell="${k}" title="${esc(SPELL[k].name + ': ' + SPELL[k].desc)}" ${!st.charges[k] || used ? 'disabled' : ''}>${SPELL[k].e} ${st.charges[k] || 0}</button>`;
+  }).join('');
+  const pouch = st.pouch.map((id, k) => `<button class="tb pouch" data-ask-use="${k}" title="${esc(ITEM[id].name)}">${ITEM[id].e}</button>`).join('');
+  const sheet = ui.sheet === 'rules' ? rulesSheet() : ui.sheet === 'items' ? itemsSheet(liveMap(day, H, fog)) : ui.sheet === 'bag' ? bagSheet(false) : ui.sheet === 'help' || (!rec.seenHelp && d === 1 && !ui.helpClosed) ? helpSheet() : '';
+  return `<div class="game">
+    ${hud()}${goal}${banner}
+    <div class="boardwrap"><div class="board" style="--w:${day.D.w};--h:${day.D.h}">${cells}</div></div>
+    <div class="dock">
+      <div class="info">${info}</div>
+      <div class="hand">${hand || '<span class="small muted">Your hand is empty.</span>'}</div>
+      <div class="tools">${spells}${pouch}<button class="tb" id="undo" aria-label="Undo" ${ui.hist.length ? '' : 'disabled'}>↶</button><button class="tb" id="clear">Clear</button></div>
+      <div class="tools"><button class="tb" data-sheet="rules" aria-label="Scoring rules">📜 Rules</button><button class="tb" data-sheet="items" aria-label="Items and pouch">🎒 ${st.items.length + st.pouch.length}</button><button class="tb" data-sheet="bag" aria-label="Your bag">🐚 Bag</button><button class="tb fin${reached ? ' ok' : ''}" id="finish">Finish day</button></div>
+    </div>
+  </div>${sheet ? `<div class="sheet-bg" data-bg><div class="sheet" role="dialog" aria-modal="true">${sheet}</div></div>` : ''}`;
+}
+function miniGrid(D, g) {
+  return `<div class="mini" style="grid-template-columns:repeat(${D.w},1fr)">${g.map((t, i) => D.fixed[i] ? `<i class="f">${FEAT[D.fixed[i]].e}</i>` : `<i>${t ? tileOf(t).e : ''}</i>`).join('')}</div>`;
+}
+function actions(inner) { return `<div class="actions"><div class="in">${inner}</div></div>`; }
+function resultView() {
+  const res = st.result, day = st.dayState, d = st.day;
+  const badges = [];
+  if (res.ratio >= 2.5) badges.push('2.5× target'); else if (res.ratio >= 2) badges.push('Double target'); else if (res.ratio >= 1.5) badges.push('1.5× target');
+  if (res.perfect) badges.push(res.beat ? 'Beat the best layout' : 'Best layout');
+  if (res.won) badges.push('Festival won');
+  const head = `<div class="big-num ${res.reached ? 'good' : 'bad'}">${res.total} / ${res.target}</div>
+    ${badges.length ? `<div>${badges.map(b => `<span class="badge">${b}</span>`).join('')}</div>` : ''}
+    <p>${day.event ? (res.won ? 'You won the festival. Choose a prize next.' : 'Not enough for the festival.') : res.reached ? 'Target reached.' : 'Short of the target by ' + (res.target - res.total) + '.'}${res.dmg ? ' You lose ' + res.dmg + ' air.' : ' No air lost.'} You get ${res.gold} shells.</p>`;
+  const lines = [];
+  const pts = res.parts.filter(p => p.pts != null), more = res.parts.filter(p => p.pts == null);
+  lines.push(`Your reef scored ${res.score} points${pts.length ? ', including ' + pts.map(p => partName(p) + ' ' + partText(p)).join(', ') : ''}. The best layout the game found scores ${res.best}${res.beat ? ', so you beat it by ' + (res.score - res.best) : res.perfect ? ', and you matched it' : ''}.`);
+  if (more.length) lines.push(`Score: ${res.score} from the reef, ` + more.map(p => partName(p) + ' ' + partText(p)).join(', ') + ` = ${res.total}.`);
+  if (res.target0 !== res.target) lines.push(`Your items moved the target from ${res.target0} to ${res.target}.`);
+  lines.push(`Shells +${res.gold}: ` + res.goldParts.map(([w, n]) => n + ' for ' + w).join(', ') + '.');
+  const next = res.won ? 'Choose a prize' : isMarket(d) ? 'Go to the market' : 'Next day';
+  return `<div class="page">${hud()}<h1>Day ${d}</h1>
+    <div class="card" style="text-align:center">${head}</div>
+    <div class="res"><div><h3>Your reef · ${res.score}</h3>${miniGrid(day.D, day.g)}</div><div><h3>Game’s best · ${res.best}</h3>${miniGrid(day.D, res.solverGrid || day.bestGrid)}</div></div>
+    <div class="card">${lines.concat(res.log).map(l => `<div class="log">${esc(l)}</div>`).join('')}</div>
+    ${st.milestone ? `<div class="card" style="border-color:var(--accent)"><h2>Thirty days on the reef</h2><p>That completes the run, and you’ve earned the title <b>Reef Keeper</b>. You can keep going into autumn. From here the targets grow by 3.5% a day and missing them costs more air, so the question is how far your items and your bag can carry you.</p></div>` : ''}
+  </div>${actions(`<button class="btn pri big" id="next">${next}</button>`)}`;
+}
+function marketView() {
+  const sh = st.shop, s = stats(st);
+  const offers = sh.offers.map((id, k) => {
+    if (!id) return '<div class="offer empty">sold</div>';
+    const def = ITEM[id], p = priceOf(id);
+    const full = def.food ? st.pouch.length >= s.pouch : !def.ticket && !def.upgrade && st.items.length >= s.slots;
+    return `<div class="offer"><span class="oe">${def.e}</span><span class="on">${esc(def.name)}</span><span class="rar rar-${def.r}">${RARITY[def.r]}${def.food ? ' · pouch' : def.upgrade ? ' · upgrade' : ''}</span><span class="od">${esc(def.desc)}${def.when === 'day' ? ' Use it during a day.' : ''}</span>
+      <button class="btn sm pri" data-buy="${k}" ${st.shells < p ? 'disabled' : ''}>${full ? (def.food ? 'Pouch full · ' : 'Locker full · ') : 'Buy · '}${p} 🐚</button></div>`;
+  }).join('');
+  const R = prep(baseRules()), kinds = KIND_IDS.filter(k => st.bag[k] > 0);
+  const packs = sh.packs.map((k, i) => {
+    if (!k) return '<div class="offer empty">sold</div>';
+    const p = packPrice(k), isNew = !(st.bag[k] > 0);
+    return `<div class="offer pack"><span class="oe">${KINDS[k].e.repeat(3)}</span><span class="on">${PACK} × ${KINDS[k].name}</span><span class="rar rar-${isNew ? 'R' : 'C'}">${isNew ? 'New species' : 'For your bag'}</span><span class="od">${esc(ruleParts(R, k, kinds.concat(k)))}.</span>
+      <button class="btn sm pri" data-pack="${i}" ${st.shells < p ? 'disabled' : ''}>Add to bag · ${p} 🐚</button></div>`;
+  }).join('');
+  const nightLog = st.nightLog && st.nightLog.length ? `<div class="card small">Overnight: ${esc(st.nightLog.join(', '))}</div>` : '';
+  const nextOpen = (() => { for (let x = st.day + 1; x < st.day + 12; x++) if (isMarket(x)) return x; return '?'; })();
+  const sheet = ui.sheet === 'bag' ? bagSheet(true) : '';
+  return `<div class="page">${hud()}<h1>Evening market</h1>${nightLog}
+    <p class="small muted">Pouch things are kept until you use them. Everything else takes one of your ${s.slots} locker slots. The market opens next after day ${nextOpen}.</p>
+    <div class="offers">${offers}</div>
+    <h3>Species</h3><p class="small muted">Your bag has ${bagSize(st.bag)} tiles, and tomorrow you draw ${dayShape(st.day + 1).hand}. <button class="btn sm" data-sheet="bag">See your bag</button></p>
+    <div class="offers">${packs}</div>
+    <div class="card"><h3 style="margin-top:0">Pouch <span class="small muted">${st.pouch.length} / ${s.pouch}</span></h3>${pouchHtml(true)}
+      <h3>Locker <span class="small muted">tap to sell</span></h3>${itemsHtml(true)}${st.pending ? `<p class="bad small">No room for ${ITEM[st.pending].e} ${esc(ITEM[st.pending].name)}. Sell something to make room, or it’s lost when you leave.</p>` : ''}</div>
+  </div>${actions(`<button class="btn" id="reroll" ${st.shells < sh.reroll ? 'disabled' : ''}>Reroll · ${sh.reroll ? sh.reroll + ' 🐚' : 'free'}</button><button class="btn pri big" id="leave">Start day ${st.day + 1}</button>`)}
+  ${sheet ? `<div class="sheet-bg" data-bg><div class="sheet" role="dialog" aria-modal="true">${sheet}</div></div>` : ''}`;
+}
+function rewardView() {
+  return `<div class="page">${hud()}<h1>Festival prize</h1>
+    <p>Choose one item, or take 10 shells.</p>
+    <div class="offers">${st.reward.map(id => { const def = ITEM[id]; return `<div class="offer"><span class="oe">${def.e}</span><span class="on">${esc(def.name)}</span><span class="rar rar-${def.r}">${RARITY[def.r]}</span><span class="od">${esc(def.desc)}</span><button class="btn sm pri" data-take="${id}">Take</button></div>`; }).join('')}
+    <div class="offer"><span class="oe">🐚</span><span class="on">10 shells</span><span class="od">Save them for the market.</span><button class="btn sm pri" data-take="">Take</button></div></div>
+    <div class="card"><h3 style="margin-top:0">Your locker</h3>${itemsHtml(false)}</div></div>`;
+}
+function fullView() {
+  return `<div class="page">${hud()}<h1>No room</h1>
+    <p>Your locker is full, so there’s no room for ${ITEM[st.pending].e} <b>${esc(ITEM[st.pending].name)}</b> (${esc(ITEM[st.pending].desc)}). Sell an item to make room, or let it go.</p>
+    <div class="card">${itemsHtml(true)}</div></div>${actions('<button class="btn" id="letgo">Let it go</button>')}`;
+}
+function overView() {
+  const days = st.day - 1, title = titleFor(days);
+  return `<div class="page"><h1>Out of air</h1>
+    <div class="card" style="text-align:center"><div class="big-num">${days} day${days === 1 ? '' : 's'}</div><p>Title: <b>${title}</b></p>
+    <p class="small muted">Festivals won ${st.festsWon} · days at double the target ${st.best2x} · total score ${st.totalScore} · seed ${esc(st.seed)}</p></div>
+    ${st.result ? `<div class="card">${[`On day ${st.day} you scored ${st.result.total} against a target of ${st.result.target}, and lost ${st.result.dmg} air.`].concat(st.result.log).map(l => `<div class="log">${esc(l)}</div>`).join('')}</div>` : ''}
+  </div>${actions('<button class="btn pri big" id="again">New run</button><button class="btn" id="same">Replay this seed</button>')}`;
+}
+function titleView() {
+  const live = st && st.phase !== 'over';
+  return `<div class="page"><div style="text-align:center;padding:24px 0 10px"><div style="font-size:50px">🪸🐠🐙</div><h1 style="font-size:34px">Reef Keeper</h1>
+    <p class="muted">A reef puzzle with a run, a market and festivals. Arrange each day’s creatures as well as you can, grow your bag, collect items, and see how many days your air lasts.</p></div>
+    <div class="row c">${live ? `<button class="btn pri big" id="cont">Continue day ${st.day}</button>` : ''}<button class="btn ${live ? '' : 'pri '}big" id="new">New run</button></div>
+    <div class="row c" style="margin-top:10px"><input type="text" id="seed" placeholder="seed (optional)"><button class="btn sm" id="seeded">Start with seed</button></div>
+    <div class="card"><h3 style="margin-top:0">How it works</h3>
+      <p>Each day you get a reef and a hand of creatures drawn from your bag. Tap a creature in your hand, then tap a cell to place it. Each species scores in its own way: coral likes coral, kelp likes kelp in the same column, crabs want the edge, pufferfish want to be alone, sharks hunt along rows and columns.</p>
+      <p>Every day has a target. Reaching it pays shells, and going past it pays more: double the target pays three times as much as just reaching it. Missing it costs air, and the run ends when your air runs out.</p>
+      <p>At the market you buy items, things for your pouch, and new species for your bag. You start with coral, clownfish and two random species, so every run plays a little differently. Every fifth day is a festival with its own rule, a higher target and a prize.</p>
+      <p>Day 30 completes the run. After that it keeps getting harder, and the titles go up to day 200.</p></div>
+    <div class="card"><h3 style="margin-top:0">Your records</h3><p>Longest run: <b>${rec.best} days</b> · runs started: ${rec.runs}</p>
+      <div class="titles">${TITLES.map(([n, name]) => `<span>${rec.titles[name] ? '✓' : '·'}</span><span>${name}</span><span class="muted">day ${n}</span>`).join('')}</div></div>
+    <footer>A sister game to Summer Garden. No sign-in, progress is saved in this browser.</footer></div>`;
+}
+function render() {
+  const app = $('#app');
+  document.body.dataset.season = st && !ui.title ? season(st.day) : 'summer';
+  if (!st || ui.title) app.innerHTML = titleView();
+  else app.innerHTML = ({day: dayView, result: resultView, market: marketView, reward: rewardView, full: fullView, over: overView}[st.phase] || dayView)();
+  if (ui.ask) app.insertAdjacentHTML('beforeend', `<div class="sheet-bg" style="z-index:50"><div class="sheet" role="dialog" aria-modal="true"><p>${esc(ui.ask.text)}</p><div class="row c"><button class="btn" id="askno">Cancel</button><button class="btn pri" id="askyes">${esc(ui.ask.yes)}</button></div></div></div>`);
+  if (ui.tip) app.insertAdjacentHTML('beforeend', `<div class="tip">${esc(ui.tip)}</div>`);
+  bind();
+}
+function bind() {
+  const on = (sel, fn) => { const el = $(sel); if (el) el.onclick = fn; };
+  on('#askno', () => { ui.ask = null; render(); });
+  on('#askyes', () => { const f = ui.ask.fn; ui.ask = null; render(); f(); });
+  on('#cont', () => { ui.title = false; render(); });
+  const fresh = fn => { if (!st || st.phase === 'over') fn(); else ask('Start a new run? The current one will be lost.', 'Start a new run', fn); };
+  on('#new', () => fresh(() => { ui.title = false; newRun(); render(); }));
+  on('#seeded', () => { const s = $('#seed').value.trim(); if (s) fresh(() => { ui.title = false; newRun(s); render(); }); });
+  on('#menu', () => { ui.title = true; ui.sheet = null; render(); });
+  on('#gotit', () => { ui.sheet = null; ui.helpClosed = true; rec.seenHelp = true; save(); render(); });
+  on('#morning', () => { ui.seenMorning = true; render(); });
+  on('#again', () => { newRun(); render(); });
+  on('#same', () => { newRun(st.seed); render(); });
+  on('#finish', () => {
+    const left = handLeft(st.dayState), unused = Object.values(left).reduce((a, b) => a + Math.max(0, b), 0);
+    if (unused) ask(unused + ' tile' + (unused > 1 ? 's are' : ' is') + ' still in your hand. Finish the day anyway?', 'Finish', finish);
+    else finish();
+  });
+  on('#next', () => { ui.seenMorning = false; nextAfterResult(); });
+  on('#reroll', reroll);
+  on('#leave', () => { if (st.pending) st.pending = null; st.shop = null; ui.sheet = null; st.day++; startDay(); st.nightLog = null; render(); window.scrollTo(0, 0); });
+  on('#letgo', () => { st.pending = null; afterReward(); });
+  on('#undo', undo);
+  on('#clear', () => { const day = st.dayState; remember(); day.g = day.D.fixed.slice(); day.pinned = {}; ui.sel = nextSel(day); save(); render(); });
+  $$('[data-c]').forEach(b => b.onclick = () => tapCell(+b.dataset.c));
+  $$('[data-t]').forEach(b => b.onclick = () => { const t = b.dataset.t; if (!(handLeft(st.dayState)[t] > 0)) return; ui.sel = ui.sel === t ? null : t; render(); });
+  $$('[data-spell]').forEach(b => b.onclick = () => ({peek: castPeek, measure: castMeasure, hot: castHot}[b.dataset.spell])());
+  $$('[data-buy]').forEach(b => b.onclick = () => buy(+b.dataset.buy));
+  $$('[data-pack]').forEach(b => b.onclick = () => buyPack(+b.dataset.pack));
+  $$('[data-rel]').forEach(b => b.onclick = () => release(b.dataset.rel));
+  $$('[data-take]').forEach(b => b.onclick = () => takeReward(b.dataset.take));
+  $$('[data-sheet]').forEach(b => b.onclick = () => { ui.sheet = b.dataset.sheet; render(); });
+  $$('[data-close]').forEach(b => b.onclick = () => { ui.sheet = null; ui.helpClosed = true; if (!rec.seenHelp) { rec.seenHelp = true; save(); } render(); });
+  $$('[data-bg]').forEach(b => b.onclick = e => { if (e.target === b) { ui.sheet = null; ui.helpClosed = true; render(); } });
+  $$('[data-use]').forEach(b => b.onclick = () => usePouch(+b.dataset.use));
+  $$('[data-ask-use]').forEach(b => b.onclick = () => {
+    const k = +b.dataset.askUse, def = ITEM[st.pouch[k]];
+    ask(def.e + ' ' + def.name + ': ' + def.desc + ' Use it now?', 'Use', () => usePouch(k));
+  });
+  if (st && (st.phase === 'market' || st.phase === 'full')) bindSell();
+}
+ui.title = true;
+render();
+</script>
+</body>
+</html>
