@@ -1,0 +1,1098 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Lumen</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Marcellus&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#e7e9f2; --surface:#fbfbfe; --surface2:#eef0f7; --text:#161a33; --muted:#5a6080; --line:#cfd3e4;
+  --night1:#1a2147; --night2:#0c1029; --cellc:#161c3c; --celll:#2b3566;
+  --accent:#6a4bd6; --good:#23805a; --bad:#c0392b; --gold:#a8790a;
+  --shadow:0 6px 18px rgba(22,26,51,.14);
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0b0d1c; --surface:#151935; --surface2:#1c2142; --text:#ebeaf7; --muted:#a3a7c4; --line:#2c3260;
+    --night1:#161c40; --night2:#080b1f; --cellc:#121735; --celll:#29315f;
+    --accent:#a58cff; --good:#5fd09a; --bad:#f07a6c; --gold:#e8c35a;
+    --shadow:0 6px 18px rgba(0,0,0,.45);
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0b0d1c; --surface:#151935; --surface2:#1c2142; --text:#ebeaf7; --muted:#a3a7c4; --line:#2c3260;
+  --night1:#161c40; --night2:#080b1f; --cellc:#121735; --celll:#29315f;
+  --accent:#a58cff; --good:#5fd09a; --bad:#f07a6c; --gold:#e8c35a;
+  --shadow:0 6px 18px rgba(0,0,0,.45);
+  color-scheme:dark;
+}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;font-size:15px;line-height:1.45;-webkit-tap-highlight-color:transparent}
+h1,h2,h3{font-family:Marcellus,Georgia,serif;font-weight:400;margin:0}
+h1{font-size:30px}
+h2{font-size:21px}
+h3{font-size:15px;margin:14px 0 4px;color:var(--accent)}
+p{margin:6px 0}
+button{font:inherit;color:inherit}
+button:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.muted{color:var(--muted)}
+.small{font-size:12.5px}
+.good{color:var(--good)} .bad{color:var(--bad)}
+.page{max-width:620px;margin:0 auto;padding:12px 16px 40px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin:10px 0}
+.btn{border:none;background:var(--surface2);border:1.5px solid var(--line);border-radius:12px;padding:9px 16px;cursor:pointer;font-weight:600}
+.btn.pri{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn:disabled{opacity:.45;cursor:default}
+.btn.sm{padding:5px 10px;font-size:13px;border-radius:10px}
+.btn.big{padding:12px 24px;font-size:17px}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+
+.hud{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.ib{border:1.5px solid var(--line);background:var(--surface);border-radius:12px;width:42px;height:42px;display:grid;place-items:center;cursor:pointer;flex:none;padding:0;font-size:18px}
+.lvl{font-family:Marcellus,Georgia,serif;font-size:22px;line-height:1.1;white-space:nowrap}
+.lvl small{display:block;font-family:system-ui,sans-serif;font-size:12px;color:var(--muted)}
+.sp{flex:1}
+.pill{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:4px 9px;font-size:12px;color:var(--muted);text-align:center;white-space:nowrap;line-height:1.2}
+.pill b{display:block;font-size:16px;color:var(--text);font-variant-numeric:tabular-nums}
+.hearts{font-size:15px;letter-spacing:1px;white-space:nowrap}
+.goal{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:9px 12px 7px;margin:10px 0 8px}
+.gl{display:flex;justify-content:space-between;align-items:baseline;gap:8px;font-size:14px;flex-wrap:wrap}
+.gl b{font-size:20px;font-variant-numeric:tabular-nums}
+.gbar{position:relative;height:10px;background:var(--line);border-radius:5px;margin:6px 0 4px}
+.gbar i{position:absolute;left:0;top:0;bottom:0;border-radius:5px;background:var(--accent);transition:width .25s}
+.gbar.ok i{background:var(--good)}
+.gbar s{position:absolute;top:-3px;bottom:-3px;width:3px;background:var(--text);opacity:.55;border-radius:2px}
+.gm{font-size:13.5px;font-weight:600}
+.banner{background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--accent);border-radius:12px;padding:8px 12px;margin:0 0 8px;font-size:14px;text-align:left;width:100%;display:flex;gap:10px;align-items:center}
+.banner .bi{flex:none}
+
+.boardwrap{border-radius:18px;background:radial-gradient(ellipse at 40% 30%,var(--night1),var(--night2));box-shadow:var(--shadow);padding:6px;position:relative}
+.boardwrap svg{display:block;width:100%;height:auto;touch-action:manipulation;user-select:none;-webkit-user-select:none}
+.cellh{cursor:pointer}
+.beams{mix-blend-mode:screen}
+.beam{fill:none;stroke-linecap:round}
+.flow{stroke-dasharray:.18 .5;animation:flow 1s linear infinite}
+@keyframes flow{to{stroke-dashoffset:-.68}}
+.pop{animation:pop .5s ease-out}
+@keyframes pop{0%{transform:scale(1)}40%{transform:scale(1.35)}100%{transform:scale(1)}}
+.alllit{position:absolute;left:50%;bottom:12px;transform:translateX(-50%);background:rgba(255,255,255,.92);color:#2a1d6b;border-radius:20px;padding:4px 14px;font-weight:700;font-size:14px;pointer-events:none;animation:fadein .4s}
+@keyframes fadein{from{opacity:0;transform:translate(-50%,-6px)}}
+
+.info{font-size:14px;color:var(--muted);text-align:center;margin:10px 0 8px;min-height:20px}
+.tray{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+.pc{display:flex;align-items:center;gap:6px;border:1.5px solid var(--line);background:var(--surface);border-radius:12px;padding:5px 10px 5px 6px;cursor:pointer;font-size:14px;font-weight:600}
+.pc svg{width:34px;height:34px;border-radius:8px;background:var(--cellc)}
+.pc.sel{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent)}
+.pc.none{opacity:.4}
+.pc small{font-weight:500;color:var(--muted);font-size:11.5px;display:block;line-height:1}
+.focusrow{display:flex;gap:8px;justify-content:center;margin:10px 0 0}
+.tools{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:12px 0 0}
+.finrow{display:flex;gap:8px;margin:12px 0 4px}
+.finrow .btn{padding:11px 14px;font-size:15px}
+.finrow .fin{flex:1;font-size:17px}
+@media (max-width:480px){.finrow .lab{display:none}.finrow .btn{padding:11px 12px}}
+.finrow .fin{white-space:nowrap}
+.finrow .fin.glow{box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 35%,transparent),0 0 22px color-mix(in srgb,var(--accent) 60%,transparent)}
+
+.irow{display:flex;align-items:center;gap:10px;border:1px solid var(--line);background:var(--surface2);border-radius:10px;padding:7px 10px;font-size:13.5px;margin:5px 0;width:100%;text-align:left}
+.irow .ie{font-size:22px;flex:none;width:30px;text-align:center}
+.irow .it{flex:1}
+.irow .ip{flex:none;font-weight:700;white-space:nowrap}
+button.irow{cursor:pointer}
+button.irow:disabled{opacity:.5;cursor:default}
+.rar{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--muted)}
+.minis{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.minis h3{margin:0 0 4px}
+.mini{border-radius:12px;background:radial-gradient(ellipse at 40% 30%,var(--night1),var(--night2));padding:3px}
+.mini svg{display:block;width:100%;height:auto}
+.big-num{font-size:40px;font-family:Marcellus,Georgia,serif;font-variant-numeric:tabular-nums;text-align:center}
+.badge{display:inline-block;border-radius:8px;padding:2px 9px;font-size:13px;font-weight:700;background:var(--gold);color:#fff;margin:2px}
+.badge.p{background:var(--accent)}
+.badge.b{background:var(--bad)}
+.center{text-align:center}
+.actions{display:flex;gap:10px;justify-content:center;margin:16px 0 4px;flex-wrap:wrap}
+.log{font-size:13.5px;padding:3px 0;border-bottom:1px dashed var(--line)}
+
+.ov{position:fixed;inset:0;background:rgba(8,10,25,.55);display:grid;place-items:center;padding:16px;z-index:50}
+.sheet{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:16px;width:100%;max-width:520px;max-height:88vh;overflow:auto;box-shadow:var(--shadow)}
+.guide .ex{border-radius:12px;background:radial-gradient(ellipse at 40% 30%,var(--night1),var(--night2));padding:4px;max-width:300px;margin:8px auto}
+.guide .ex svg{display:block;width:100%;height:auto}
+.guide .exs{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.guide .exs .ex{margin:0}
+.guide .cap{font-size:12.5px;color:var(--muted);text-align:center;margin-top:2px}
+.dots{display:flex;gap:5px;justify-content:center;margin:10px 0}
+.dots i{width:7px;height:7px;border-radius:50%;background:var(--line)}
+.dots i.on{background:var(--accent)}
+.bin{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;font-size:13px;text-align:center}
+.bin div{background:var(--surface2);border:1px solid var(--line);border-radius:8px;padding:5px 2px}
+.bin b{display:block;font-size:17px}
+.sw{display:inline-block;width:12px;height:12px;border-radius:3px;vertical-align:-1px;margin-right:3px;border:1px solid rgba(0,0,0,.25)}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--text);color:var(--bg);padding:9px 15px;border-radius:12px;font-size:14px;max-width:min(92vw,460px);z-index:70;box-shadow:var(--shadow);text-align:center}
+.conf{position:fixed;top:-10px;width:9px;height:14px;border-radius:2px;z-index:80;pointer-events:none;animation:fall linear forwards}
+@keyframes fall{to{transform:translateY(105vh) rotate(720deg)}}
+footer{margin-top:24px;font-size:12px;color:var(--muted);text-align:center}
+@media (prefers-reduced-motion: reduce){.flow,.pop,.conf,.alllit{animation:none}}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div id="ovl"></div>
+<script>
+'use strict';
+/* ---------- seeded randomness ---------- */
+function seedOf(str) {
+  let h = 1779033703 ^ str.length;
+  for (let i = 0; i < str.length; i++) { h = Math.imul(h ^ str.charCodeAt(i), 3432918353); h = h << 13 | h >>> 19; }
+  h = Math.imul(h ^ h >>> 16, 2246822507); h = Math.imul(h ^ h >>> 13, 3266489909);
+  return (h ^ h >>> 16) >>> 0;
+}
+function rngFor(...parts) {
+  let a = seedOf(parts.join(':'));
+  return function () {
+    a |= 0; a = a + 0x6D2B79F5 | 0;
+    let t = Math.imul(a ^ a >>> 15, 1 | a);
+    t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+    return ((t ^ t >>> 14) >>> 0) / 4294967296;
+  };
+}
+const pick = (r, a) => a[Math.floor(r() * a.length)];
+function shuffle(r, a) { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(r() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;'}[c]));
+
+/* ---------- the hex board and light ---------- */
+// pointy-top axial directions, counter-clockwise from east: E, NE, NW, W, SW, SE (each 60° apart)
+const DIRS = [[1, 0], [1, -1], [0, -1], [-1, 0], [-1, 1], [0, 1]];
+const HEXES = {};
+function makeHex(R) {
+  if (HEXES[R]) return HEXES[R];
+  const cells = [], at = new Map();
+  for (let r = -R; r <= R; r++) for (let q = -R; q <= R; q++) if (Math.abs(q + r) <= R) { at.set(q + ',' + r, cells.length); cells.push({q, r}); }
+  const N = cells.length, nb = new Int16Array(N * 6).fill(-1);
+  cells.forEach((c, i) => DIRS.forEach(([dq, dr], d) => { const j = at.get((c.q + dq) + ',' + (c.r + dr)); if (j !== undefined) nb[i * 6 + d] = j; }));
+  const edge = cells.map((c, i) => DIRS.some((_, d) => nb[i * 6 + d] < 0));
+  return HEXES[R] = {R, cells, N, nb, edge, at};
+}
+// fixed cells: 0 empty, 1 rock, 2 lamp, 3 crystal, 4 dark crystal. piece types:
+const MIR = 1, SPL = 2, FIL = 3, PRI = 4, BEN = 5;
+// a mirror whose line sits at 30k degrees sends direction d to k - d (angle in = angle out)
+const reflect = (k, d) => (k - d + 12) % 6;
+/* follow every beam from every lamp; returns the colour that reaches each cell and the segments for drawing.
+   colours are bits: red 1, green 2, blue 4, and beams that meet in a cell add up */
+function trace(H, L, pieces, wantSegs) {
+  const {N, nb} = H, lit = new Uint8Array(N), seen = new Uint8Array(N * 6 * 8), segs = wantSegs ? [] : null;
+  const st = [];
+  for (const lp of L.lamps) st.push(lp.cell, lp.d, lp.col);
+  while (st.length) {
+    const col = st.pop(), d = st.pop(), from = st.pop();
+    const i = nb[from * 6 + d];
+    if (i >= 0 && seen[(i * 6 + d) * 8 + col]) continue;
+    if (segs) segs.push([from, i, d, col]);
+    if (i < 0) continue;
+    seen[(i * 6 + d) * 8 + col] = 1;
+    const f = L.fixed[i];
+    if (f === 1 || f === 2) continue;
+    lit[i] |= col;
+    const p = pieces[i];
+    if (!p) { st.push(i, d, col); continue; }
+    if (p.t === MIR) st.push(i, reflect(p.k, d), col);
+    else if (p.t === SPL) { st.push(i, d, col); const e = reflect(p.k, d); if (e !== d) st.push(i, e, col); }
+    else if (p.t === FIL) { const c = col & p.c; if (c) st.push(i, d, c); }
+    else if (p.t === PRI) { if (col & 1) st.push(i, (d + 5) % 6, 1); if (col & 2) st.push(i, d, 2); if (col & 4) st.push(i, (d + 1) % 6, 4); }
+    else if (p.t === BEN) st.push(i, (d + (p.k ? 5 : 1)) % 6, col);
+  }
+  return {lit, segs};
+}
+const VAL = c => [0, 1, 1, 2, 1, 2, 2, 3][c];
+const CNAME = ['dark', 'red', 'green', 'yellow', 'blue', 'magenta', 'cyan', 'white'];
+const CLET = ['', 'R', 'G', 'Y', 'B', 'M', 'C', 'W'];
+const CHEX = ['#000', '#ff3b3b', '#2bff5c', '#ffe83b', '#3d6bff', '#ff3bff', '#3bf0ff', '#ffffff'];
+// in binary mode red is 4, green 2 and blue 1, so a colour reads as a three-bit number
+const BIN = c => (c & 1 ? 4 : 0) + (c & 2 ? 2 : 0) + (c & 4 ? 1 : 0);
+const mixName = c => [1, 2, 4].filter(b => c & b).map(b => CNAME[b]).join(' + ');
+function scoreOf(L, lit) {
+  let pts = 0, max = 0, ok = 0, bad = 0, n = 0;
+  for (const cr of L.crystals) {
+    if (cr.dark) { if (lit[cr.cell]) { pts -= 2; bad++; } continue; }
+    n++; max += VAL(cr.c);
+    if (lit[cr.cell] === cr.c) { pts += VAL(cr.c); ok++; }
+  }
+  return {pts, max, ok, bad, n, perfect: ok === n && !bad};
+}
+
+/* ---------- level generation ----------
+   every level is built backwards from a hidden solution: lamps on the rim, pieces dropped where light already
+   flows, then crystals put on cells whose colour only comes out right with those pieces in place */
+const BAR = lv => lv <= 5 ? 0.6 : Math.min(1, 0.6 + (lv - 5) * 0.02);
+const isBoss = lv => lv % 5 === 0;
+const MODS = {
+  dark:     {e: '🌑', name: 'Dark room', desc: 'The beams are invisible. Crystals still glow with the light they get.', gold: 2},
+  binary:   {e: '🔢', name: 'Binary night', desc: 'Crystals show numbers instead of colours: red is 4, green 2, blue 1. Yellow is 6, white is 7.', gold: 1},
+  workshop: {e: '🔧', name: 'Workshop', desc: 'Two pieces of the solution are already bolted down. Use them.', gold: 0},
+  rockfall: {e: '🪨', name: 'Rockfall', desc: 'More rocks block the light today.', gold: 0},
+  cathedral:{e: '⛪', name: 'Cathedral', desc: 'A big window with more crystals. Clear it to choose a relic.', gold: 0},
+};
+function modsFor(seed, lv) {
+  if (isBoss(lv)) return ['cathedral'];
+  const r = rngFor('mods', seed, lv), out = [];
+  if (lv >= 7 && r() < 0.17) out.push('dark');
+  if (lv >= 10 && r() < 0.18) out.push('binary');
+  if (lv >= 8 && r() < 0.2) out.push('workshop');
+  if (lv >= 4 && r() < 0.14) out.push('rockfall');
+  return out;
+}
+function levelParams(lv, r, mods, relax) {
+  const boss = mods.includes('cathedral');
+  let R = lv <= 2 ? 3 : lv <= 8 ? (r() < 0.5 ? 3 : 4) : lv < 24 ? 4 : (r() < 0.35 ? 5 : 4);
+  if (boss) R = Math.min(5, R + (lv >= 10 ? 1 : 0));
+  const lamps = (lv <= 2 ? 1 : lv <= 7 ? 2 : 3) + (R === 5 ? 1 : 0);
+  const mix = lv >= 4;
+  let n = Math.min(10, 2 + Math.floor(lv / 3)) + (boss ? 1 : 0) - relax;
+  const pieces = [];
+  for (let k = 0; k < Math.max(2, n); k++) {
+    const x = r();
+    pieces.push(lv >= 11 && x < 0.12 ? PRI : lv >= 8 && x < 0.26 ? FIL : lv >= 5 && x < 0.42 ? SPL : MIR);
+  }
+  return {R, lamps, mix, pieces,
+    crystals: Math.max(2, Math.min(11, 2 + Math.floor(lv / 2.5)) + (boss ? 2 : 0) - relax),
+    dark: lv >= 14 ? Math.min(3, 1 + Math.floor((lv - 14) / 7)) : 0,
+    rocks: Math.floor(r() * 4) + (mods.includes('rockfall') ? 4 : 0),
+    locked: mods.includes('workshop') ? 2 : 0};
+}
+function genLevel(seed, lv, mods) {
+  for (let relax = 0; relax < 6; relax++) {
+    const got = genTry(seed, lv, mods, relax);
+    if (got) return got;
+  }
+  return genTry(seed + 'x', 1, [], 0);
+}
+function genTry(seed, lv, mods, relax) {
+  const r = rngFor('lumen', seed, lv, relax);
+  const P = levelParams(lv, r, mods, relax);
+  const H = makeHex(P.R);
+  let best = null;
+  const t0 = Date.now();
+  for (let a = 0; a < 30; a++) {
+    if (best && Date.now() - t0 > 180) break;
+    const L = {R: P.R, fixed: new Uint8Array(H.N), lamps: [], crystals: [], fixedPieces: {}, mods};
+    const rim = shuffle(r, H.cells.map((_, i) => i).filter(i => H.edge[i]));
+    const cols = P.mix ? shuffle(r, [1, 2, 4]) : [pick(r, [1, 2, 4])];
+    if (P.pieces.some(t => t === FIL || t === PRI)) cols[0] = P.pieces.includes(PRI) || r() < 0.5 ? 7 : pick(r, [3, 5, 6]);
+    for (let k = 0, j = 0; k < P.lamps && j < rim.length; j++) {
+      const c = rim[j];
+      if (H.nb.slice(c * 6, c * 6 + 6).some(x => x >= 0 && L.fixed[x] === 2)) continue;
+      const ds = [0, 1, 2, 3, 4, 5].filter(d => { const x = H.nb[c * 6 + d]; return x >= 0 && !H.edge[x]; });
+      if (!ds.length) continue;
+      L.fixed[c] = 2; L.lamps.push({cell: c, d: pick(r, ds), col: cols[k % cols.length]}); k++;
+    }
+    for (let k = 0; k < P.rocks; k++) { const c = Math.floor(r() * H.N); if (!L.fixed[c]) L.fixed[c] = 1; }
+    const sol = {};
+    // mirrors go in first, filters and prisms once the beams carry mixed light
+    const want = P.pieces.slice().sort((x, y) => y - x);
+    let fails = 0;
+    while (want.length && fails < 60) {
+      const t = want[want.length - 1];
+      const before = trace(H, L, sol).lit;
+      const cand = [];
+      for (let i = 0; i < H.N; i++) if (before[i] && !L.fixed[i] && !sol[i]) cand.push(i);
+      if (!cand.length) { fails++; continue; }
+      const i = pick(r, cand);
+      let p;
+      const bits = [1, 2, 4].filter(b => before[i] & b);
+      if (t === MIR || t === SPL) p = {t, k: Math.floor(r() * 6)};
+      else if (t === FIL) { if (bits.length < 2) { fails++; continue; } p = {t, c: pick(r, bits)}; if (bits.length === 3 && r() < 0.35) p.c |= pick(r, bits.filter(b => b !== p.c)); }
+      else { if (bits.length < 2) { fails++; continue; } p = {t}; }
+      sol[i] = p;
+      const after = trace(H, L, sol).lit;
+      let changed = 0; for (let j = 0; j < H.N; j++) if (before[j] !== after[j]) changed++;
+      if (changed < 3) { delete sol[i]; fails++; continue; }
+      want.pop();
+    }
+    if (want.length) continue;
+    const fin = trace(H, L, sol).lit, bare = trace(H, L, {}).lit;
+    const spots = [];
+    for (let i = 0; i < H.N; i++) if (fin[i] && !L.fixed[i] && !sol[i] && bare[i] !== fin[i]) spots.push(i);
+    shuffle(r, spots);
+    spots.sort((x, y) => VAL(fin[y]) - VAL(fin[x]) + (r() - 0.5) * 1.6);
+    const chosen = [];
+    for (const s of spots) {
+      if (chosen.length >= P.crystals) break;
+      if (chosen.some(c => H.nb.slice(c * 6, c * 6 + 6).includes(s))) continue;
+      chosen.push(s);
+    }
+    if (chosen.length < P.crystals) continue;
+    for (const c of chosen) { L.fixed[c] = 3; L.crystals.push({cell: c, c: fin[c]}); }
+    for (let k = 0, tries = 0; k < P.dark && tries < 120; tries++) {
+      const c = Math.floor(r() * H.N);
+      if (L.fixed[c] || sol[c] || fin[c]) continue;
+      if (!H.nb.slice(c * 6, c * 6 + 6).some(j => j >= 0 && fin[j])) continue;
+      L.fixed[c] = 4; L.crystals.push({cell: c, c: 0, dark: true}); k++;
+    }
+    const solCells = Object.keys(sol).map(Number);
+    for (let k = 0; k < P.locked && solCells.length > 2; k++) { const c = solCells.splice(Math.floor(r() * solCells.length), 1)[0]; L.fixedPieces[c] = sol[c]; }
+    L.sol = sol;
+    L.hand = {};
+    for (const c of Object.keys(sol)) if (!L.fixedPieces[c]) { const k = keyOfPiece(sol[c]); L.hand[k] = (L.hand[k] || 0) + 1; }
+    if (!scoreOf(L, trace(H, L, sol).lit).perfect) continue;
+    const g = greedy(H, L);
+    const q = (g.perfect ? 0 : 10) - g.pts / Math.max(1, g.max) * 5 + r();
+    if (!best || q > best.q) best = {L, H, q};
+    if (best.q >= 8 && a >= 4) break;
+  }
+  return best;
+}
+// a greedy player drops pieces one at a time where they help most; levels it can finish are thrown away
+function greedy(H, L) {
+  const pieces = Object.assign({}, L.fixedPieces);
+  for (const key of Object.keys(L.hand)) for (let n = 0; n < L.hand[key]; n++) {
+    let bv = -1e9, bp = null, bc = -1;
+    const PKd = PK[key], opts = PKd.rot ? [...Array(PKd.rot).keys()].map(k => ({t: PKd.t, k})) : [{t: PKd.t, c: PKd.c}];
+    // a piece on a cell no light reaches changes nothing
+    const lit = trace(H, L, pieces).lit;
+    for (let i = 0; i < H.N; i++) {
+      if (L.fixed[i] || pieces[i] || !lit[i]) continue;
+      for (const p of opts) { pieces[i] = p; const s = scoreOf(L, trace(H, L, pieces).lit).pts; if (s > bv) { bv = s; bp = p; bc = i; } delete pieces[i]; }
+    }
+    if (bc >= 0) pieces[bc] = bp;
+  }
+  return scoreOf(L, trace(H, L, pieces).lit);
+}
+
+/* ---------- pieces you hold ---------- */
+const PK = {
+  M:  {t: MIR, rot: 6, name: 'Mirror', desc: 'Bounces light. Angle in equals angle out. Six positions, every 30°.'},
+  S:  {t: SPL, rot: 6, name: 'Splitter', desc: 'Half-silvered glass: light goes straight through and also bounces like a mirror.'},
+  P:  {t: PRI, rot: 0, name: 'Prism', desc: 'Splits light into its colours: red bends right, green goes straight, blue bends left.'},
+  B:  {t: BEN, rot: 2, name: 'Bender', desc: 'Turns any light 60° to one side. Tap it to switch sides.'},
+  F1: {t: FIL, c: 1, name: 'Red filter', desc: 'Only red gets through.'},
+  F2: {t: FIL, c: 2, name: 'Green filter', desc: 'Only green gets through.'},
+  F4: {t: FIL, c: 4, name: 'Blue filter', desc: 'Only blue gets through.'},
+  F3: {t: FIL, c: 3, name: 'Yellow filter', desc: 'Red and green get through, blue is stopped.'},
+  F5: {t: FIL, c: 5, name: 'Magenta filter', desc: 'Red and blue get through, green is stopped.'},
+  F6: {t: FIL, c: 6, name: 'Cyan filter', desc: 'Green and blue get through, red is stopped.'},
+};
+const KEY_ORDER = ['M', 'S', 'B', 'P', 'F1', 'F2', 'F4', 'F3', 'F5', 'F6'];
+function keyOfPiece(p) { return p.t === MIR ? 'M' : p.t === SPL ? 'S' : p.t === PRI ? 'P' : p.t === BEN ? 'B' : 'F' + p.c; }
+const pieceOf = pl => { const d = PK[pl.key]; return d.t === FIL ? {t: FIL, c: d.c} : {t: d.t, k: pl.k || 0}; };
+
+/* ---------- relics, kit and the shop ---------- */
+const RELICS = [
+  {id: 'locket', e: '💗', name: 'Locket', r: 'C', desc: 'One more heart, and you heal one now.'},
+  {id: 'owl', e: '🦉', name: 'Night Owl', r: 'C', desc: 'A free hint every fourth level.'},
+  {id: 'piggy', e: '🐷', name: 'Piggy Bank', r: 'C', desc: 'After each level, +1 gold for every 5 you hold (up to +3).'},
+  {id: 'clover', e: '🍀', name: 'Clover', r: 'R', desc: 'The first time you miss the bar in each block of five levels, it costs no hearts.'},
+  {id: 'quill', e: '🪶', name: 'Quill', r: 'C', desc: 'Unused pieces pay 2 gold each instead of 1.'},
+  {id: 'coupon', e: '🏷️', name: 'Coupon', r: 'C', desc: 'Everything in the shop costs 1 gold less.'},
+  {id: 'compass', e: '🧭', name: 'Compass', r: 'R', desc: 'Each level, one cell of the hidden solution is marked with a dotted ring.'},
+  {id: 'candle', e: '🕯️', name: 'Candle', r: 'C', desc: 'Dark rooms are lit: you see the beams anyway (and still get the dark-room gold).'},
+  {id: 'ring', e: '💍', name: 'Jeweller', r: 'C', desc: '+1 gold for every white crystal you light.'},
+  {id: 'shield', e: '🛡️', name: 'Shield', r: 'R', desc: 'Missing the bar costs 1 heart instead of 2.'},
+  {id: 'flame', e: '🔥', name: 'Eternal Flame', r: 'R', desc: 'The perfect-streak bonus can grow to +8 gold instead of +4.'},
+  {id: 'pack', e: '🎒', name: 'Big Satchel', r: 'C', desc: 'The shop shows four offers instead of three.'},
+  {id: 'loupe', e: '🔎', name: 'Loupe', r: 'C', desc: 'Crystals that get the wrong light show what is missing (+) and what is extra (−).'},
+  {id: 'hourglass', e: '⏳', name: 'Hourglass', r: 'C', desc: 'Two hints after every cathedral you clear.'},
+  {id: 'dove', e: '🕊️', name: 'Dove', r: 'R', desc: 'Once, when you would lose your last heart, you keep two instead.'},
+  {id: 'abacus', e: '🧮', name: 'Abacus', r: 'C', desc: 'Binary nights pay 3 more gold, and crystals there show the colour as a faint ring.'},
+];
+const RELIC = Object.fromEntries(RELICS.map(x => [x.id, x]));
+const KIT = [
+  {id: 'kM', key: 'M', price: 5, min: 1},
+  {id: 'kB', key: 'B', price: 5, min: 2},
+  {id: 'kS', key: 'S', price: 6, min: 5},
+  {id: 'kP', key: 'P', price: 6, min: 9},
+  {id: 'kF1', key: 'F1', price: 3, min: 8}, {id: 'kF2', key: 'F2', price: 3, min: 8}, {id: 'kF4', key: 'F4', price: 3, min: 8},
+];
+const USES = {
+  hint: {e: '💡', name: 'Hint', price: 3, desc: 'Puts one piece of the hidden solution in place and bolts it down.'},
+  heal: {e: '❤️', name: 'Heal', price: 4, desc: 'Get one heart back now.'},
+};
+const has = id => st && st.relics.includes(id);
+const maxHearts = () => 5 + (has('locket') ? 1 : 0);
+
+/* ---------- state ---------- */
+const SAVE = 'lumen-v1', SAVE_DAILY = 'lumen-daily-v1', REC = 'lumen-records-v1';
+let st = null, ui = {sel: null, focus: -1, guide: -1, toast: null};
+let rec = loadRec();
+function loadRec() { try { return Object.assign({best: 0, runs: 0, perfects: 0, bestStreak: 0, seenHelp: false, mute: false, daily: {}}, JSON.parse(localStorage.getItem(REC) || '{}')); } catch (e) { return {best: 0, runs: 0, perfects: 0, bestStreak: 0, seenHelp: false, mute: false, daily: {}}; } }
+function saveRec() { try { localStorage.setItem(REC, JSON.stringify(rec)); } catch (e) {} }
+function save() { if (!st) return; try { localStorage.setItem(st.mode === 'daily' ? SAVE_DAILY : SAVE, JSON.stringify(st)); } catch (e) {} }
+function loadRun(key) { try { const s = JSON.parse(localStorage.getItem(key) || 'null'); return s && s.v === 1 ? s : null; } catch (e) { return null; } }
+const today = () => { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); };
+
+function newRun() {
+  st = {v: 1, mode: 'run', seed: Math.random().toString(36).slice(2, 8), lv: 1, hearts: 5, gold: 0, hints: 2, relics: [], kit: {}, streak: 0, perfects: 0, score: 0,
+    phase: 'level', cloverUsed: -1, doveUsed: false, seenTypes: {}, play: null, res: null, shop: null, reward: null, log: []};
+  rec.runs++; saveRec();
+  startLevel();
+}
+function newDaily() {
+  const d = today();
+  const old = loadRun(SAVE_DAILY);
+  if (old && old.day === d) { st = old; return render(); }
+  st = {v: 1, mode: 'daily', day: d, seed: 'daily-' + d, lv: 16, hearts: 0, gold: 0, hints: 1, relics: [], kit: {}, streak: 0, perfects: 0, score: 0,
+    phase: 'level', seenTypes: {P: 1, S: 1, F: 1, D: 1}, play: null, res: null, log: []};
+  startLevel();
+}
+let LV = null; // the generated level for st, rebuilt from the seed on load
+function levelNow() {
+  const key = st.seed + ':' + st.lv;
+  if (!LV || LV.key !== key) {
+    const mods = st.mode === 'daily' ? [] : modsFor(st.seed, st.lv);
+    const g = genLevel(st.seed, st.lv, mods);
+    LV = {key, L: g.L, H: g.H, mods};
+  }
+  return LV;
+}
+function startLevel() {
+  const {L, H, mods} = levelNow();
+  const news = [];
+  const types = new Set(Object.keys(L.hand).map(k => k[0] === 'F' ? 'F' : k));
+  if (L.crystals.some(c => c.dark)) types.add('D');
+  for (const t of types) if (!st.seenTypes[t] && t !== 'M') { st.seenTypes[t] = 1; news.push(t); }
+  let compass = -1;
+  if (has('compass')) { const cs = Object.keys(L.sol).map(Number).filter(c => !L.fixedPieces[c]); if (cs.length) compass = pick(rngFor('compass', st.seed, st.lv), cs); }
+  if (has('owl') && st.lv % 4 === 0 && st.mode === 'run') st.hints++;
+  st.play = {placed: {}, hist: [], news, compass, hinted: 0, wasPerfect: false};
+  st.phase = 'level';
+  ui.sel = null; ui.focus = -1;
+  autoSelect();
+  save(); render();
+  if (st.mode === 'run' && st.lv === 1 && !rec.seenHelp) { rec.seenHelp = true; saveRec(); openGuide(0); }
+}
+
+/* what is left to place: the level's own pieces first, then your kit */
+function counts() {
+  const {L} = levelNow(), used = {};
+  for (const pl of Object.values(st.play.placed)) if (pl.src !== 'hint') used[pl.key] = (used[pl.key] || 0) + 1;
+  const keys = new Set(Object.keys(L.hand).concat(Object.keys(st.kit).filter(k => st.kit[k] > 0)));
+  const out = {};
+  for (const k of keys) {
+    const hand = L.hand[k] || 0, kit = st.kit[k] || 0, u = used[k] || 0;
+    out[k] = {hand, kit, used: u, left: hand + kit - u};
+  }
+  return out;
+}
+function autoSelect() {
+  const c = counts();
+  if (ui.sel && c[ui.sel] && c[ui.sel].left > 0) return;
+  ui.sel = KEY_ORDER.find(k => c[k] && c[k].left > 0) || null;
+}
+function boardPieces() {
+  const {L} = levelNow(), out = Object.assign({}, L.fixedPieces);
+  for (const [c, pl] of Object.entries(st.play.placed)) out[c] = pieceOf(pl);
+  return out;
+}
+function evalNow() {
+  const {L, H} = levelNow();
+  const tr = trace(H, L, boardPieces(), true);
+  return {tr, S: scoreOf(L, tr.lit)};
+}
+
+/* ---------- actions on the board ---------- */
+function snapshot() { st.play.hist.push(JSON.stringify(st.play.placed)); if (st.play.hist.length > 80) st.play.hist.shift(); }
+let lastOk = null;
+function tapCell(i) {
+  const {L} = levelNow(), p = st.play;
+  if (L.fixedPieces[i]) return toast('This piece is bolted down.');
+  const f = L.fixed[i];
+  if (f) return toast(cellInfo(i));
+  const pl = p.placed[i];
+  if (pl) {
+    if (pl.src === 'hint') return toast('A hint put this piece here. It stays.');
+    if (ui.focus !== i) { ui.focus = i; return render(); }
+    const rot = PK[pl.key].rot;
+    if (!rot) return toast('This piece looks the same every way round. Use "Take back" to move it.');
+    snapshot(); pl.k = ((pl.k || 0) + 1) % rot; sfx('turn');
+    return after();
+  }
+  const c = counts();
+  if (!ui.sel || !c[ui.sel] || c[ui.sel].left <= 0) { ui.focus = -1; render(); return toast(Object.values(c).some(x => x.left > 0) ? 'Pick a piece below first.' : 'You have placed every piece. Tap one on the board to turn it.'); }
+  snapshot();
+  p.placed[i] = {key: ui.sel, k: PK[ui.sel].rot ? defaultTurn(i) : 0, src: c[ui.sel].used < c[ui.sel].hand ? 'hand' : 'kit'};
+  ui.focus = i; sfx('place');
+  autoSelect();
+  after();
+}
+// a fresh mirror is turned so that light already passing through the cell bends rather than slips past
+function defaultTurn(i) {
+  const {L, H} = levelNow(), tr = trace(H, L, boardPieces(), true);
+  const inc = tr.segs.find(s => s[1] === i);
+  if (!inc) return 1;
+  const d = inc[2];
+  for (const k of [1, 5, 2, 4, 0, 3]) { const e = reflect(k, d); if (e !== d && e !== (d + 3) % 6) return k; }
+  return 1;
+}
+function rotateFocus(dir) {
+  const pl = st.play.placed[ui.focus];
+  if (!pl || pl.src === 'hint') return;
+  const rot = PK[pl.key].rot;
+  if (!rot) return;
+  snapshot(); pl.k = ((pl.k || 0) + dir + rot) % rot; sfx('turn'); after();
+}
+function takeBack() {
+  const pl = st.play.placed[ui.focus];
+  if (!pl || pl.src === 'hint') return;
+  snapshot(); delete st.play.placed[ui.focus]; ui.sel = pl.key; ui.focus = -1; sfx('turn'); after();
+}
+function undo() {
+  const h = st.play.hist.pop();
+  if (h == null) return;
+  st.play.placed = JSON.parse(h); ui.focus = -1; autoSelect(); after(true);
+}
+function clearAll() {
+  if (!Object.values(st.play.placed).some(pl => pl.src !== 'hint')) return;
+  snapshot();
+  for (const [c, pl] of Object.entries(st.play.placed)) if (pl.src !== 'hint') delete st.play.placed[c];
+  ui.focus = -1; autoSelect(); after(true);
+}
+function useHint() {
+  if (st.hints <= 0) return;
+  const {L} = levelNow(), p = st.play;
+  const want = Object.keys(L.sol).map(Number).filter(c => !L.fixedPieces[c] && !(p.placed[c] && p.placed[c].src === 'hint'));
+  if (!want.length) return toast('Every piece of the solution is already in place.');
+  // prefer a cell the player has not got right yet
+  const wrong = want.filter(c => { const pl = p.placed[c], s = L.sol[c]; return !pl || keyOfPiece(s) !== pl.key || (PK[pl.key].rot && pl.k % (s.t === MIR || s.t === SPL ? 6 : 6) !== s.k); });
+  const c = (wrong.length ? wrong : want)[0], sp = L.sol[c], key = keyOfPiece(sp);
+  snapshot();
+  delete p.placed[c];
+  // the hint uses up one piece of that kind; take back the latest one placed elsewhere if none are left
+  const cn = counts();
+  if (!cn[key] || cn[key].left <= 0) {
+    const elsewhere = Object.keys(p.placed).filter(x => p.placed[x].key === key && p.placed[x].src !== 'hint');
+    if (elsewhere.length) delete p.placed[elsewhere[elsewhere.length - 1]];
+  }
+  p.placed[c] = {key, k: sp.k || 0, src: 'hint'};
+  st.hints--; p.hinted++;
+  ui.focus = -1; autoSelect(); sfx('hint');
+  after();
+}
+function after(quiet) {
+  const {S} = evalNow();
+  const prev = lastOk;
+  lastOk = S;
+  if (!quiet && prev && S.ok > prev.ok) sfx('lit', S.ok);
+  if (S.perfect && !st.play.wasPerfect) { st.play.wasPerfect = true; sfx('all'); }
+  if (!S.perfect) st.play.wasPerfect = false;
+  save(); render();
+}
+function cellInfo(i) {
+  const {L} = levelNow(), f = L.fixed[i], lit = evalNow().tr.lit[i], bin = L.mods.includes('binary');
+  if (f === 1) return 'A rock. Light stops here.';
+  if (f === 2) { const lp = L.lamps.find(x => x.cell === i); return `A lamp shining ${bin ? BIN(lp.col) + ' (' + CNAME[lp.col] + ')' : CNAME[lp.col] + (lp.col > 4 || lp.col === 3 ? ' (' + mixName(lp.col) + ')' : '')} light.`; }
+  const cr = L.crystals.find(x => x.cell === i);
+  if (cr.dark) return lit ? 'A dark crystal. Light is hitting it, and that costs 2 points.' : 'A dark crystal. Keep every beam away from it.';
+  const w = bin ? cr.c > 0 ? BIN(cr.c) : 0 : CNAME[cr.c];
+  const g = lit ? (bin ? BIN(lit) : CNAME[lit]) : 'nothing';
+  return `This crystal wants ${w}${!bin && (cr.c === 3 || cr.c > 4) ? ' (' + mixName(cr.c) + ')' : ''}. It gets ${g}.${lit === cr.c ? ' Lit.' : ''}`;
+}
+
+/* ---------- finishing a level ---------- */
+function finish() {
+  const {L} = levelNow(), {S} = evalNow(), p = st.play;
+  const bar = st.mode === 'daily' ? 1 : BAR(st.lv);
+  const need = Math.ceil(S.max * bar - 1e-9);
+  const cleared = S.pts >= need, perfect = S.perfect;
+  const cn = counts();
+  const handTotal = Object.values(L.hand).reduce((a, b) => a + b, 0);
+  const used = Object.values(p.placed).filter(pl => pl.src !== 'hint').length + p.hinted;
+  const unused = Math.max(0, handTotal - used);
+  const res = {lv: st.lv, pts: S.pts, max: S.max, need, ok: S.ok, n: S.n, bad: S.bad, cleared, perfect, unused, gold: [], hearts: 0, placed: JSON.parse(JSON.stringify(p.placed)), hinted: p.hinted};
+  if (st.mode === 'daily') {
+    const prevBest = rec.daily[st.day];
+    rec.daily[st.day] = {pts: Math.max(S.pts, prevBest ? prevBest.pts : -99), max: S.max, perfect: perfect || !!(prevBest && prevBest.perfect), hints: p.hinted};
+    saveRec();
+    st.res = res; st.phase = 'result'; save(); render(); if (perfect) { sfx('win'); confetti(); }
+    return;
+  }
+  const g = (n, why) => { if (n) res.gold.push([n, why]); };
+  if (cleared) {
+    g(3, 'clearing the level');
+    if (perfect) { st.streak++; g(3, 'a perfect window'); const cap = has('flame') ? 8 : 4; g(Math.min(cap, st.streak - 1), 'a perfect streak of ' + st.streak); }
+    g(unused * (has('quill') ? 2 : 1), unused + ' unused piece' + (unused === 1 ? '' : 's'));
+    for (const m of L.mods) g(MODS[m].gold, MODS[m].name.toLowerCase());
+    if (L.mods.includes('binary') && has('abacus')) g(3, 'the abacus');
+    if (has('ring')) g(L.crystals.filter(c => c.c === 7 && evalNow().tr.lit[c.cell] === 7).length, 'white crystals');
+  } else st.streak = 0;
+  if (!perfect && cleared) st.streak = 0;
+  const earned = res.gold.reduce((a, x) => a + x[0], 0);
+  st.gold += earned;
+  if (has('piggy')) { const i = Math.min(3, Math.floor(st.gold / 5)); if (i) { st.gold += i; res.gold.push([i, 'piggy bank interest']); } }
+  if (perfect) { st.perfects++; rec.perfects++; if (st.hearts < maxHearts()) { st.hearts++; res.hearts = 1; } }
+  if (!cleared) {
+    let loss = has('shield') ? 1 : 2;
+    const block = Math.floor((st.lv - 1) / 5);
+    if (has('clover') && st.cloverUsed !== block) { st.cloverUsed = block; loss = 0; res.clover = true; }
+    st.hearts -= loss; res.hearts = -loss;
+    if (st.hearts <= 0 && has('dove') && !st.doveUsed) { st.doveUsed = true; st.hearts = 2; res.dove = true; }
+  }
+  st.score += Math.max(0, S.pts);
+  rec.bestStreak = Math.max(rec.bestStreak, st.streak);
+  st.log.unshift(`Level ${st.lv}: ${S.pts}/${S.max}${perfect ? ' perfect' : cleared ? '' : ' missed'}`);
+  st.res = res; st.phase = 'result';
+  if (st.hearts <= 0) { st.phase = 'over'; rec.best = Math.max(rec.best, st.lv - 1); localStorage.removeItem(SAVE); }
+  saveRec(); save(); render();
+  if (perfect) { sfx('win'); confetti(); } else if (!cleared) sfx('miss');
+}
+function nextFromResult() {
+  if (st.res.cleared && isBoss(st.lv)) return openReward();
+  openShop();
+}
+function openReward() {
+  const r = rngFor('reward', st.seed, st.lv);
+  const pool = shuffle(r, RELICS.filter(x => !st.relics.includes(x.id)));
+  st.reward = pool.slice(0, 3).map(x => x.id);
+  if (has('hourglass')) st.hints += 2;
+  st.phase = 'reward'; save(); render();
+}
+function takeRelic(id) {
+  if (id) gainRelic(id);
+  st.reward = null; openShop();
+}
+function gainRelic(id) {
+  st.relics.push(id);
+  if (id === 'locket') st.hearts = Math.min(maxHearts(), st.hearts + 1);
+}
+function price(x) { return Math.max(1, x - (has('coupon') ? 1 : 0)); }
+function openShop() {
+  const r = rngFor('shop', st.seed, st.lv, st.shopRolls || 0);
+  const pool = [];
+  for (const k of KIT) if (st.lv >= k.min) pool.push({kind: 'kit', id: k.id, w: 3});
+  for (const x of RELICS) if (!st.relics.includes(x.id)) pool.push({kind: 'relic', id: x.id, w: x.r === 'R' ? 1 : 2});
+  pool.push({kind: 'use', id: 'hint', w: 4});
+  const n = has('pack') ? 4 : 3, offers = [];
+  while (offers.length < n && pool.length) {
+    const tot = pool.reduce((a, x) => a + x.w, 0);
+    let x = r() * tot, j = 0;
+    while (x > pool[j].w) { x -= pool[j].w; j++; }
+    offers.push(pool.splice(j, 1)[0]);
+  }
+  st.shop = {offers: offers.map(o => Object.assign(o, {sold: false})), rolls: st.shop && st.phase === 'shop' ? st.shop.rolls : 0};
+  st.phase = 'shop'; save(); render();
+}
+function offerInfo(o) {
+  if (o.kind === 'kit') { const k = KIT.find(x => x.id === o.id); return {icon: pieceIcon(k.key), name: PK[k.key].name + ' (kit)', desc: PK[k.key].desc + ' You get one extra on every level.', price: price(k.price), tag: 'kit'}; }
+  if (o.kind === 'relic') { const x = RELIC[o.id]; return {icon: x.e, name: x.name, desc: x.desc, price: price(x.r === 'R' ? 9 : 6), tag: x.r === 'R' ? 'rare relic' : 'relic'}; }
+  const u = USES[o.id]; return {icon: u.e, name: u.name, desc: u.desc, price: price(u.price), tag: 'consumable'};
+}
+function buy(i) {
+  const o = st.shop.offers[i], inf = offerInfo(o);
+  if (o.sold || st.gold < inf.price) return;
+  st.gold -= inf.price; o.sold = true; sfx('buy');
+  if (o.kind === 'kit') { const k = KIT.find(x => x.id === o.id).key; st.kit[k] = (st.kit[k] || 0) + 1; }
+  else if (o.kind === 'relic') gainRelic(o.id);
+  else if (o.id === 'hint') st.hints++;
+  save(); render();
+}
+function heal() { const c = price(USES.heal.price); if (st.gold < c || st.hearts >= maxHearts()) return; st.gold -= c; st.hearts++; sfx('buy'); save(); render(); }
+function reroll() { const c = 1 + st.shop.rolls; if (st.gold < c) return; st.gold -= c; const rolls = st.shop.rolls + 1; st.shopRolls = (st.shopRolls || 0) + 1; openShop(); st.shop.rolls = rolls; save(); render(); }
+function leaveShop() { st.lv++; st.shop = null; st.res = null; startLevel(); }
+
+/* ---------- drawing ---------- */
+const SQ3 = Math.sqrt(3);
+const px = c => [SQ3 * (c.q + c.r / 2), 1.5 * c.r];
+const dirv = d => { const [dq, dr] = DIRS[d]; return [SQ3 * (dq + dr / 2), 1.5 * dr]; };
+const hexPts = (x, y, s) => [0, 1, 2, 3, 4, 5].map(i => { const a = Math.PI / 180 * (60 * i + 30); return (x + s * Math.cos(a)).toFixed(3) + ',' + (y + s * Math.sin(a)).toFixed(3); }).join(' ');
+const flatPts = (x, y, s) => [0, 1, 2, 3, 4, 5].map(i => { const a = Math.PI / 180 * (60 * i); return (x + s * Math.cos(a)).toFixed(3) + ',' + (y + s * Math.sin(a)).toFixed(3); }).join(' ');
+function pieceSvg(p, x, y, opts = {}) {
+  const locked = opts.locked;
+  let s = '';
+  if (p.t === MIR || p.t === SPL) {
+    const a = Math.PI / 6 * p.k, dx = Math.cos(a) * 0.78, dy = -Math.sin(a) * 0.78;
+    const x1 = (x - dx).toFixed(3), y1 = (y - dy).toFixed(3), x2 = (x + dx).toFixed(3), y2 = (y + dy).toFixed(3);
+    if (p.t === MIR) s += `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#0b0f24" stroke-width=".28" stroke-linecap="round"/><line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${locked ? '#9aa3c8' : '#e9edff'}" stroke-width=".16" stroke-linecap="round"/>`;
+    else s += `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#0b0f24" stroke-width=".26" stroke-linecap="round"/><line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#8fd8ff" stroke-width=".13" stroke-dasharray=".16 .1" stroke-linecap="round"/>`;
+  } else if (p.t === FIL) {
+    s += `<circle cx="${x}" cy="${y}" r=".5" fill="${CHEX[p.c]}" fill-opacity=".28" stroke="${CHEX[p.c]}" stroke-width=".12"/>`;
+  } else if (p.t === PRI) {
+    s += `<polygon points="${x},${(y - .55).toFixed(3)} ${(x + .5).toFixed(3)},${(y + .35).toFixed(3)} ${(x - .5).toFixed(3)},${(y + .35).toFixed(3)}" fill="rgba(255,255,255,.18)" stroke="#f3f0ff" stroke-width=".1" stroke-linejoin="round"/>`;
+  } else if (p.t === BEN) {
+    const sgn = p.k ? -1 : 1;
+    s += `<path d="M ${(x - .42).toFixed(3)} ${(y + .25).toFixed(3)} Q ${x} ${(y - .55).toFixed(3)} ${(x + .42).toFixed(3)} ${(y + .25).toFixed(3)}" fill="none" stroke="#ffd58a" stroke-width=".13" transform="${sgn < 0 ? `scale(-1 1) translate(${(-2 * x).toFixed(3)} 0)` : ''}"/><circle cx="${(x + .42 * sgn).toFixed(3)}" cy="${(y + .25).toFixed(3)}" r=".11" fill="#ffd58a"/>`;
+  }
+  if (locked) s += `<circle cx="${(x + .5).toFixed(3)}" cy="${(y - .52).toFixed(3)}" r=".17" fill="#9aa3c8"/>`;
+  return s;
+}
+function pieceIcon(key, k) {
+  const p = pieceOf({key, k: k == null ? 1 : k});
+  return `<svg viewBox="-1 -1 2 2" aria-hidden="true">${pieceSvg(p, 0, 0)}</svg>`;
+}
+/* the whole board as svg; opts: interactive, pieces, segs, hideBeams, binary, mini */
+function boardSvg(L, H, o) {
+  const pts = H.cells.map(px);
+  const xs = pts.map(p => p[0]), ys = pts.map(p => p[1]);
+  const minX = Math.min(...xs) - 1.05, maxX = Math.max(...xs) + 1.05, minY = Math.min(...ys) - 1.15, maxY = Math.max(...ys) + 1.15;
+  const lit = o.lit;
+  let cells = '', top = '', beams = '', glow = '';
+  H.cells.forEach((c, i) => {
+    const [x, y] = pts[i], f = L.fixed[i];
+    const fill = f === 1 ? '#3b4166' : 'var(--cellc)';
+    const ring = i === o.focus ? 'stroke="#ffd166" stroke-width=".14"' : 'stroke="var(--celll)" stroke-width=".06"';
+    cells += `<polygon class="${o.interactive ? 'cellh' : ''}" data-c="${i}" points="${hexPts(x, y, .97)}" fill="${fill}" ${ring}/>`;
+    if (o.compass === i) top += `<polygon points="${hexPts(x, y, .78)}" fill="none" stroke="#ffd166" stroke-width=".07" stroke-dasharray=".14 .12" pointer-events="none"/>`;
+    if (f === 1) top += `<polygon points="${hexPts(x, y + .05, .6)}" fill="#5a6088" stroke="#2a2f4f" stroke-width=".06" pointer-events="none"/>`;
+  });
+  if (!o.hideBeams && o.segs) for (const [from, to, d, col] of o.segs) {
+    const [x1, y1] = pts[from];
+    let x2, y2;
+    if (to >= 0) [x2, y2] = pts[to]; else { const [dx, dy] = dirv(d); x2 = x1 + dx * .55; y2 = y1 + dy * .55; }
+    const seg = `x1="${x1.toFixed(3)}" y1="${y1.toFixed(3)}" x2="${x2.toFixed(3)}" y2="${y2.toFixed(3)}"`;
+    glow += `<line class="beam" ${seg} stroke="${CHEX[col]}" stroke-width=".42" stroke-opacity=".22"/>`;
+    beams += `<line class="beam" ${seg} stroke="${CHEX[col]}" stroke-width=".13"/>`;
+    if (!o.mini) beams += `<line class="beam flow" ${seg} stroke="#fff" stroke-opacity=".55" stroke-width=".06"/>`;
+  }
+  for (const lp of L.lamps) {
+    const [x, y] = pts[lp.cell], [dx, dy] = dirv(lp.d), a = Math.atan2(dy, dx);
+    const tip = [x + Math.cos(a) * .82, y + Math.sin(a) * .82], l = [x + Math.cos(a + 2.5) * .42, y + Math.sin(a + 2.5) * .42], rr = [x + Math.cos(a - 2.5) * .42, y + Math.sin(a - 2.5) * .42];
+    top += `<polygon points="${tip.map(v => v.toFixed(3))} ${l.map(v => v.toFixed(3))} ${rr.map(v => v.toFixed(3))}" fill="${CHEX[lp.col]}" pointer-events="none"/>`;
+    top += `<circle cx="${x}" cy="${y}" r=".5" fill="${CHEX[lp.col]}" stroke="#0b0f24" stroke-width=".08" pointer-events="none"/>`;
+    top += `<text x="${x}" y="${(y + .18).toFixed(3)}" text-anchor="middle" font-size=".5" font-weight="700" fill="#0b0f24" pointer-events="none">${o.binary ? BIN(lp.col) : CLET[lp.col]}</text>`;
+  }
+  for (const cr of L.crystals) {
+    const i = cr.cell, [x, y] = pts[i], got = lit ? lit[i] : 0;
+    if (cr.dark) {
+      const hurt = got > 0;
+      top += `<polygon points="${flatPts(x, y, .58)}" fill="#05060f" stroke="${hurt ? '#ff5a4f' : '#6b7199'}" stroke-width="${hurt ? .14 : .08}" pointer-events="none"/>`;
+      if (hurt) top += `<text x="${x}" y="${(y + .2).toFixed(3)}" text-anchor="middle" font-size=".55" font-weight="700" fill="#ff5a4f" pointer-events="none">✕</text>`;
+      continue;
+    }
+    const ok = got === cr.c, stroke = o.binary && !o.abacus ? '#e4e6ff' : CHEX[cr.c];
+    const fill = got ? CHEX[got] : '#0b0f24';
+    const cls = ok && o.popped && o.popped.has(i) ? ' class="pop"' : '';
+    top += `<g${cls} style="transform-origin:${x.toFixed(3)}px ${y.toFixed(3)}px" pointer-events="none">`;
+    if (ok) top += `<polygon points="${flatPts(x, y, .9)}" fill="${CHEX[cr.c]}" fill-opacity=".35"/>`;
+    top += `<polygon points="${flatPts(x, y, .62)}" fill="${fill}" fill-opacity="${ok ? 1 : got ? .45 : 1}" stroke="${stroke}" stroke-width="${ok ? .1 : .15}"/>`;
+    const lab = o.binary ? BIN(cr.c) : CLET[cr.c];
+    top += `<text x="${x}" y="${(y + .17).toFixed(3)}" text-anchor="middle" font-size=".46" font-weight="800" fill="${ok ? '#0b0f24' : '#f2f3ff'}">${lab}</text>`;
+    if (ok) top += `<text x="${(x + .55).toFixed(3)}" y="${(y - .4).toFixed(3)}" text-anchor="middle" font-size=".42">✨</text>`;
+    else if (o.loupe && got) {
+      const miss = cr.c & ~got, extra = got & ~cr.c, bits = [];
+      [1, 2, 4].forEach(b => { if (miss & b) bits.push(['+', b]); if (extra & b) bits.push(['−', b]); });
+      bits.forEach(([sgn, b], k) => { const bx = x - .5 + k * .42; top += `<circle cx="${bx.toFixed(3)}" cy="${(y + .78).toFixed(3)}" r=".19" fill="${CHEX[b]}"/><text x="${bx.toFixed(3)}" y="${(y + .9).toFixed(3)}" text-anchor="middle" font-size=".3" font-weight="800" fill="#0b0f24">${sgn}</text>`; });
+    }
+    top += `</g>`;
+  }
+  let pcs = '';
+  for (const [c, p] of Object.entries(o.pieces || {})) {
+    const [x, y] = pts[c];
+    pcs += `<g pointer-events="none">${pieceSvg(p, x, y, {locked: o.locked && o.locked[c]})}</g>`;
+  }
+  return `<svg viewBox="${minX.toFixed(2)} ${minY.toFixed(2)} ${(maxX - minX).toFixed(2)} ${(maxY - minY).toFixed(2)}" role="img" aria-label="Hexagon board">${cells}<g class="beams" pointer-events="none">${glow}${beams}</g>${pcs}${top}</svg>`;
+}
+
+/* ---------- screens ---------- */
+const app = document.getElementById('app'), ovl = document.getElementById('ovl');
+function hearts() {
+  if (st.mode === 'daily') return '';
+  const m = maxHearts();
+  return `<span class="hearts" aria-label="${st.hearts} of ${m} hearts">${'❤️'.repeat(Math.max(0, st.hearts))}${'🤍'.repeat(Math.max(0, m - st.hearts))}</span>`;
+}
+function hud() {
+  if (st.mode === 'daily') return `<div class="hud"><button class="ib" id="menu" aria-label="Menu">☰</button><div class="lvl">Daily window<small>${st.day}</small></div><div class="sp"></div><div class="pill">Hints<b>💡 ${st.hints}</b></div></div>`;
+  return `<div class="hud"><button class="ib" id="menu" aria-label="Menu">☰</button>
+    <div class="lvl">Level ${st.lv}<small>${isBoss(st.lv) ? 'Cathedral' : 'next cathedral: ' + Math.ceil(st.lv / 5) * 5}</small></div>
+    <div class="sp"></div>${hearts()}
+    <div class="pill">Gold<b>🪙 ${st.gold}</b></div></div>`;
+}
+let popped = new Set(), prevLit = new Set();
+function levelView() {
+  const {L, H} = levelNow(), {tr, S} = evalNow(), p = st.play;
+  const bar = st.mode === 'daily' ? 1 : BAR(st.lv), need = Math.ceil(S.max * bar - 1e-9);
+  const okNow = new Set(L.crystals.filter(c => !c.dark && tr.lit[c.cell] === c.c).map(c => c.cell));
+  popped = new Set([...okNow].filter(c => !prevLit.has(c))); prevLit = okNow;
+  const binary = L.mods.includes('binary'), dark = L.mods.includes('dark') && !has('candle');
+  const locked = {}; for (const c of Object.keys(L.fixedPieces)) locked[c] = 1; for (const [c, pl] of Object.entries(p.placed)) if (pl.src === 'hint') locked[c] = 1;
+  const svg = boardSvg(L, H, {interactive: true, lit: tr.lit, segs: tr.segs, pieces: boardPieces(), locked, focus: ui.focus, compass: p.compass, hideBeams: dark, binary, abacus: has('abacus'), loupe: has('loupe'), popped});
+  const pct = Math.max(0, Math.min(100, 100 * S.pts / Math.max(1, S.max)));
+  const reached = S.pts >= need;
+  const status = S.perfect ? '✨ Every crystal is lit. Finish for a perfect window.' : reached ? `Bar reached. ${S.n - S.ok} crystal${S.n - S.ok === 1 ? '' : 's'} still dark for a perfect.` : `Need ${need - S.pts} more point${need - S.pts === 1 ? '' : 's'} to clear.`;
+  const goal = `<div class="goal"><div class="gl"><span>Lit <b>${S.ok}/${S.n}</b> crystals${S.bad ? ` <span class="bad">· ${S.bad} dark crystal hit</span>` : ''}</span><span>Points <b>${S.pts}/${S.max}</b></span></div>
+    <div class="gbar${reached ? ' ok' : ''}"><i style="width:${pct}%"></i>${st.mode === 'daily' ? '' : `<s style="left:calc(${bar * 100}% - 1.5px)"></s>`}</div>
+    <div class="gm ${S.perfect ? 'good' : reached ? '' : 'muted'}">${status}${st.mode === 'run' && st.streak ? ` · 🔥 perfect streak ${st.streak}` : ''}</div></div>`;
+  let banners = '';
+  for (const m of L.mods) banners += `<div class="banner"><span class="bi">${MODS[m].e}</span><span><b>${MODS[m].name}.</b> ${MODS[m].desc}${m === 'dark' && has('candle') ? ' Your candle lights it anyway.' : ''}</span></div>`;
+  for (const t of p.news) banners += `<div class="banner"><span class="bi">${t === 'D' ? '◆' : pieceIconInline(t)}</span><span><b>New: ${t === 'D' ? 'dark crystals' : t === 'F' ? 'filters' : PK[t].name.toLowerCase() + 's'}.</b> ${t === 'D' ? 'Black crystals must stay dark. Every one that light touches costs 2 points.' : t === 'F' ? 'A filter only lets its own colours through. Use it to pull one colour out of white or mixed light.' : PK[t].desc} <button class="btn sm" data-guide="${t === 'P' || t === 'F' || t === 'S' || t === 'D' ? 3 : 1}">See it</button></span></div>`;
+  const cn = counts();
+  const tray = KEY_ORDER.filter(k => cn[k]).map(k => {
+    const c = cn[k];
+    return `<button class="pc${ui.sel === k ? ' sel' : ''}${c.left > 0 ? '' : ' none'}" data-key="${k}" aria-label="${PK[k].name}, ${c.left} left">${pieceIcon(k)}<span>${PK[k].name} ×${c.left}${c.kit ? `<small>${c.kit} from your kit</small>` : ''}</span></button>`;
+  }).join('');
+  const fpl = p.placed[ui.focus];
+  const focusRow = fpl && fpl.src !== 'hint' ? `<div class="focusrow">${PK[fpl.key].rot ? `<button class="btn" id="rotl" aria-label="Turn left">↺ Turn</button><button class="btn" id="rotr" aria-label="Turn right">Turn ↻</button>` : ''}<button class="btn" id="take">✋ Take back</button></div>` : '';
+  const anyLeft = Object.values(cn).some(c => c.left > 0);
+  const info = fpl && fpl.src !== 'hint' ? `${PK[fpl.key].name}: ${PK[fpl.key].rot ? 'tap it again, or use the buttons, to turn it.' : 'it works the same every way round.'}`
+    : ui.sel ? `<b>${PK[ui.sel].name}</b>: ${esc(PK[ui.sel].desc)} Tap an empty cell.` : anyLeft ? 'Pick a piece below.' : 'Every piece is out. Tap a piece on the board to turn it, or finish.';
+  const placedAny = Object.values(p.placed).some(pl => pl.src !== 'hint');
+  return `<div class="page">${hud()}${goal}${banners}
+    <div class="boardwrap">${svg}${S.perfect ? '<div class="alllit">All crystals lit</div>' : ''}</div>
+    <p class="info">${info}</p>
+    <div class="tray">${tray || '<span class="muted small">No pieces this time.</span>'}</div>
+    ${focusRow}
+    <div class="finrow"><button class="btn" id="undo" aria-label="Undo" ${p.hist.length ? '' : 'disabled'}>↶<span class="lab"> Undo</span></button><button class="btn" id="clear" aria-label="Clear" ${placedAny ? '' : 'disabled'}>🧹<span class="lab"> Clear</span></button><button class="btn" id="hint" ${st.hints ? '' : 'disabled'}>💡 ${st.hints}</button>
+      <button class="btn pri fin${S.perfect ? ' glow' : ''}" id="finish">Finish · ${S.pts}/${S.max}</button></div>
+    ${st.mode === 'run' ? kitCard() : ''}
+    <div class="card"><div class="row" style="justify-content:space-between"><h2>How it works</h2><button class="btn sm" data-guide="0">Picture guide</button></div>
+      <p class="small muted">Tap a piece, then an empty cell. Tap a placed piece to select it and tap again to turn it. Light every crystal with exactly its colour: red + green = yellow, red + blue = magenta, green + blue = cyan, all three = white. ${st.mode === 'daily' ? 'The daily window is the same for everyone today.' : `You need ${Math.round(bar * 100)}% of the points to clear this level; a perfect window heals a heart.`}</p>
+      ${binary ? binTable() : ''}</div>
+  </div>`;
+}
+function pieceIconInline(t) { return `<span style="display:inline-block;width:30px;height:30px;border-radius:7px;background:var(--cellc);vertical-align:middle">${pieceIcon(t === 'F' ? 'F1' : t)}</span>`; }
+function binTable() { return `<div class="bin">${[1, 2, 4, 3, 5, 6, 7].map(c => `<div><span class="sw" style="background:${CHEX[c]}"></span>${CNAME[c]}<b>${BIN(c)}</b></div>`).join('')}<div><span class="muted">bits</span><b>RGB</b></div></div>`; }
+function kitCard() {
+  const kits = KEY_ORDER.filter(k => st.kit[k]).map(k => `<div class="irow"><span class="ie" style="width:30px;height:30px;border-radius:7px;background:var(--cellc)">${pieceIcon(k)}</span><span class="it"><b>${PK[k].name} ×${st.kit[k]}</b><br><span class="small muted">${esc(PK[k].desc)}</span></span></div>`).join('');
+  const rel = st.relics.map(id => `<div class="irow"><span class="ie">${RELIC[id].e}</span><span class="it"><b>${RELIC[id].name}</b><br><span class="small muted">${esc(RELIC[id].desc)}</span></span></div>`).join('');
+  return `<div class="card"><h2>Your kit and relics</h2>${kits || rel ? kits + rel : '<p class="small muted">Nothing yet. The shop after each level sells extra pieces for your kit and relics that bend the rules.</p>'}</div>`;
+}
+function resultView() {
+  const R = st.res, {L, H} = levelNow();
+  const mine = {}; for (const [c, pl] of Object.entries(R.placed)) mine[c] = pieceOf(pl);
+  Object.assign(mine, L.fixedPieces);
+  const t1 = trace(H, L, mine, true), solP = Object.assign({}, L.sol), t2 = trace(H, L, solP, true);
+  const binary = L.mods.includes('binary');
+  const badges = [];
+  if (R.perfect) badges.push('<span class="badge p">Perfect</span>');
+  if (R.unused && R.cleared) badges.push(`<span class="badge">${R.unused} piece${R.unused === 1 ? '' : 's'} to spare</span>`);
+  if (!R.cleared) badges.push('<span class="badge b">Below the bar</span>');
+  if (st.mode === 'daily') {
+    const dd = rec.daily[st.day];
+    return `<div class="page">${hud()}<div class="card center"><div class="big-num ${R.perfect ? 'good' : ''}">${R.pts} / ${R.max}</div>${badges.join('')}
+      <p>${R.perfect ? 'You lit the whole daily window' + (R.hinted ? ` with ${R.hinted} hint${R.hinted === 1 ? '' : 's'}.` : ' without hints.') : 'Not every crystal is lit. You can go back and keep working on it today.'}</p>
+      <p class="small muted">Best today: ${dd.pts}/${dd.max}${dd.perfect ? ', perfect' : ''}. Perfect daily windows so far: ${Object.values(rec.daily).filter(x => x.perfect).length}.</p></div>
+      ${R.perfect ? '' : `<div class="actions"><button class="btn big pri" id="dailyback">Keep working on it</button></div>`}
+      <div class="minis"><div><h3>Your window</h3><div class="mini">${boardSvg(L, H, {lit: t1.lit, segs: t1.segs, pieces: mine, binary, mini: true})}</div></div>
+      ${R.perfect ? '' : `<div><h3>Solution</h3><div class="mini" id="solbox"><button class="btn sm" id="showsol" style="margin:40% auto;display:block">Show it</button></div></div>`}</div>
+      <div class="actions"><button class="btn big" id="totitle">Back to the title</button></div></div>`;
+  }
+  const goldTot = R.gold.reduce((a, x) => a + x[0], 0);
+  const words = R.cleared ? (R.perfect ? 'Every crystal is lit.' : `You cleared the bar of ${R.need} points.`) : `You needed ${R.need} points.`;
+  const heartsTxt = R.hearts > 0 ? 'You heal one heart.' : R.hearts < 0 ? `You lose ${-R.hearts} heart${R.hearts === -1 ? '' : 's'}.` : R.clover ? 'The clover keeps your hearts safe this time.' : '';
+  return `<div class="page">${hud()}<h2 style="margin-top:10px">Level ${R.lv}</h2>
+    <div class="card center"><div class="big-num ${R.perfect ? 'good' : R.cleared ? '' : 'bad'}">${R.pts} / ${R.max}</div>${badges.join('')}
+      <p>${words} ${heartsTxt}${R.dove ? ' The dove saves you with two hearts.' : ''} ${goldTot ? `You get ${goldTot} gold.` : ''}</p>
+      ${R.gold.length ? `<p class="small muted">Gold: ${R.gold.map(([n, w]) => n + ' for ' + w).join(', ')}.</p>` : ''}</div>
+    <div class="minis"><div><h3>Your window</h3><div class="mini">${boardSvg(L, H, {lit: t1.lit, segs: t1.segs, pieces: mine, binary, mini: true})}</div></div>
+      <div><h3>${R.perfect ? 'The hidden solution' : 'One solution'}</h3><div class="mini">${boardSvg(L, H, {lit: t2.lit, segs: t2.segs, pieces: solP, binary, mini: true})}</div></div></div>
+    <p class="small muted center">${R.perfect && R.unused ? 'You found a way with fewer pieces than the level was built with.' : 'There can be more than one way to light a window.'}</p>
+    <div class="actions"><button class="btn big pri" id="next">${R.cleared && isBoss(R.lv) ? 'Choose a relic' : 'To the shop'}</button></div></div>`;
+}
+function rewardView() {
+  return `<div class="page">${hud()}<h2 style="margin-top:10px">The cathedral is lit</h2><p class="muted">Choose one relic to keep for the rest of the run.</p>
+    ${st.reward.map(id => `<button class="irow" data-relic="${id}"><span class="ie">${RELIC[id].e}</span><span class="it"><b>${RELIC[id].name}</b> <span class="rar">${RELIC[id].r === 'R' ? 'rare' : ''}</span><br><span class="small muted">${esc(RELIC[id].desc)}</span></span></button>`).join('')}
+    <div class="actions"><button class="btn" data-relic="">Skip</button></div></div>`;
+}
+function shopView() {
+  const hc = price(USES.heal.price), rc = 1 + st.shop.rolls;
+  const offers = st.shop.offers.map((o, i) => {
+    const inf = offerInfo(o);
+    return `<button class="irow" data-buy="${i}" ${o.sold || st.gold < inf.price ? 'disabled' : ''}><span class="ie" style="${o.kind === 'kit' ? 'width:30px;height:30px;border-radius:7px;background:var(--cellc)' : ''}">${inf.icon}</span><span class="it"><b>${inf.name}</b> <span class="rar">${inf.tag}</span><br><span class="small muted">${esc(inf.desc)}</span></span><span class="ip">${o.sold ? 'bought' : '🪙 ' + inf.price}</span></button>`;
+  }).join('');
+  return `<div class="page">${hud()}<h2 style="margin-top:10px">The glass shop</h2><p class="muted">You have ${st.gold} gold and ${st.hints} hint${st.hints === 1 ? '' : 's'}. Next is level ${st.lv + 1}${isBoss(st.lv + 1) ? ', a cathedral' : ''}, where you need ${Math.round(BAR(st.lv + 1) * 100)}% of the points.</p>
+    ${offers}
+    <button class="irow" id="heal" ${st.gold < hc || st.hearts >= maxHearts() ? 'disabled' : ''}><span class="ie">❤️</span><span class="it"><b>Heal</b><br><span class="small muted">Get one heart back.</span></span><span class="ip">🪙 ${hc}</span></button>
+    <div class="actions"><button class="btn" id="reroll" ${st.gold < rc ? 'disabled' : ''}>New offers · 🪙 ${rc}</button><button class="btn big pri" id="leave">Next level</button></div>
+    ${kitCard()}</div>`;
+}
+function overView() {
+  return `<div class="page"><div class="card center" style="margin-top:20px"><div style="font-size:44px">🌑</div><h2>The lights go out</h2>
+    <p>You reached level ${st.lv} with ${st.perfects} perfect window${st.perfects === 1 ? '' : 's'} and ${st.score} points in all.</p>
+    <p class="small muted">Best run so far: level ${rec.best}. Longest perfect streak: ${rec.bestStreak}.</p></div>
+    <div class="card"><h3>This run</h3>${st.log.slice(0, 12).map(l => `<div class="log">${esc(l)}</div>`).join('')}</div>
+    <div class="actions"><button class="btn big pri" id="again">New run</button><button class="btn big" id="totitle">Title</button></div></div>`;
+}
+function titleView() {
+  const run = loadRun(SAVE), d = today(), dd = rec.daily[d];
+  const demo = guideBoard('title');
+  return `<div class="page"><div class="center" style="padding:18px 0 6px"><h1>Lumen</h1><p class="muted">A puzzle of light on a hexagon window.</p></div>
+    <div class="guide"><div class="ex" style="max-width:320px">${demo}</div></div>
+    <p class="center">Bend coloured light with mirrors, splitters, filters and prisms. Light every crystal with exactly its colour.</p>
+    <div class="actions" style="flex-direction:column;align-items:center">
+      ${run && run.phase !== 'over' ? `<button class="btn big pri" id="cont">Continue · level ${run.lv}</button>` : ''}
+      <button class="btn big ${run && run.phase !== 'over' ? '' : 'pri'}" id="new">New run</button>
+      <button class="btn big" id="daily">Daily window${dd ? (dd.perfect ? ' · lit ✨' : ` · ${dd.pts}/${dd.max}`) : ''}</button>
+      <button class="btn" data-guide="0">How to play</button></div>
+    <div class="card small"><b>Records.</b> Best run: level ${rec.best}. Perfect windows: ${rec.perfects}. Longest perfect streak: ${rec.bestStreak}. Runs: ${rec.runs}.</div>
+    <div class="row" style="justify-content:center"><button class="btn sm" id="mute">${rec.mute ? '🔇 Sound off' : '🔊 Sound on'}</button><button class="btn sm" id="theme">Theme: ${document.documentElement.dataset.theme || 'auto'}</button></div>
+    <footer>Every window is built from a hidden solution, so a perfect is always possible.</footer></div>`;
+}
+function render() {
+  if (!st) app.innerHTML = titleView();
+  else if (st.phase === 'level') app.innerHTML = levelView();
+  else if (st.phase === 'result') app.innerHTML = resultView();
+  else if (st.phase === 'reward') app.innerHTML = rewardView();
+  else if (st.phase === 'shop') app.innerHTML = shopView();
+  else if (st.phase === 'over') app.innerHTML = overView();
+  renderOverlay();
+}
+function menu() {
+  ovl.innerHTML = `<div class="ov" id="ovbg"><div class="sheet"><h2>Menu</h2>
+    <button class="irow" data-guide="0"><span class="ie">📖</span><span class="it">How to play, with pictures</span></button>
+    <button class="irow" id="m-mute"><span class="ie">${rec.mute ? '🔇' : '🔊'}</span><span class="it">Sound ${rec.mute ? 'off' : 'on'}</span></button>
+    <button class="irow" id="m-title"><span class="ie">🏠</span><span class="it">Title screen (your run is saved)</span></button>
+    ${st && st.mode === 'run' ? `<button class="irow" id="m-quit"><span class="ie">🏳️</span><span class="it">Give up this run</span></button>` : ''}
+    <div class="actions"><button class="btn" id="m-close">Close</button></div></div></div>`;
+}
+
+/* ---------- picture guide ---------- */
+// small hand-made boards: lamps [q,r,dir,colour], pieces [q,r,piece], crystals [q,r,colour]
+function exBoard(spec) {
+  const H = makeHex(spec.R || 2), L = {R: spec.R || 2, fixed: new Uint8Array(H.N), lamps: [], crystals: [], fixedPieces: {}, mods: []};
+  const at = (q, r) => H.at.get(q + ',' + r);
+  for (const [q, r, d, col] of spec.lamps) { const c = at(q, r); L.fixed[c] = 2; L.lamps.push({cell: c, d, col}); }
+  for (const [q, r, c] of spec.crystals || []) { const i = at(q, r); L.fixed[i] = c ? 3 : 4; L.crystals.push({cell: i, c, dark: !c}); }
+  for (const [q, r] of spec.rocks || []) L.fixed[at(q, r)] = 1;
+  const pieces = {};
+  for (const [q, r, p] of spec.pieces || []) pieces[at(q, r)] = p;
+  const tr = trace(H, L, pieces, true);
+  return boardSvg(L, H, {lit: tr.lit, segs: tr.segs, pieces, binary: spec.binary});
+}
+function guideBoard(k) {
+  const B = {
+    title: {R: 3, lamps: [[-3, 1, 0, 7], [3, -3, 4, 2]], pieces: [[0, 1, {t: PRI}], [1, -1, {t: MIR, k: 3}]], crystals: [[0, 3, 1], [2, -1, 4], [1, 0, 6]]},
+    straight: {lamps: [[-2, 0, 0, 1]], crystals: [[1, 0, 1], [0, -2, 1]]},
+    mirror: {lamps: [[-2, 0, 0, 1]], pieces: [[0, 0, {t: MIR, k: 1}]], crystals: [[1, 0, 1], [1, -1, 1]]},
+    mirror2: {lamps: [[-2, 0, 0, 1]], pieces: [[0, 0, {t: MIR, k: 4}]], crystals: [[0, 1, 1], [0, -2, 1]]},
+    mix: {lamps: [[-2, 0, 0, 1], [0, 2, 2, 2]], crystals: [[0, 0, 3], [2, 0, 1], [0, -2, 2]]},
+    wrong: {lamps: [[-2, 0, 0, 1], [0, 2, 2, 2]], crystals: [[0, 0, 1]]},
+    split: {lamps: [[-2, 0, 0, 2]], pieces: [[0, 0, {t: SPL, k: 1}]], crystals: [[2, 0, 2], [2, -2, 2]]},
+    filter: {lamps: [[-2, 0, 0, 7]], pieces: [[0, 0, {t: FIL, c: 4}]], crystals: [[-1, 0, 7], [2, 0, 4]]},
+    prism: {lamps: [[-2, 0, 0, 7]], pieces: [[-1, 0, {t: PRI}]], crystals: [[-1, 2, 1], [2, 0, 2], [1, -2, 4]]},
+    dark: {lamps: [[-2, 0, 0, 4]], pieces: [[0, 0, {t: MIR, k: 1}]], crystals: [[2, -2, 4], [1, 0, 0]]},
+    binary: {lamps: [[-2, 0, 0, 1], [0, 2, 2, 2]], crystals: [[0, 0, 3], [2, 0, 1]], binary: true},
+  };
+  return exBoard(B[k]);
+}
+const GUIDE = [
+  () => `<h2>Light goes straight</h2><div class="ex">${guideBoard('straight')}</div>
+    <p>A lamp sends a beam in the direction of its arrow. Light travels in a straight line, cell to cell, until something stops it or it leaves the window.</p>
+    <p>A crystal is lit when the light reaching it has <b>exactly</b> its colour. Here the red crystal on the beam is lit; the one off to the side is not.</p>`,
+  () => `<h2>Mirrors bend it</h2><div class="exs"><div class="ex">${guideBoard('mirror')}</div><div class="ex">${guideBoard('mirror2')}</div></div>
+    <p>Tap a mirror in your tray, then an empty cell. Tap the mirror on the board to select it, and tap again to turn it. A mirror has six positions, one every 30°.</p>
+    <p>Light leaves a mirror at the same angle it arrives: <b>angle in = angle out</b>. On a hexagon that means the beam always turns by 0°, 60°, 120° or 180°.</p>`,
+  () => `<h2>Colours add up</h2><div class="exs"><div class="ex">${guideBoard('mix')}</div><div class="ex">${guideBoard('wrong')}</div></div>
+    <p>Where beams meet, their colours add: red + green = yellow, red + blue = magenta, green + blue = cyan, and all three make white.</p>
+    <p>Too much light is as wrong as too little. On the right the red crystal also gets green, sees yellow, and stays unlit.</p>`,
+  () => `<h2>Other glass</h2><div class="exs"><div><div class="ex">${guideBoard('split')}</div><p class="cap">Splitter: through and bounced</p></div><div><div class="ex">${guideBoard('filter')}</div><p class="cap">Blue filter on white light</p></div>
+    <div><div class="ex">${guideBoard('prism')}</div><p class="cap">Prism: red right, green on, blue left</p></div><div><div class="ex">${guideBoard('dark')}</div><p class="cap">Dark crystal: keep it unlit</p></div></div>
+    <p>These come in later levels. A <b>splitter</b> lets light through and bounces a copy. A <b>filter</b> only passes its own colours. A <b>prism</b> fans white light into red, green and blue. <b>Dark crystals</b> cost 2 points each if light touches them.</p>`,
+  () => `<h2>Levels, hearts and gold</h2>
+    <p>Every window is built backwards from a hidden solution, so lighting <b>every</b> crystal is always possible with the pieces you are given.</p>
+    <p>Each crystal is worth its number of colours: red 1, yellow 2, white 3. To clear a level you need a share of the points, shown as a mark on the bar. It starts at 60% and rises by 2% a level from level 6, until from level 25 only a perfect window clears.</p>
+    <p>Missing the bar costs 2 hearts. A perfect window heals 1 heart and pays extra gold, and perfects in a row pay more. Pieces you did not need pay 1 gold each.</p>
+    <p>After each level the shop sells extra pieces for your kit (you get them on every level), relics that bend the rules, and hints. Every fifth level is a big cathedral window that rewards a relic.</p>`,
+  () => `<h2>Light as numbers</h2><div class="ex">${guideBoard('binary')}</div>
+    <p>Three colours, each on or off, make eight possibilities. Call red 4, green 2 and blue 1, and every colour is a number from 0 to 7 written in binary: yellow is 4 + 2 = 6 (110), cyan is 3 (011), white is 7 (111).</p>
+    ${binTable()}
+    <p>On binary nights crystals show these numbers instead of colours. Adding light is the same as the bitwise OR of the numbers, and a filter is a bitwise AND.</p>`,
+];
+function openGuide(p) { ui.guide = p; renderOverlay(); }
+function renderOverlay() {
+  if (ui.guide < 0) { if (!ovl.querySelector('#ovbg')) ovl.innerHTML = ''; return; }
+  const p = ui.guide;
+  ovl.innerHTML = `<div class="ov"><div class="sheet guide">${GUIDE[p]()}
+    <div class="dots">${GUIDE.map((_, i) => `<i class="${i === p ? 'on' : ''}"></i>`).join('')}</div>
+    <div class="actions"><button class="btn" data-gnav="back" ${p ? '' : 'disabled'}>Back</button>${p < GUIDE.length - 1 ? '<button class="btn pri" data-gnav="next">Next</button>' : ''}<button class="btn ${p < GUIDE.length - 1 ? '' : 'pri'}" data-gnav="done">${p < GUIDE.length - 1 ? 'Close' : 'Play'}</button></div></div></div>`;
+}
+
+/* ---------- sound and sparkle ---------- */
+let AC = null;
+function tone(f, dur = .2, type = 'sine', vol = .07, delay = 0) {
+  if (rec.mute) return;
+  try {
+    AC = AC || new (window.AudioContext || window.webkitAudioContext)();
+    const t = AC.currentTime + delay, o = AC.createOscillator(), g = AC.createGain();
+    o.type = type; o.frequency.value = f;
+    g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(vol, t + .012); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    o.connect(g); g.connect(AC.destination); o.start(t); o.stop(t + dur + .03);
+  } catch (e) {}
+}
+const SCALE = [523.25, 587.33, 659.25, 783.99, 880, 1046.5, 1174.66, 1318.5, 1568, 1760, 2093];
+function sfx(k, n) {
+  if (k === 'place') tone(330, .08, 'triangle', .05);
+  else if (k === 'turn') tone(440, .05, 'triangle', .035);
+  else if (k === 'lit') { tone(SCALE[Math.min(SCALE.length - 1, n - 1)], .35, 'sine', .08); tone(SCALE[Math.min(SCALE.length - 1, n + 1)], .3, 'sine', .03, .05); }
+  else if (k === 'all') [0, 2, 4, 7].forEach((s, i) => tone(SCALE[s], .5, 'sine', .07, i * .09));
+  else if (k === 'win') [0, 2, 4, 5, 7, 9].forEach((s, i) => tone(SCALE[s], .45, 'triangle', .06, i * .07));
+  else if (k === 'miss') { tone(220, .35, 'sawtooth', .03); tone(165, .5, 'sawtooth', .03, .15); }
+  else if (k === 'buy') tone(988, .15, 'square', .03);
+  else if (k === 'hint') tone(660, .25, 'sine', .05);
+}
+function confetti() {
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const cols = ['#ff3b3b', '#2bff5c', '#3d6bff', '#ffe83b', '#ff3bff', '#3bf0ff', '#ffffff'];
+  for (let i = 0; i < 70; i++) {
+    const d = document.createElement('i');
+    d.className = 'conf';
+    d.style.left = Math.random() * 100 + 'vw'; d.style.background = cols[i % cols.length];
+    d.style.animationDuration = (1.6 + Math.random() * 1.6) + 's'; d.style.animationDelay = Math.random() * .4 + 's';
+    document.body.appendChild(d);
+    setTimeout(() => d.remove(), 3800);
+  }
+}
+function toast(msg, ms = 2800) {
+  clearTimeout(ui.toast);
+  let t = document.querySelector('.toast');
+  if (!t) { t = document.createElement('div'); t.className = 'toast'; t.setAttribute('role', 'status'); document.body.appendChild(t); }
+  t.textContent = msg;
+  ui.toast = setTimeout(() => t.remove(), ms);
+}
+
+/* ---------- input ---------- */
+document.addEventListener('click', e => {
+  const t = e.target;
+  const g = t.closest('[data-guide]');
+  if (g) { ovl.innerHTML = ''; return openGuide(+g.dataset.guide); }
+  const gn = t.closest('[data-gnav]');
+  if (gn) { const k = gn.dataset.gnav; if (k === 'back') ui.guide = Math.max(0, ui.guide - 1); else if (k === 'next') ui.guide++; else ui.guide = -1; return renderOverlay(); }
+  if (t.id === 'ovbg' || t.closest('#m-close')) { ovl.innerHTML = ''; return; }
+  if (t.closest('#m-mute') || t.closest('#mute')) { rec.mute = !rec.mute; saveRec(); if (t.closest('#m-mute')) menu(); return render(); }
+  if (t.closest('#m-title')) { ovl.innerHTML = ''; save(); st = null; LV = null; return render(); }
+  if (t.closest('#m-quit')) { ovl.innerHTML = ''; st.hearts = 0; st.phase = 'over'; rec.best = Math.max(rec.best, st.lv - 1); saveRec(); localStorage.removeItem(SAVE); return render(); }
+  if (t.closest('#menu')) return menu();
+  if (t.closest('#theme')) { const order = ['auto', 'light', 'dark']; const cur = document.documentElement.dataset.theme || 'auto'; const nx = order[(order.indexOf(cur) + 1) % 3]; if (nx === 'auto') delete document.documentElement.dataset.theme; else document.documentElement.dataset.theme = nx; try { localStorage.setItem('lumen-theme', nx); } catch (er) {} return render(); }
+  if (t.closest('#new')) { if (loadRun(SAVE) && loadRun(SAVE).phase !== 'over' && !confirm('Start a new run? Your current run will be lost.')) return; return newRun(); }
+  if (t.closest('#again')) return newRun();
+  if (t.closest('#cont')) { st = loadRun(SAVE); LV = null; if (st.phase === 'level') { lastOk = null; } return render(); }
+  if (t.closest('#daily')) return newDaily();
+  if (t.closest('#totitle')) { st = null; LV = null; return render(); }
+  if (!st) return;
+  const cell = t.closest('[data-c]');
+  if (cell && st.phase === 'level') return tapCell(+cell.dataset.c);
+  const pc = t.closest('[data-key]');
+  if (pc) { ui.sel = pc.dataset.key; ui.focus = -1; return render(); }
+  if (t.closest('#rotl')) return rotateFocus(1);
+  if (t.closest('#rotr')) return rotateFocus(-1);
+  if (t.closest('#take')) return takeBack();
+  if (t.closest('#undo')) return undo();
+  if (t.closest('#clear')) return clearAll();
+  if (t.closest('#hint')) return useHint();
+  if (t.closest('#finish')) {
+    const {S} = evalNow();
+    if (!S.perfect && st.mode === 'run' && !confirm(`Finish with ${S.pts} of ${S.max} points?`)) return;
+    return finish();
+  }
+  if (t.closest('#dailyback')) { st.phase = 'level'; st.res = null; save(); return render(); }
+  if (t.closest('#showsol')) { const {L, H} = levelNow(); const tr = trace(H, L, L.sol, true); document.getElementById('solbox').innerHTML = boardSvg(L, H, {lit: tr.lit, segs: tr.segs, pieces: L.sol, mini: true, binary: L.mods.includes('binary')}); return; }
+  if (t.closest('#next')) return nextFromResult();
+  const rl = t.closest('[data-relic]');
+  if (rl) return takeRelic(rl.dataset.relic);
+  const b = t.closest('[data-buy]');
+  if (b) return buy(+b.dataset.buy);
+  if (t.closest('#heal')) return heal();
+  if (t.closest('#reroll')) return reroll();
+  if (t.closest('#leave')) return leaveShop();
+});
+document.addEventListener('keydown', e => {
+  if (!st || st.phase !== 'level' || ui.guide >= 0) return;
+  if (e.key === 'r' || e.key === 'R') rotateFocus(e.shiftKey ? -1 : 1);
+  else if (e.key === 'Backspace' || e.key === 'Delete') takeBack();
+  else if ((e.key === 'z' || e.key === 'Z') && (e.metaKey || e.ctrlKey)) { e.preventDefault(); undo(); }
+});
+
+try { const th = localStorage.getItem('lumen-theme'); if (th && th !== 'auto') document.documentElement.dataset.theme = th; } catch (e) {}
+render();
+</script>
+</body>
+</html>
