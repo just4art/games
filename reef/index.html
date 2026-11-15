@@ -47,27 +47,29 @@ button:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
 
 /* the playing screen scrolls like the other pages: score, reef, hand and buttons, then today's scoring and your items */
 .game{max-width:620px;margin:0 auto;padding:12px 16px 40px}
-.hud{display:flex;align-items:center;gap:8px}
+.hud{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.hud .sp{flex:1}
 .ib{border:1.5px solid var(--line);background:var(--surface);border-radius:12px;width:42px;height:42px;display:grid;place-items:center;cursor:pointer;flex:none;padding:0;font-size:18px}
 .dn{font-family:Marcellus,Georgia,serif;font-size:22px;white-space:nowrap;line-height:1.1}
 .dn small{display:block;font-family:system-ui,sans-serif;font-size:12px;color:var(--muted)}
-.air{flex:1;min-width:80px;font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
+.air{flex:1 1 120px;min-width:0;font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
 .air b{color:var(--text)}
 .bar{height:7px;background:var(--line);border-radius:4px;margin-top:3px;overflow:hidden}
 .bar i{display:block;height:100%;background:var(--sky);transition:width .3s}
 .air.low .bar i{background:var(--bad)}
-.pill{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:4px 10px;font-size:12px;color:var(--muted);text-align:center;white-space:nowrap;line-height:1.2}
+.pill{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:4px 9px;font-size:12px;color:var(--muted);text-align:center;white-space:nowrap;line-height:1.2}
 .pill b{display:block;font-size:16px;color:var(--text);font-variant-numeric:tabular-nums}
 .goal{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:8px 12px 6px;margin:10px 0 8px}
 .gl{display:flex;justify-content:space-between;align-items:baseline;gap:8px;font-size:14px}
 .gl b{font-size:20px;font-variant-numeric:tabular-nums}
-.gl .gm{font-size:13px;font-weight:600;text-align:center}
+.gm{font-size:13.5px;font-weight:600;margin:0 0 3px}
 .gbar{position:relative;height:10px;background:var(--line);border-radius:5px;margin:5px 0 16px}
 .gbar i{position:absolute;left:0;top:0;bottom:0;border-radius:5px;background:var(--accent);transition:width .25s}
 .gbar.ok i{background:var(--good)}
 .gbar s{position:absolute;top:-2px;bottom:-2px;width:2px;background:var(--surface);text-decoration:none}
 .gbar s span{position:absolute;top:13px;left:50%;transform:translateX(-50%);font-size:11px;color:var(--muted);white-space:nowrap}
 .gs{font-size:12.5px;color:var(--muted)}
+@media (max-width:520px){.hud .air{order:9;flex-basis:100%}}
 .banner{background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--accent);border-radius:12px;padding:7px 12px;margin:0 0 8px;font-size:14px;cursor:pointer;text-align:left;width:100%;display:block}
 .banner b{color:var(--accent)}
 .boardwrap{container-type:inline-size}
@@ -1052,6 +1054,7 @@ function hud() {
   return `<div class="hud">
     <button class="ib" id="menu" aria-label="Menu">☰</button>
     <div class="dn">Day ${d}<small>${SEASON_NAME[season(d)]}</small></div>
+    <div class="sp"></div>
     <div class="air${low ? ' low' : ''}">Air <b>${st.air}</b> / ${m}<div class="bar"><i style="width:${Math.max(0, 100 * st.air / m)}%"></i></div></div>
     <div class="pill">Shells<b>🐚 ${st.shells}</b></div>
     <div class="pill">Festival<b>${isFest(d) && st.phase === 'day' ? 'Today' : 'Day ' + (isFest(d) && st.phase !== 'day' ? d + 5 : nf)}</b></div>
@@ -1265,8 +1268,9 @@ function dayView() {
   const prev = fog ? 'Murky: scores show when you finish' : reached ? '+' + shellParts(day, ratio, false).tot + ' 🐚 now' + (ratio >= 2 ? ' · double!' : '') : 'Finishing now costs ' + missCost(day, ratio) + ' air';
   const bits = [`reef ${score}`].concat(H.parts.filter(p => p.pts == null).map(p => (p.it ? ITEM[p.it.id].e : p.name.split(' ')[0]) + ' ' + (p.mul ? '×' + Math.round(p.mul * 100) / 100 : '+' + p.add)));
   const goal = `<div class="goal">
-      <div class="gl"><span>Score <b>${fog ? '?' : H.total}</b></span><span class="gm ${reached ? 'good' : ''}">${prev}</span><span>Target <b>${day.target}</b></span></div>
+      <div class="gl"><span>Score <b>${fog ? '?' : H.total}</b></span><span>Target <b>${day.target}</b></span></div>
       <div class="gbar${reached ? ' ok' : ''}"><i style="width:${pct}%"></i>${[1, 1.5, 2].map(x => `<s style="left:${x / 2.5 * 100}%"><span>${x === 1 ? day.target : x + '×'}</span></s>`).join('')}</div>
+      <div class="gm ${reached ? 'good' : 'muted'}">${prev}${reached || fog ? '' : ' · need ' + (day.target - H.total) + ' more'}</div>
       ${(bits.length > 1 && !fog) || day.measured ? `<div class="gs">${fog ? '' : bits.length > 1 ? esc(bits.join(' · ')) + ' = ' + H.total : ''}${day.measured ? (bits.length > 1 && !fog ? ' · ' : '') + 'best reef possible today: ' + day.best : ''}</div>` : ''}
     </div>`;
   const cells = day.g.map((t, i) => {
@@ -1303,7 +1307,7 @@ function actions(inner) { return `<div class="actions"><div class="in">${inner}<
 function resultView() {
   const res = st.result, day = st.dayState, d = st.day;
   const badges = [];
-  if (res.ratio >= 2.5) badges.push('2.5× target'); else if (res.ratio >= 2) badges.push('Double target'); else if (res.ratio >= 1.5) badges.push('1.5× target');
+  if (res.ratio >= 2.5) badges.push(Math.floor(res.ratio * 10) / 10 + '× target'); else if (res.ratio >= 2) badges.push('Double target'); else if (res.ratio >= 1.5) badges.push('1.5× target');
   if (res.perfect) badges.push(res.beat ? 'Beat the best layout' : 'Best layout');
   if (res.won) badges.push('Festival won');
   const head = `<div class="big-num ${res.reached ? 'good' : 'bad'}">${res.total} / ${res.target}</div>
