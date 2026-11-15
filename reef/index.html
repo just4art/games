@@ -46,7 +46,7 @@ button:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
 .good{color:var(--good)} .bad{color:var(--bad)}
 
 /* the playing screen: header, goal, board that takes the free space, and the dock with every control */
-.game{height:100vh;height:100dvh;max-width:780px;margin:0 auto;display:flex;flex-direction:column;gap:6px;padding:8px 10px max(8px,env(safe-area-inset-bottom))}
+.game{min-height:100vh;min-height:100dvh;max-width:780px;margin:0 auto;display:flex;flex-direction:column;gap:6px;padding:8px 10px max(8px,env(safe-area-inset-bottom))}
 .hud{display:flex;align-items:center;gap:6px}
 .ib{border:1.5px solid var(--line);background:var(--surface);border-radius:10px;width:34px;height:34px;display:grid;place-items:center;cursor:pointer;flex:none;padding:0}
 .dn{font-family:Marcellus,Georgia,serif;font-size:19px;white-space:nowrap;line-height:1.1}
@@ -70,20 +70,28 @@ button:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
 .gs{font-size:11.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .banner{background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--accent);border-radius:10px;padding:4px 10px;font-size:12.5px;cursor:pointer;text-align:left;width:100%}
 .banner b{color:var(--accent)}
-.boardwrap{flex:1;min-height:120px;container-type:size;display:grid;place-items:center}
+.play{display:flex;flex-direction:column;gap:6px;flex:1 0 auto}
+.boardwrap{flex:1 0 auto;display:grid;place-items:center}
+@media (min-width:900px){
+  .game{max-width:1180px}
+  .play{flex-direction:row;align-items:flex-start;gap:12px}
+  .play .boardwrap{flex:1;min-width:0}
+  .play .dock{width:340px;flex:none;top:8px;bottom:auto;box-shadow:var(--shadow)}
+  .play .info{min-height:4em}
+}
 .board{display:grid;gap:4px;padding:6px;border-radius:16px;background:linear-gradient(160deg,var(--sea1),var(--sea2));box-shadow:var(--shadow);
-  width:min(100cqw, calc((100cqh - 12px) * var(--w) / var(--h) + 12px));grid-template-columns:repeat(var(--w),1fr);touch-action:manipulation}
+  width:100%;grid-template-columns:repeat(var(--w),1fr);touch-action:manipulation}
 .cell{position:relative;aspect-ratio:1;border:none;border-radius:9px;background:var(--cell);display:grid;place-items:center;cursor:pointer;padding:0;line-height:1;
-  font-size:min(calc(100cqw / var(--w) * .5), calc(100cqh / var(--h) * .5));transition:transform .08s}
+  font-size:calc(var(--cs,60px) * .5);transition:transform .08s}
 .cell:active{transform:scale(.95)}
 .cell.fixed{cursor:default;background:color-mix(in srgb,var(--cell) 25%,transparent)}
 .cell.open{box-shadow:inset 0 0 0 2px color-mix(in srgb,var(--accent) 55%,transparent)}
 .cell.pin{box-shadow:inset 0 0 0 3px var(--sky)}
-.cell .pt{position:absolute;right:4px;bottom:3px;font-size:max(10px,min(calc(100cqw / var(--w) * .17), 14px));font-weight:700;font-variant-numeric:tabular-nums;color:var(--good);font-family:system-ui,sans-serif}
+.cell .pt{position:absolute;right:4px;bottom:3px;font-size:max(10px,min(calc(var(--cs,60px) * .17), 14px));font-weight:700;font-variant-numeric:tabular-nums;color:var(--good);font-family:system-ui,sans-serif}
 .cell .pt.neg{color:var(--bad)}
 .cell .pt.zero{color:var(--muted)}
-.cell .hot{position:absolute;inset:0;border-radius:9px;display:grid;place-items:center;font-size:max(12px,min(calc(100cqw / var(--w) * .22), 18px));font-weight:700;color:var(--text);font-family:system-ui,sans-serif}
-.dock{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:6px 8px;display:flex;flex-direction:column;gap:6px}
+.cell .hot{position:absolute;inset:0;border-radius:9px;display:grid;place-items:center;font-size:max(12px,min(calc(var(--cs,60px) * .22), 18px));font-weight:700;color:var(--text);font-family:system-ui,sans-serif}
+.dock{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:6px 8px;display:flex;flex-direction:column;gap:6px;position:sticky;bottom:max(8px,env(safe-area-inset-bottom));z-index:5;box-shadow:0 -4px 14px rgba(0,0,0,.12)}
 .info{font-size:12.5px;color:var(--muted);min-height:2.6em;line-height:1.3;text-align:center}
 .info b{color:var(--text)}
 .hand{display:flex;flex-wrap:wrap;gap:5px;justify-content:center}
@@ -155,6 +163,29 @@ input[type=text]{font:inherit;border:1.5px solid var(--line);background:var(--su
 .sheet p{font-size:14px}
 .help ol{margin:4px 0 6px;padding-left:20px}
 .help li{margin:3px 0}
+.ex{display:grid;gap:3px;padding:5px;border-radius:10px;background:linear-gradient(160deg,var(--sea1),var(--sea2));max-width:100%;flex:none}
+.ex i{position:relative;aspect-ratio:1;border-radius:6px;background:var(--cell);display:grid;place-items:center;font-style:normal;font-size:calc(var(--ec) * .5);line-height:1}
+.ex i.hl{background:color-mix(in srgb,var(--accent) 30%,var(--cell))}
+.ex i.fo{box-shadow:inset 0 0 0 3px var(--accent)}
+.ex i.f{background:transparent}
+.ex i b{position:absolute;right:2px;bottom:1px;font-size:max(9px,calc(var(--ec) * .24));color:var(--good);font-family:system-ui,sans-serif}
+.ex i b.neg{color:var(--bad)} .ex i b.zero{color:var(--muted)}
+.guide .gpic{display:flex;gap:14px;align-items:center;justify-content:center;flex-wrap:wrap;margin:10px 0}
+.guide .arrow{font-size:26px;color:var(--accent)}
+.guide .demo{flex-direction:column}
+.guide .gtitle{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.guide .dots{display:flex;gap:6px;justify-content:center;margin:10px 0 4px}
+.guide .dots i{width:8px;height:8px;border-radius:50%;background:var(--line)}
+.guide .dots i.on{background:var(--accent)}
+.tiers{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin:8px 0}
+.tiers div{background:var(--surface2);border:1px solid var(--line);border-radius:10px;padding:6px 2px;text-align:center;font-size:12px;color:var(--muted)}
+.tiers b{display:block;font-size:15px;color:var(--text)}
+.tiers .miss b{color:var(--bad)} .tiers .top{border-color:var(--gold)} .tiers .top b{color:var(--gold)}
+.gi{display:flex;gap:12px;align-items:flex-start;margin:10px 0;font-size:14px}
+.gi .ge{font-size:30px;line-height:1;flex:none;width:40px;text-align:center}
+.spc{display:flex;gap:12px;align-items:center;padding:8px 0;border-bottom:1px dashed var(--line)}
+.spc:last-child{border-bottom:none}
+.spc p{margin:2px 0 0;font-size:13px}
 footer{margin-top:24px;font-size:12px;color:var(--muted);text-align:center}
 @media (prefers-reduced-motion: reduce){.cell,.bar i,.gbar i{transition:none}}
 </style>
@@ -1128,7 +1159,7 @@ function rulesSheet() {
   const line = t => `<div><span class="e">${KINDS[t].e}</span><span><b>${KINDS[t].name}</b>${tags(t)}: ${esc(ruleParts(R, t, types))} <span class="n">· bag ${st.bag[t] || 0}${day.hand.includes(t) ? ', hand ' + Math.max(0, left[t] || 0) : ''}</span></span></div>`;
   const ev = everywhere(R, day).map(([e, n, d]) => `<div><span class="e">${e}</span><span><b>${n}</b>: ${esc(d)}</span></div>`).join('');
   const cur = day.current ? CURRENTS[day.current] : null, E = day.event ? EVENTS[day.event.id] : null;
-  return `<div class="sh"><h2>Scoring today</h2><span><button class="btn sm" data-sheet="help">How to play</button> <button class="btn sm" data-close>Close</button></span></div>
+  return `<div class="sh"><h2>Scoring today</h2><span><button class="btn sm" data-guide>How to play</button> <button class="btn sm" data-close>Close</button></span></div>
     ${E ? `<p>🎪 <b>${E.name}</b>. ${esc(E.desc(day.event))} The target is higher today, and you win a prize if you reach it.</p>` : ''}
     ${cur ? `<p>${cur.e} <b>${cur.name}</b>. ${esc(cur.desc)}${cur.bad && has('calm') ? ' Your 🪷 Calm Waters keeps it away.' : ''}</p>` : ''}
     <div class="rules">${types.map(line).join('')}${ev}</div>
@@ -1146,17 +1177,68 @@ function bagSheet(canRelease) {
   const kinds = KIND_IDS.filter(k => st.bag[k] > 0), n = bagSize(st.bag), R = prep(baseRules());
   return `<div class="sh"><h2>Your bag · ${n} tiles</h2><button class="btn sm" data-close>Close</button></div>
     <p class="small muted">Each day you draw ${dayShape(st.phase === 'day' ? st.day : st.day + 1).hand} tiles from your bag, close to its mix.${canRelease ? ` Releasing a tile costs ${RELEASE} shell and keeps your hands focused.` : ''}</p>
-    ${kinds.map(k => `<div class="bagrow"><span class="e">${KINDS[k].e}</span><span class="t"><b>${KINDS[k].name} ×${st.bag[k]}</b><br><span class="small muted">${esc(ruleParts(R, k, kinds))}</span></span>${canRelease ? `<button class="btn sm" data-rel="${k}" ${st.shells < RELEASE || n <= 6 ? 'disabled' : ''}>Release 1</button>` : ''}</div>`).join('')}`;
+    ${kinds.map(k => `<div class="bagrow"><span class="e">${KINDS[k].e}</span><span class="t"><b>${KINDS[k].name} ×${st.bag[k]}</b><br><span class="small muted">${esc(ruleParts(R, k, kinds))}</span><span style="display:block;margin-top:4px">${exampleHtml(k, 28)}</span></span>${canRelease ? `<button class="btn sm" data-rel="${k}" ${st.shells < RELEASE || n <= 6 ? 'disabled' : ''}>Release 1</button>` : ''}</div>`).join('')}`;
 }
-function helpSheet() {
-  return `<div class="sh help"><h2>How to play</h2><button class="btn sm" data-close>Close</button></div>
-    <div class="help"><ol>
-      <li>Your hand is the row of tiles under the reef. One is already picked up: it has the orange outline, and the line above the hand says how it scores.</li>
-      <li>Tap an empty cell to place it. The small number in each cell is what that creature scores where it is. Tap a placed creature to pick it up again.</li>
-      <li>Reach the target, then press <b>Finish</b>. The further past it you go, the more shells you get: double the target pays three times as much as just reaching it.</li>
-    </ol>
-    <p>Missing the target costs air, and the run ends when you run out. Targets grow every day, so you need items from the market and new species for your bag. 📜 Rules shows today’s scoring (and this help again), 🎒 your items and pouch, 🐚 your bag. ↶ undoes a move.</p></div>
-    <div class="row c"><button class="btn pri" id="gotit">Got it</button></div>`;
+/* ---------------- picture guide ---------------- */
+/* small example reefs; the numbers on them come from the real scoring rules. * marks the creature the example is about,
+   and the shaded cells are the ones that count for it */
+const EX = {
+  place:   {w: 3, h: 3, g: '. . . . *coral . . . .', hl: ''},
+  coral:   {w: 3, h: 3, g: '. coral . coral *coral coral . . .', hl: 'n4', say: 'Coral scores 1, and +1 for each coral next to it.'},
+  clown:   {w: 3, h: 3, g: '. coral . coral *clown . . coral .', hl: 'n4', say: 'Clownfish score +2 for each coral next to them.'},
+  kelp:    {w: 3, h: 3, g: '. kelp . . *kelp coral . kelp .', hl: 'col', say: 'Kelp scores 1, and +1 for each other kelp in its column, even far away.'},
+  sardine: {w: 4, h: 2, g: 'sardine . *sardine sardine . coral . .', hl: 'row', say: 'Sardines get +1 for each other sardine in their row.'},
+  crab:    {w: 3, h: 3, g: '. *crab . . crab . . . .', hl: 'edge', say: 'A crab scores 3 on the edge of the reef, and nothing in the middle.'},
+  octo:    {w: 3, h: 3, g: '. . . coral *octo . . . .', hl: 'n4', say: 'An octopus likes open water: +1 for each empty cell next to it.'},
+  puffer:  {w: 4, h: 3, g: '*puffer . . . . . coral puffer . . . .', hl: 'n4', say: 'A pufferfish with no creature next to it scores 5. With company it scores 1.'},
+  star:    {w: 3, h: 3, g: '*star . . . . star . . .', hl: 'corner', say: 'A starfish scores 5 in a corner and 1 anywhere else.'},
+  squid:   {w: 3, h: 3, g: 'coral . clown . *squid . . . crab', hl: 'diag', say: 'Squid get +1 for each creature on their diagonals.'},
+  lobster: {w: 3, h: 3, g: '. rock . . *lobster rock . . .', hl: 'n4', say: 'A lobster gets +2 for each rock next to it.'},
+  dolphin: {w: 3, h: 3, g: '. coral . clown *dolphin crab . . .', hl: 'n4', say: 'A dolphin likes company: +1 for each creature next to it.'},
+  shrimp:  {w: 3, h: 3, g: '. coral . clown *shrimp coral . crab .', hl: 'n4', say: 'Shrimp get +1 for each different kind next to them. Here there are three kinds.'},
+  jelly:   {w: 3, h: 3, g: '. . . coral *jelly coral . . .', hl: 'n4', say: 'A jellyfish scores 4, but stings: every creature next to it loses 1.'},
+  turtle:  {w: 3, h: 3, g: '. jelly . . *turtle . . jelly .', hl: 'n4', say: 'Turtles eat jellyfish: +3 for each one next to them, and they don’t get stung.'},
+  shark:   {w: 4, h: 4, g: '. . . . clown *shark . sardine . . . . . clown . .', hl: 'rowcol', say: 'A shark gets +1 for each fish in its row or column, but a fish right next to it loses 2.'}
+};
+function exampleHtml(k, cell = 40) {
+  const ex = EX[k], w = ex.w, h = ex.h;
+  let f = 0;
+  const g = ex.g.split(' ').map((t, i) => { if (t[0] === '*') { f = i; t = t.slice(1); } return t === '.' ? null : t; });
+  const D = {w, h, fixed: g.map(t => FEAT[t] ? t : null)}, per = [];
+  scoreGrid(g, D, prep(baseRules()), per);
+  const N = nbFor(D), all = g.map((_, i) => i);
+  const hl = new Set({n4: N.n4[f], diag: N.nd[f], row: N.row[f], col: N.col[f], rowcol: N.row[f].concat(N.col[f]),
+    edge: all.filter(i => N.edge[i] && i !== f), corner: all.filter(i => N.corner[i] && i !== f)}[ex.hl] || []);
+  return `<div class="ex" style="grid-template-columns:repeat(${w},1fr);width:${w * cell + 10}px;--ec:${cell}px" aria-hidden="true">${g.map((t, i) =>
+    `<i class="${i === f ? 'fo' : ''}${hl.has(i) ? ' hl' : ''}${FEAT[t] ? ' f' : ''}">${t ? tileOf(t).e : ''}${KINDS[t] ? `<b class="${per[i] < 0 ? 'neg' : per[i] === 0 ? 'zero' : ''}">${pm(per[i])}</b>` : ''}</i>`).join('')}</div>`;
+}
+function speciesCard(k) { return `<div class="spc">${exampleHtml(k, 36)}<div><b>${KINDS[k].e} ${KINDS[k].name}</b><p>${esc(EX[k].say)}</p></div></div>`; }
+function guideHtml(p) {
+  const mine = st ? KIND_IDS.filter(k => st.bag[k] > 0) : ['coral', 'clown', 'crab', 'puffer'];
+  const tier = (label, x, cls = '') => `<div class="${cls}"><b>${label}</b>${x}</div>`;
+  const pages = [
+    ['Place your creatures', `<div class="gpic"><div class="hand demo"><span class="htile sel">🪸<span>3</span></span><span class="htile">🐠<span>2</span></span></div><span class="arrow">➜</span>${exampleHtml('place', 46)}</div>
+      <p>Tap a creature in your hand: it gets an orange outline. Then tap a cell on the reef to put it there. Tap a placed creature to pick it up again, or use ↶ to undo. You don’t have to use every tile.</p>`],
+    ['Neighbours give points', `<div class="gpic">${exampleHtml('coral', 42)}${exampleHtml('clown', 42)}</div>
+      <p>Each creature scores by what is around it. The number in the corner of a cell is what that creature scores. For the outlined creature, the shaded cells are the ones that count: usually the four cells above, below, left and right.</p>
+      <p class="small muted">Left: coral likes coral. Right: clownfish get +2 for each coral next to them.</p>`],
+    ['Every species is different', `<div class="gpic">${exampleHtml('crab', 38)}${exampleHtml('kelp', 38)}${exampleHtml('puffer', 38)}</div>
+      <p>Crabs want the edge, kelp counts kelp in its whole column, a pufferfish wants to be alone. The line above your hand always says how the creature you’re holding scores, and 📜 Rules lists them all.</p>`],
+    ['Beat the target', `<div class="goal"><div class="gl"><span>Score <b>46</b></span><span class="gm good">+12 🐚 now · double!</span><span>Target <b>23</b></span></div>
+        <div class="gbar ok"><i style="width:80%"></i>${[1, 1.5, 2].map(x => `<s style="left:${x / 2.5 * 100}%"><span>${x === 1 ? 23 : x + '×'}</span></s>`).join('')}</div></div>
+      <p>When the score bar passes the target, press <b>Finish day</b>. Shells for a day:</p>
+      <div class="tiers">${tier('short', '2 🐚', 'miss')}${tier('1×', '4 🐚')}${tier('1.5×', 4 + overShells(1.5) + ' 🐚')}${tier('2×', 4 + overShells(2) + ' 🐚', 'top')}${tier('2.5×', 4 + overShells(2.5) + ' 🐚', 'top')}</div>
+      <p class="small muted">Going past the target is worth a lot: double the target pays three times as much as just reaching it. Saved shells also earn interest, 1 for every 5.</p>`],
+    ['Air, market and festivals', `<div class="gi"><span class="ge">🫁</span><span>Missing the target costs air, more the further short you are. When your air runs out, the run is over.</span></div>
+      <div class="gi"><span class="ge">🏪</span><span>Some evenings there is a market. Buy items that raise your score (🛶 🗡️ 🍯), things for your pouch that you use when you like (🍱 🧵), and more creatures for your bag (🦀🦀🦀).</span></div>
+      <div class="gi"><span class="ge">🎪</span><span>Every fifth day is a festival with a special rule and a higher target. Reach it and you choose a prize.</span></div>
+      <div class="gi"><span class="ge">🌊</span><span>Some days have a current that changes the rules a little. The banner above the reef says what it does.</span></div>`],
+    ['Your species', `<p class="small muted">These are in your bag${st ? '' : ' at the start'}. Other species turn up at the market, and 🐚 Bag shows these pictures again.</p>${mine.map(speciesCard).join('')}`]
+  ];
+  const [title, body] = pages[p], last = p === pages.length - 1;
+  return `<div class="guide"><div class="gtitle"><h2>${title}</h2><span class="small muted">${p + 1} / ${pages.length}</span></div>${body}
+    <div class="dots">${pages.map((_, i) => `<i class="${i === p ? 'on' : ''}"></i>`).join('')}</div>
+    <div class="row c"><button class="btn" data-gnav="${p ? 'back' : 'done'}">${p ? 'Back' : 'Skip'}</button><button class="btn pri" data-gnav="${last ? 'done' : 'next'}">${last ? 'Start playing' : 'Next'}</button></div></div>`;
 }
 function liveMap(day, H, fog) {
   const live = new Map();
@@ -1209,16 +1291,16 @@ function dayView() {
     return `<button class="tb" data-spell="${k}" title="${esc(SPELL[k].name + ': ' + SPELL[k].desc)}" ${!st.charges[k] || used ? 'disabled' : ''}>${SPELL[k].e} ${st.charges[k] || 0}</button>`;
   }).join('');
   const pouch = st.pouch.map((id, k) => `<button class="tb pouch" data-ask-use="${k}" title="${esc(ITEM[id].name)}">${ITEM[id].e}</button>`).join('');
-  const sheet = ui.sheet === 'rules' ? rulesSheet() : ui.sheet === 'items' ? itemsSheet(liveMap(day, H, fog)) : ui.sheet === 'bag' ? bagSheet(false) : ui.sheet === 'help' || (!rec.seenHelp && d === 1 && !ui.helpClosed) ? helpSheet() : '';
+  const sheet = ui.sheet === 'rules' ? rulesSheet() : ui.sheet === 'items' ? itemsSheet(liveMap(day, H, fog)) : ui.sheet === 'bag' ? bagSheet(false) : '';
   return `<div class="game">
     ${hud()}${goal}${banner}
-    <div class="boardwrap"><div class="board" style="--w:${day.D.w};--h:${day.D.h}">${cells}</div></div>
+    <div class="play"><div class="boardwrap"><div class="board" style="--w:${day.D.w};--h:${day.D.h}">${cells}</div></div>
     <div class="dock">
       <div class="info">${info}</div>
       <div class="hand">${hand || '<span class="small muted">Your hand is empty.</span>'}</div>
       <div class="tools">${spells}${pouch}<button class="tb" id="undo" aria-label="Undo" ${ui.hist.length ? '' : 'disabled'}>↶</button><button class="tb" id="clear">Clear</button></div>
       <div class="tools"><button class="tb" data-sheet="rules" aria-label="Scoring rules">📜 Rules</button><button class="tb" data-sheet="items" aria-label="Items and pouch">🎒 ${st.items.length + st.pouch.length}</button><button class="tb" data-sheet="bag" aria-label="Your bag">🐚 Bag</button><button class="tb fin${reached ? ' ok' : ''}" id="finish">Finish day</button></div>
-    </div>
+    </div></div>
   </div>${sheet ? `<div class="sheet-bg" data-bg><div class="sheet" role="dialog" aria-modal="true">${sheet}</div></div>` : ''}`;
 }
 function miniGrid(D, g) {
@@ -1261,7 +1343,7 @@ function marketView() {
   const packs = sh.packs.map((k, i) => {
     if (!k) return '<div class="offer empty">sold</div>';
     const p = packPrice(k), isNew = !(st.bag[k] > 0);
-    return `<div class="offer pack"><span class="oe">${KINDS[k].e.repeat(3)}</span><span class="on">${PACK} × ${KINDS[k].name}</span><span class="rar rar-${isNew ? 'R' : 'C'}">${isNew ? 'New species' : 'For your bag'}</span><span class="od">${esc(ruleParts(R, k, kinds.concat(k)))}.</span>
+    return `<div class="offer pack"><span class="oe">${KINDS[k].e.repeat(3)}</span><span class="on">${PACK} × ${KINDS[k].name}</span><span class="rar rar-${isNew ? 'R' : 'C'}">${isNew ? 'New species' : 'For your bag'}</span>${exampleHtml(k, 30)}<span class="od">${esc(EX[k].say)}</span>
       <button class="btn sm pri" data-pack="${i}" ${st.shells < p ? 'disabled' : ''}>Add to bag · ${p} 🐚</button></div>`;
   }).join('');
   const nightLog = st.nightLog && st.nightLog.length ? `<div class="card small">Overnight: ${esc(st.nightLog.join(', '))}</div>` : '';
@@ -1301,7 +1383,7 @@ function titleView() {
   const live = st && st.phase !== 'over';
   return `<div class="page"><div style="text-align:center;padding:24px 0 10px"><div style="font-size:50px">🪸🐠🐙</div><h1 style="font-size:34px">Reef Keeper</h1>
     <p class="muted">A reef puzzle with a run, a market and festivals. Arrange each day’s creatures as well as you can, grow your bag, collect items, and see how many days your air lasts.</p></div>
-    <div class="row c">${live ? `<button class="btn pri big" id="cont">Continue day ${st.day}</button>` : ''}<button class="btn ${live ? '' : 'pri '}big" id="new">New run</button></div>
+    <div class="row c">${live ? `<button class="btn pri big" id="cont">Continue day ${st.day}</button>` : ''}<button class="btn ${live ? '' : 'pri '}big" id="new">New run</button><button class="btn big" data-guide>How to play</button></div>
     <div class="row c" style="margin-top:10px"><input type="text" id="seed" placeholder="seed (optional)"><button class="btn sm" id="seeded">Start with seed</button></div>
     <div class="card"><h3 style="margin-top:0">How it works</h3>
       <p>Each day you get a reef and a hand of creatures drawn from your bag. Tap a creature in your hand, then tap a cell to place it. Each species scores in its own way: coral likes coral, kelp likes kelp in the same column, crabs want the edge, pufferfish want to be alone, sharks hunt along rows and columns.</p>
@@ -1317,10 +1399,29 @@ function render() {
   document.body.dataset.season = st && !ui.title ? season(st.day) : 'summer';
   if (!st || ui.title) app.innerHTML = titleView();
   else app.innerHTML = ({day: dayView, result: resultView, market: marketView, reward: rewardView, full: fullView, over: overView}[st.phase] || dayView)();
+  if (st && st.phase === 'day' && st.day === 1 && !ui.title && !rec.seenHelp && !ui.helpClosed && ui.guide == null) ui.guide = 0;
+  if (ui.guide != null) app.insertAdjacentHTML('beforeend', `<div class="sheet-bg" style="z-index:45"><div class="sheet" role="dialog" aria-modal="true">${guideHtml(ui.guide)}</div></div>`);
   if (ui.ask) app.insertAdjacentHTML('beforeend', `<div class="sheet-bg" style="z-index:50"><div class="sheet" role="dialog" aria-modal="true"><p>${esc(ui.ask.text)}</p><div class="row c"><button class="btn" id="askno">Cancel</button><button class="btn pri" id="askyes">${esc(ui.ask.yes)}</button></div></div></div>`);
   if (ui.tip) app.insertAdjacentHTML('beforeend', `<div class="tip">${esc(ui.tip)}</div>`);
   bind();
+  fitBoard();
 }
+/* The board fills the free height on big screens, but never gets narrower than the screen on a phone (or 460px):
+   if that doesn't fit, the page scrolls and the dock stays pinned to the bottom. */
+function fitBoard() {
+  const b = $('.board'), wrap = $('.boardwrap'), game = $('.game');
+  if (!b || !wrap || !game) return;
+  const w = +b.style.getPropertyValue('--w'), h = +b.style.getPropertyValue('--h');
+  const W = wrap.clientWidth, padW = 12 + 4 * (w - 1), padH = 12 + 4 * (h - 1);
+  const side = getComputedStyle($('.play')).flexDirection === 'row', dock = $('.dock');
+  const top = wrap.getBoundingClientRect().top + window.scrollY;
+  const avail = window.innerHeight - top - (side ? 0 : dock.offsetHeight + 6) - 14;
+  const byH = (avail - padH) / h * w + padW;
+  const size = Math.min(W, Math.max(byH, Math.min(W, 460)));
+  b.style.width = size + 'px';
+  b.style.setProperty('--cs', (size - padW) / w + 'px');
+}
+window.addEventListener('resize', fitBoard);
 function bind() {
   const on = (sel, fn) => { const el = $(sel); if (el) el.onclick = fn; };
   on('#askno', () => { ui.ask = null; render(); });
@@ -1330,7 +1431,6 @@ function bind() {
   on('#new', () => fresh(() => { ui.title = false; newRun(); render(); }));
   on('#seeded', () => { const s = $('#seed').value.trim(); if (s) fresh(() => { ui.title = false; newRun(s); render(); }); });
   on('#menu', () => { ui.title = true; ui.sheet = null; render(); });
-  on('#gotit', () => { ui.sheet = null; ui.helpClosed = true; rec.seenHelp = true; save(); render(); });
   on('#morning', () => { ui.seenMorning = true; render(); });
   on('#again', () => { newRun(); render(); });
   on('#same', () => { newRun(st.seed); render(); });
@@ -1355,6 +1455,13 @@ function bind() {
   $$('[data-sheet]').forEach(b => b.onclick = () => { ui.sheet = b.dataset.sheet; render(); });
   $$('[data-close]').forEach(b => b.onclick = () => { ui.sheet = null; ui.helpClosed = true; if (!rec.seenHelp) { rec.seenHelp = true; save(); } render(); });
   $$('[data-bg]').forEach(b => b.onclick = e => { if (e.target === b) { ui.sheet = null; ui.helpClosed = true; render(); } });
+  $$('[data-guide]').forEach(b => b.onclick = () => { ui.sheet = null; ui.guide = 0; render(); });
+  $$('[data-gnav]').forEach(b => b.onclick = () => {
+    const a = b.dataset.gnav;
+    if (a === 'next') ui.guide++; else if (a === 'back') ui.guide--;
+    else { ui.guide = null; ui.helpClosed = true; rec.seenHelp = true; save(); }
+    render();
+  });
   $$('[data-use]').forEach(b => b.onclick = () => usePouch(+b.dataset.use));
   $$('[data-ask-use]').forEach(b => b.onclick = () => {
     const k = +b.dataset.askUse, def = ITEM[st.pouch[k]];
