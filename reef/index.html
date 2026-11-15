@@ -99,11 +99,11 @@ button:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
 .htile span{font-size:12.5px;font-weight:700;color:var(--muted)}
 .htile.sel{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent);background:var(--surface)}
 .htile.none{opacity:.35;cursor:default}
-.tools{display:flex;gap:4px;justify-content:center}
-.tb{border:1.5px solid var(--line);background:var(--surface2);border-radius:10px;padding:6px 6px;min-width:34px;justify-content:center;cursor:pointer;font-size:13px;flex:none;font-weight:600;white-space:nowrap;display:flex;align-items:center;gap:3px}
+.tools{display:flex;gap:3px;justify-content:center}
+.tb{border:1.5px solid var(--line);background:var(--surface2);border-radius:10px;padding:6px 5px;min-width:33px;justify-content:center;cursor:pointer;font-size:13px;flex:none;font-weight:600;white-space:nowrap;display:flex;align-items:center;gap:3px}
 .tb:disabled{opacity:.4;cursor:default}
 .tb.pouch{border-style:dashed;padding:6px 5px}
-.tb.fin{background:var(--accent);border-color:var(--accent);color:#fff;font-size:15px;padding:6px 10px;flex:1 1 auto;justify-content:center;max-width:220px}
+.tb.fin{background:var(--accent);border-color:var(--accent);color:#fff;font-size:15px;padding:6px 6px;flex:1 1 auto;min-width:0;justify-content:center;max-width:220px}
 .tb.fin.ok{background:var(--good);border-color:var(--good)}
 
 /* scrolling pages (results, market, prizes, title) keep their main buttons in a bar fixed to the bottom */
@@ -1174,7 +1174,6 @@ function menuSheet() {
     ${b('data-sheet="rules"', '📜', 'Scoring today', 'How each species scores, today’s current or festival, and the tools.')}
     ${b('data-sheet="items"', '🎒', 'Items and pouch', `${st.items.length} items, ${st.pouch.length} in the pouch. Use pouch things from here.`)}
     ${b('data-sheet="bag"', '🐚', 'Your bag', bagSize(st.bag) + ' tiles, with a picture for each species.')}
-    ${b('id="clear"', '🧹', 'Clear the reef', 'Take every creature back into your hand. Undo brings them back.')}
     ${b('data-guide', '💡', 'How to play', 'The picture guide.')}
     ${b('id="totitle"', '🏠', 'Title screen', 'Your run is saved.')}
   </div>`;
@@ -1298,7 +1297,7 @@ function dayView() {
     : leftN ? 'Tap a tile in your hand to pick it up.' : 'Everything is placed. Tap a creature to move it, or finish the day.';
   const spells = Object.keys(SPELL).map(k => {
     const used = (k === 'measure' && day.measured) || (k === 'hot' && day.hotOn);
-    return `<button class="tb" data-spell="${k}" title="${esc(SPELL[k].name + ': ' + SPELL[k].desc)}" ${!st.charges[k] || used ? 'disabled' : ''}>${SPELL[k].e} ${st.charges[k] || 0}</button>`;
+    return `<button class="tb" data-spell="${k}" title="${esc(SPELL[k].name + ': ' + SPELL[k].desc)}" ${!st.charges[k] || used ? 'disabled' : ''}>${SPELL[k].e}${st.charges[k] || 0}</button>`;
   }).join('');
   const sheet = ui.sheet === 'rules' ? rulesSheet() : ui.sheet === 'items' ? itemsSheet(liveMap(day, H, fog)) : ui.sheet === 'bag' ? bagSheet(false) : ui.sheet === 'menu' ? menuSheet() : '';
   return `<div class="game">
@@ -1307,7 +1306,7 @@ function dayView() {
     <div class="dock">
       <div class="info">${info}</div>
       <div class="hand">${hand || '<span class="small muted">Your hand is empty.</span>'}</div>
-      <div class="tools">${spells}<button class="tb" id="undo" aria-label="Undo" ${ui.hist.length ? '' : 'disabled'}>↶</button><button class="tb" data-sheet="rules" aria-label="Scoring rules">📜</button><button class="tb${st.pouch.length ? ' pouch' : ''}" data-sheet="items" aria-label="Items and pouch">🎒${st.pouch.length ? st.pouch.length : ''}</button><button class="tb fin${reached ? ' ok' : ''}" id="finish">Finish</button></div>
+      <div class="tools">${spells}<button class="tb" id="undo" aria-label="Undo" ${ui.hist.length ? '' : 'disabled'}>↶</button><button class="tb" id="clear" aria-label="Clear the reef" title="Clear the reef" ${day.g.some((t, i) => t && !day.D.fixed[i]) ? '' : 'disabled'}>🧹</button><button class="tb" data-sheet="rules" aria-label="Scoring rules">📜</button><button class="tb${st.pouch.length ? ' pouch' : ''}" data-sheet="items" aria-label="Items and pouch">🎒${st.pouch.length ? st.pouch.length : ''}</button><button class="tb fin${reached ? ' ok' : ''}" id="finish">Finish</button></div>
     </div></div>
   </div>${sheet ? `<div class="sheet-bg" data-bg><div class="sheet" role="dialog" aria-modal="true">${sheet}</div></div>` : ''}`;
 }
