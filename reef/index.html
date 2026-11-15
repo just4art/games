@@ -92,7 +92,7 @@ button:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
 .cell .pt.zero{color:var(--muted)}
 .cell .hot{position:absolute;inset:0;border-radius:9px;display:grid;place-items:center;font-size:max(12px,min(calc(var(--cs,60px) * .22), 18px));font-weight:700;color:var(--text);font-family:system-ui,sans-serif}
 .dock{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:5px 6px;display:flex;flex-direction:column;gap:5px;position:sticky;bottom:max(8px,env(safe-area-inset-bottom));z-index:5;box-shadow:0 -4px 14px rgba(0,0,0,.12)}
-.info{font-size:12px;color:var(--muted);line-height:1.3;text-align:center;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.info{font-size:12px;color:var(--muted);line-height:1.3;height:2.6em;text-align:center;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .info b{color:var(--text)}
 .hand{display:flex;gap:5px;justify-content:safe center;overflow-x:auto;scrollbar-width:none;padding:2px 1px}
 .htile{display:flex;align-items:center;gap:3px;border:1.5px solid var(--line);background:var(--surface2);border-radius:11px;padding:2px 7px;font-size:21px;cursor:pointer;line-height:1.2;flex:none}
@@ -1425,12 +1425,17 @@ function fitBoard() {
   const b = $('.board'), wrap = $('.boardwrap'), game = $('.game');
   if (!b || !wrap || !game) return;
   const w = +b.style.getPropertyValue('--w'), h = +b.style.getPropertyValue('--h');
-  const W = wrap.clientWidth, padW = 12 + 4 * (w - 1), padH = 12 + 4 * (h - 1);
+  const padW = 12 + 4 * (w - 1), padH = 12 + 4 * (h - 1);
+  // worked out once per day and screen size, so the board doesn't jump when the text around it changes
+  const key = [st.day, w, h, window.innerWidth, window.innerHeight].join(':');
+  if (ui.fit && ui.fit.key === key) { b.style.width = ui.fit.size + 'px'; b.style.setProperty('--cs', (ui.fit.size - padW) / w + 'px'); return; }
+  const W = wrap.clientWidth;
   const side = getComputedStyle($('.play')).flexDirection === 'row', dock = $('.dock');
   const top = wrap.getBoundingClientRect().top + window.scrollY;
   const avail = window.innerHeight - top - (side ? 0 : dock.offsetHeight + 6) - 14;
   const byH = (avail - padH) / h * w + padW;
   const size = Math.min(W, Math.max(byH, Math.min(W * 0.85, 460)));
+  ui.fit = {key, size};
   b.style.width = size + 'px';
   b.style.setProperty('--cs', (size - padW) / w + 'px');
 }
