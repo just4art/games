@@ -58,17 +58,17 @@ button:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
 .air.low .bar i{background:var(--bad)}
 .pill{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:3px 8px;font-size:12px;color:var(--muted);text-align:center;white-space:nowrap;line-height:1.2}
 .pill b{display:block;font-size:15px;color:var(--text);font-variant-numeric:tabular-nums}
-.goal{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:6px 10px 4px}
+.goal{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:4px 10px 2px;position:sticky;top:4px;z-index:6}
 .gl{display:flex;justify-content:space-between;align-items:baseline;gap:8px;font-size:13px}
-.gl b{font-size:18px;font-variant-numeric:tabular-nums}
+.gl b{font-size:17px;font-variant-numeric:tabular-nums}
 .gl .gm{font-size:12.5px;font-weight:600;text-align:center}
-.gbar{position:relative;height:9px;background:var(--line);border-radius:5px;margin:4px 0 13px}
+.gbar{position:relative;height:8px;background:var(--line);border-radius:4px;margin:3px 0 14px}
 .gbar i{position:absolute;left:0;top:0;bottom:0;border-radius:5px;background:var(--accent);transition:width .25s}
 .gbar.ok i{background:var(--good)}
 .gbar s{position:absolute;top:-2px;bottom:-2px;width:2px;background:var(--surface);text-decoration:none}
-.gbar s span{position:absolute;top:12px;left:50%;transform:translateX(-50%);font-size:10px;color:var(--muted);white-space:nowrap}
+.gbar s span{position:absolute;top:10px;left:50%;transform:translateX(-50%);font-size:10px;color:var(--muted);white-space:nowrap}
 .gs{font-size:11.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.banner{background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--accent);border-radius:10px;padding:4px 10px;font-size:12.5px;cursor:pointer;text-align:left;width:100%}
+.banner{background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--accent);border-radius:10px;padding:3px 10px;font-size:12.5px;cursor:pointer;text-align:left;width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .banner b{color:var(--accent)}
 .play{display:flex;flex-direction:column;gap:6px;flex:1 0 auto}
 .boardwrap{flex:1 0 auto;display:grid;place-items:center}
@@ -91,19 +91,19 @@ button:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
 .cell .pt.neg{color:var(--bad)}
 .cell .pt.zero{color:var(--muted)}
 .cell .hot{position:absolute;inset:0;border-radius:9px;display:grid;place-items:center;font-size:max(12px,min(calc(var(--cs,60px) * .22), 18px));font-weight:700;color:var(--text);font-family:system-ui,sans-serif}
-.dock{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:6px 8px;display:flex;flex-direction:column;gap:6px;position:sticky;bottom:max(8px,env(safe-area-inset-bottom));z-index:5;box-shadow:0 -4px 14px rgba(0,0,0,.12)}
-.info{font-size:12.5px;color:var(--muted);min-height:2.6em;line-height:1.3;text-align:center}
+.dock{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:5px 6px;display:flex;flex-direction:column;gap:5px;position:sticky;bottom:max(8px,env(safe-area-inset-bottom));z-index:5;box-shadow:0 -4px 14px rgba(0,0,0,.12)}
+.info{font-size:12px;color:var(--muted);line-height:1.3;text-align:center;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .info b{color:var(--text)}
-.hand{display:flex;flex-wrap:wrap;gap:5px;justify-content:center}
-.htile{display:flex;align-items:center;gap:3px;border:1.5px solid var(--line);background:var(--surface2);border-radius:11px;padding:3px 8px;font-size:22px;cursor:pointer;line-height:1.2}
+.hand{display:flex;gap:5px;justify-content:safe center;overflow-x:auto;scrollbar-width:none;padding:2px 1px}
+.htile{display:flex;align-items:center;gap:3px;border:1.5px solid var(--line);background:var(--surface2);border-radius:11px;padding:2px 7px;font-size:21px;cursor:pointer;line-height:1.2;flex:none}
 .htile span{font-size:12.5px;font-weight:700;color:var(--muted)}
 .htile.sel{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent);background:var(--surface)}
 .htile.none{opacity:.35;cursor:default}
-.tools{display:flex;gap:4px;justify-content:center;flex-wrap:wrap}
-.tb{border:1.5px solid var(--line);background:var(--surface2);border-radius:10px;padding:6px 8px;min-width:34px;justify-content:center;cursor:pointer;font-size:13px;font-weight:600;white-space:nowrap;display:flex;align-items:center;gap:3px}
+.tools{display:flex;gap:4px;justify-content:center}
+.tb{border:1.5px solid var(--line);background:var(--surface2);border-radius:10px;padding:6px 6px;min-width:34px;justify-content:center;cursor:pointer;font-size:13px;flex:none;font-weight:600;white-space:nowrap;display:flex;align-items:center;gap:3px}
 .tb:disabled{opacity:.4;cursor:default}
 .tb.pouch{border-style:dashed;padding:6px 5px}
-.tb.fin{background:var(--accent);border-color:var(--accent);color:#fff;font-size:15px;padding:7px 16px;flex:1;justify-content:center;max-width:220px}
+.tb.fin{background:var(--accent);border-color:var(--accent);color:#fff;font-size:15px;padding:6px 10px;flex:1 1 auto;justify-content:center;max-width:220px}
 .tb.fin.ok{background:var(--good);border-color:var(--good)}
 
 /* scrolling pages (results, market, prizes, title) keep their main buttons in a bar fixed to the bottom */
@@ -155,6 +155,7 @@ button.irow{cursor:pointer}
 .bagrow:last-child{border-bottom:none}
 .bagrow .e{font-size:22px;width:28px;text-align:center}
 .bagrow .t{flex:1;min-width:0}
+.tip.top{top:38%;bottom:auto}
 .tip{position:fixed;left:50%;bottom:90px;transform:translateX(-50%);background:var(--text);color:var(--bg);padding:8px 14px;border-radius:12px;font-size:13.5px;max-width:min(92vw,480px);z-index:60;box-shadow:var(--shadow);text-align:center}
 input[type=text]{font:inherit;border:1.5px solid var(--line);background:var(--surface);color:var(--text);border-radius:10px;padding:7px 10px;width:150px}
 .sheet-bg{position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:flex-end;justify-content:center;padding:12px;z-index:40}
@@ -1053,7 +1054,7 @@ function takeReward(id) {
 /* ---------------- rendering ---------------- */
 /* an in-page question instead of confirm(): browsers let people switch confirm() off, and then it always says no */
 function ask(text, yes, fn) { ui.ask = {text, yes, fn}; render(); }
-function toast(msg) { ui.tip = msg; render(); clearTimeout(toast.t); toast.t = setTimeout(() => { ui.tip = ''; render(); }, 2600); }
+function toast(msg, ms = 2600) { ui.tip = msg; render(); clearTimeout(toast.t); toast.t = setTimeout(() => { ui.tip = ''; render(); }, ms); }
 function hud() {
   const m = maxAir(st), low = st.air < m * 0.3, d = st.day, nf = Math.ceil(d / 5) * 5;
   return `<div class="hud">
@@ -1167,6 +1168,17 @@ function rulesSheet() {
     <h3>Tools</h3><div class="rules">${Object.entries(SPELL).map(([k, s]) => `<div><span class="e">${s.e}</span><span><b>${s.name}</b> ×${st.charges[k] || 0}: ${esc(s.desc)}</span></div>`).join('')}</div>
     <h3>Shells</h3><p class="small">2 for every day, 2 more for reaching the target, and the further past it you go the more you get: +4 at 1.5 times the target, +8 at double, +12 at 2.5 times. Matching the best layout adds 2 and winning a festival adds 4. You also get 1 shell of interest for every 5 you have saved, up to 4 a day.</p>`;
 }
+function menuSheet() {
+  const b = (attr, e, name, note) => `<button class="irow" ${attr}><span class="ie">${e}</span><span class="it"><b>${name}</b><span class="small muted">${note}</span></span></button>`;
+  return `<div class="sh"><h2>Menu</h2><button class="btn sm" data-close>Close</button></div><div class="ilist">
+    ${b('data-sheet="rules"', '📜', 'Scoring today', 'How each species scores, today’s current or festival, and the tools.')}
+    ${b('data-sheet="items"', '🎒', 'Items and pouch', `${st.items.length} items, ${st.pouch.length} in the pouch. Use pouch things from here.`)}
+    ${b('data-sheet="bag"', '🐚', 'Your bag', bagSize(st.bag) + ' tiles, with a picture for each species.')}
+    ${b('id="clear"', '🧹', 'Clear the reef', 'Take every creature back into your hand. Undo brings them back.')}
+    ${b('data-guide', '💡', 'How to play', 'The picture guide.')}
+    ${b('id="totitle"', '🏠', 'Title screen', 'Your run is saved.')}
+  </div>`;
+}
 function itemsSheet(live) {
   const s = stats(st);
   return `<div class="sh"><h2>Items</h2><button class="btn sm" data-close>Close</button></div>
@@ -1233,7 +1245,7 @@ function guideHtml(p) {
       <div class="gi"><span class="ge">🏪</span><span>Some evenings there is a market. Buy items that raise your score (🛶 🗡️ 🍯), things for your pouch that you use when you like (🍱 🧵), and more creatures for your bag (🦀🦀🦀).</span></div>
       <div class="gi"><span class="ge">🎪</span><span>Every fifth day is a festival with a special rule and a higher target. Reach it and you choose a prize.</span></div>
       <div class="gi"><span class="ge">🌊</span><span>Some days have a current that changes the rules a little. The banner above the reef says what it does.</span></div>`],
-    ['Your species', `<p class="small muted">These are in your bag${st ? '' : ' at the start'}. Other species turn up at the market, and 🐚 Bag shows these pictures again.</p>${mine.map(speciesCard).join('')}`]
+    ['Your species', `<p class="small muted">These are in your bag${st ? '' : ' at the start'}. Other species turn up at the market, and “Your bag” in the ☰ menu shows these pictures again.</p>${mine.map(speciesCard).join('')}`]
   ];
   const [title, body] = pages[p], last = p === pages.length - 1;
   return `<div class="guide"><div class="gtitle"><h2>${title}</h2><span class="small muted">${p + 1} / ${pages.length}</span></div>${body}
@@ -1264,8 +1276,6 @@ function dayView() {
   let banner = '';
   if (day.event) { const E = EVENTS[day.event.id]; banner = `<button class="banner" data-sheet="rules">🎪 <b>${E.name}</b>: ${esc(E.desc(day.event))} Higher target, prize if you reach it.</button>`; }
   else if (day.current) { const c = CURRENTS[day.current]; banner = `<button class="banner" data-sheet="rules">${c.e} <b>${c.name}</b>: ${esc(c.desc)}${c.bad && has('calm') ? ' (🪷 keeps it away)' : ''}</button>`; }
-  const morning = (st.nightLog || []).concat(day.startLog || []);
-  if (morning.length && !ui.seenMorning) banner += `<button class="banner" id="morning">Since yesterday: ${esc(morning.join(' · '))}</button>`;
 
   const reached = ratio >= 1 && !fog;
   const pct = fog ? 0 : Math.min(100, 100 * ratio / 2.5);
@@ -1274,7 +1284,7 @@ function dayView() {
   const goal = `<div class="goal">
       <div class="gl"><span>Score <b>${fog ? '?' : H.total}</b></span><span class="gm ${reached ? 'good' : ''}">${prev}</span><span>Target <b>${day.target}</b></span></div>
       <div class="gbar${reached ? ' ok' : ''}"><i style="width:${pct}%"></i>${[1, 1.5, 2].map(x => `<s style="left:${x / 2.5 * 100}%"><span>${x === 1 ? day.target : x + '×'}</span></s>`).join('')}</div>
-      <div class="gs">${fog ? '' : esc(bits.join(' · ')) + (bits.length > 1 ? ' = ' + H.total : '')}${day.measured ? ' · best reef possible today: ' + day.best : ''}</div>
+      ${(bits.length > 1 && !fog) || day.measured ? `<div class="gs">${fog ? '' : bits.length > 1 ? esc(bits.join(' · ')) + ' = ' + H.total : ''}${day.measured ? (bits.length > 1 && !fog ? ' · ' : '') + 'best reef possible today: ' + day.best : ''}</div>` : ''}
     </div>`;
   const cells = day.g.map((t, i) => {
     if (day.D.fixed[i]) return `<button class="cell fixed" disabled aria-label="${FEAT[day.D.fixed[i]].name}">${FEAT[day.D.fixed[i]].e}</button>`;
@@ -1284,22 +1294,20 @@ function dayView() {
   }).join('');
   const hand = ORDER.filter(t => day.hand.includes(t)).map(t =>
     `<button class="htile${ui.sel === t ? ' sel' : ''}${left[t] > 0 ? '' : ' none'}" data-t="${t}" aria-label="${tileOf(t).name}">${tileOf(t).e}<span>${Math.max(0, left[t])}</span></button>`).join('');
-  const info = ui.sel && left[ui.sel] > 0 ? `<b>${tileOf(ui.sel).e} ${tileOf(ui.sel).name}</b>: ${esc(ruleParts(R, ui.sel, typesOf(day)))}. Tap an empty cell to place it.`
-    : leftN ? 'Tap a tile in your hand to pick it up.' : 'Everything is placed. Tap a creature on the reef to pick it up and move it, or finish the day.';
+  const info = ui.sel && left[ui.sel] > 0 ? `<b>${tileOf(ui.sel).e} ${tileOf(ui.sel).name}</b>: ${esc(ruleParts(R, ui.sel, typesOf(day)))}`
+    : leftN ? 'Tap a tile in your hand to pick it up.' : 'Everything is placed. Tap a creature to move it, or finish the day.';
   const spells = Object.keys(SPELL).map(k => {
     const used = (k === 'measure' && day.measured) || (k === 'hot' && day.hotOn);
     return `<button class="tb" data-spell="${k}" title="${esc(SPELL[k].name + ': ' + SPELL[k].desc)}" ${!st.charges[k] || used ? 'disabled' : ''}>${SPELL[k].e} ${st.charges[k] || 0}</button>`;
   }).join('');
-  const pouch = st.pouch.map((id, k) => `<button class="tb pouch" data-ask-use="${k}" title="${esc(ITEM[id].name)}">${ITEM[id].e}</button>`).join('');
-  const sheet = ui.sheet === 'rules' ? rulesSheet() : ui.sheet === 'items' ? itemsSheet(liveMap(day, H, fog)) : ui.sheet === 'bag' ? bagSheet(false) : '';
+  const sheet = ui.sheet === 'rules' ? rulesSheet() : ui.sheet === 'items' ? itemsSheet(liveMap(day, H, fog)) : ui.sheet === 'bag' ? bagSheet(false) : ui.sheet === 'menu' ? menuSheet() : '';
   return `<div class="game">
     ${hud()}${goal}${banner}
     <div class="play"><div class="boardwrap"><div class="board" style="--w:${day.D.w};--h:${day.D.h}">${cells}</div></div>
     <div class="dock">
       <div class="info">${info}</div>
       <div class="hand">${hand || '<span class="small muted">Your hand is empty.</span>'}</div>
-      <div class="tools">${spells}${pouch}<button class="tb" id="undo" aria-label="Undo" ${ui.hist.length ? '' : 'disabled'}>↶</button><button class="tb" id="clear">Clear</button></div>
-      <div class="tools"><button class="tb" data-sheet="rules" aria-label="Scoring rules">📜 Rules</button><button class="tb" data-sheet="items" aria-label="Items and pouch">🎒 ${st.items.length + st.pouch.length}</button><button class="tb" data-sheet="bag" aria-label="Your bag">🐚 Bag</button><button class="tb fin${reached ? ' ok' : ''}" id="finish">Finish day</button></div>
+      <div class="tools">${spells}<button class="tb" id="undo" aria-label="Undo" ${ui.hist.length ? '' : 'disabled'}>↶</button><button class="tb" data-sheet="rules" aria-label="Scoring rules">📜</button><button class="tb${st.pouch.length ? ' pouch' : ''}" data-sheet="items" aria-label="Items and pouch">🎒${st.pouch.length ? st.pouch.length : ''}</button><button class="tb fin${reached ? ' ok' : ''}" id="finish">Finish</button></div>
     </div></div>
   </div>${sheet ? `<div class="sheet-bg" data-bg><div class="sheet" role="dialog" aria-modal="true">${sheet}</div></div>` : ''}`;
 }
@@ -1402,9 +1410,14 @@ function render() {
   if (st && st.phase === 'day' && st.day === 1 && !ui.title && !rec.seenHelp && !ui.helpClosed && ui.guide == null) ui.guide = 0;
   if (ui.guide != null) app.insertAdjacentHTML('beforeend', `<div class="sheet-bg" style="z-index:45"><div class="sheet" role="dialog" aria-modal="true">${guideHtml(ui.guide)}</div></div>`);
   if (ui.ask) app.insertAdjacentHTML('beforeend', `<div class="sheet-bg" style="z-index:50"><div class="sheet" role="dialog" aria-modal="true"><p>${esc(ui.ask.text)}</p><div class="row c"><button class="btn" id="askno">Cancel</button><button class="btn pri" id="askyes">${esc(ui.ask.yes)}</button></div></div></div>`);
-  if (ui.tip) app.insertAdjacentHTML('beforeend', `<div class="tip">${esc(ui.tip)}</div>`);
+  if (ui.tip) app.insertAdjacentHTML('beforeend', `<div class="tip${st && st.phase === 'day' && !ui.title ? ' top' : ''}">${esc(ui.tip)}</div>`);
   bind();
   fitBoard();
+  if (st && st.phase === 'day' && !ui.title && !ui.seenMorning && ui.guide == null) {
+    ui.seenMorning = true;
+    const morning = (st.nightLog || []).concat(st.dayState.startLog || []);
+    if (morning.length) setTimeout(() => toast('Since yesterday: ' + morning.join(' · '), 4500), 0);
+  }
 }
 /* The board fills the free height on big screens, but never gets narrower than the screen on a phone (or 460px):
    if that doesn't fit, the page scrolls and the dock stays pinned to the bottom. */
@@ -1417,7 +1430,7 @@ function fitBoard() {
   const top = wrap.getBoundingClientRect().top + window.scrollY;
   const avail = window.innerHeight - top - (side ? 0 : dock.offsetHeight + 6) - 14;
   const byH = (avail - padH) / h * w + padW;
-  const size = Math.min(W, Math.max(byH, Math.min(W, 460)));
+  const size = Math.min(W, Math.max(byH, Math.min(W * 0.85, 460)));
   b.style.width = size + 'px';
   b.style.setProperty('--cs', (size - padW) / w + 'px');
 }
@@ -1430,8 +1443,8 @@ function bind() {
   const fresh = fn => { if (!st || st.phase === 'over') fn(); else ask('Start a new run? The current one will be lost.', 'Start a new run', fn); };
   on('#new', () => fresh(() => { ui.title = false; newRun(); render(); }));
   on('#seeded', () => { const s = $('#seed').value.trim(); if (s) fresh(() => { ui.title = false; newRun(s); render(); }); });
-  on('#menu', () => { ui.title = true; ui.sheet = null; render(); });
-  on('#morning', () => { ui.seenMorning = true; render(); });
+  on('#menu', () => { if (st && st.phase === 'day') ui.sheet = 'menu'; else { ui.title = true; ui.sheet = null; } render(); });
+  on('#totitle', () => { ui.title = true; ui.sheet = null; render(); });
   on('#again', () => { newRun(); render(); });
   on('#same', () => { newRun(st.seed); render(); });
   on('#finish', () => {
@@ -1441,10 +1454,10 @@ function bind() {
   });
   on('#next', () => { ui.seenMorning = false; nextAfterResult(); });
   on('#reroll', reroll);
-  on('#leave', () => { if (st.pending) st.pending = null; st.shop = null; ui.sheet = null; st.day++; startDay(); st.nightLog = null; render(); window.scrollTo(0, 0); });
+  on('#leave', () => { ui.seenMorning = false; if (st.pending) st.pending = null; st.shop = null; ui.sheet = null; st.day++; startDay(); st.nightLog = null; render(); window.scrollTo(0, 0); });
   on('#letgo', () => { st.pending = null; afterReward(); });
   on('#undo', undo);
-  on('#clear', () => { const day = st.dayState; remember(); day.g = day.D.fixed.slice(); day.pinned = {}; ui.sel = nextSel(day); save(); render(); });
+  on('#clear', () => { const day = st.dayState; remember(); day.g = day.D.fixed.slice(); day.pinned = {}; ui.sel = nextSel(day); ui.sheet = null; save(); render(); });
   $$('[data-c]').forEach(b => b.onclick = () => tapCell(+b.dataset.c));
   $$('[data-t]').forEach(b => b.onclick = () => { const t = b.dataset.t; if (!(handLeft(st.dayState)[t] > 0)) return; ui.sel = ui.sel === t ? null : t; render(); });
   $$('[data-spell]').forEach(b => b.onclick = () => ({peek: castPeek, measure: castMeasure, hot: castHot}[b.dataset.spell])());
