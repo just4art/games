@@ -144,23 +144,53 @@ body.picking [data-drop],body.dragging [data-drop]{outline:3px dashed rgba(13,13
 .ptable th,.ptable td{text-align:left;padding:6px 8px;border-bottom:1px solid var(--line);vertical-align:top}
 .ptable th{font-size:14px;text-transform:uppercase;letter-spacing:.05em;color:var(--ink2)}
 .wcomplete{text-align:center}
-.wcomplete .big{font-size:96px;animation:hop 1s ease-in-out 3}
+.wcomplete > .big{font-size:96px;animation:hop 1s ease-in-out 3}
+
+/* chapters */
+.ocean .chtabs{position:absolute;top:12px;left:50%;transform:translateX(-50%);display:flex;gap:8px;z-index:3}
+.chtab{border:0;border-radius:999px;padding:7px 16px;font-weight:600;font-size:17px;white-space:nowrap;background:rgba(255,255,255,.72);color:var(--ink)}
+.chtab[aria-selected="true"]{background:#fff;box-shadow:0 3px 0 rgba(0,0,0,.12)}
+.chtab small{color:var(--ink2);font-weight:500}
+.ocean.deep{background:radial-gradient(ellipse at 50% 0%,#3d7fb8,#163d74 55%,#0c2550)!important}
 
 /* aquarium */
 .aqscreen{display:grid;grid-template-columns:1fr 360px;gap:18px;padding:16px 20px;height:100%}
 .tank{position:relative;border-radius:28px;overflow:hidden;box-shadow:var(--shadow),inset 0 0 0 8px rgba(255,255,255,.5);
   background:linear-gradient(180deg,#9be3f0,#45aacb 60%,#2f8fb5)}
 .tank .sandbed{position:absolute;left:0;right:0;bottom:0;height:70px;background:linear-gradient(#f6e2b0,#e7c784);border-radius:50% 50% 0 0/30px 30px 0 0}
-.tank .decor{position:absolute;bottom:22px;font-size:54px;line-height:1}
+.tank .decor{position:absolute;border:0;background:none;padding:0;line-height:1;cursor:grab;touch-action:none;z-index:3;border-radius:12px}
+.tank .decor.picked{outline:3px dashed #fff;outline-offset:4px}
+.tank .decor.dragging{cursor:grabbing;z-index:5;filter:drop-shadow(0 8px 10px rgba(0,0,0,.3))}
+.dtools{position:absolute;transform:translate(-50%,-100%);display:flex;gap:4px;background:#fff;border-radius:14px;padding:4px;box-shadow:var(--shadow);z-index:6}
+.dtools button{border:0;background:var(--teal-l);border-radius:10px;width:42px;height:38px;font-size:20px}
+.tank .swim{cursor:pointer;z-index:2}
+.tank .swim .bd{display:inline-block;transition:transform .25s,filter .25s}
+.tank.focusing .swim:not(.spot):not(.me){opacity:.35}
+.tank .swim.spot{z-index:4}
+.tank .swim.spot .bd{transform:scale(1.7);filter:drop-shadow(0 0 6px #fff) drop-shadow(0 0 14px #ffd54a)}
+.tank .swim.spot::before{content:'⬇';position:absolute;left:50%;top:-46px;transform:translateX(-50%);font-size:30px;color:#ffd54a;text-shadow:0 2px 0 #14365a;animation:bob .8s ease-in-out infinite}
+@keyframes bob{50%{transform:translate(-50%,-8px)}}
+.tank .swim.me .nametag{position:absolute;left:50%;top:-14px;transform:translateX(-50%);background:rgba(255,255,255,.85);border-radius:10px;padding:0 8px;font-size:15px;font-weight:600;white-space:nowrap;pointer-events:none}
+.finder{position:absolute;top:12px;left:14px;right:14px;display:flex;flex-wrap:wrap;gap:6px;align-items:center;background:rgba(255,255,255,.85);border-radius:16px;padding:6px 10px;font-size:17px;z-index:7}
+.finder .flabel{font-weight:600;margin-right:2px}
+.fchip{border:2px solid var(--line);background:#fff;border-radius:999px;padding:1px 9px;font-size:17px}
+.fchip.on{border-color:#e0a800;background:#fff3c4}
+.aboutfish{position:absolute;bottom:80px;left:50%;transform:translateX(-50%);background:#fff;border-radius:14px;padding:6px 16px;font-size:18px;box-shadow:var(--shadow);z-index:7;white-space:nowrap}
+.shopgrid.wide{grid-template-columns:repeat(2,1fr)}
+.item .ic.shk{width:120px;height:78px}
+.item .ic.shk svg{width:120px;height:78px}
+.parts{display:flex;gap:8px}
+.adopt{display:flex;flex-direction:column;gap:8px;background:var(--teal-l);border-radius:16px;padding:10px 12px}
+.namein{font-size:22px;padding:6px 10px;border-radius:10px;border:2px solid var(--line);-webkit-user-select:text;user-select:text}
+.tabs{flex-wrap:wrap}
 .tank .swim{position:absolute;left:0;font-size:38px;line-height:1;will-change:transform}
 .tank .swim.me svg{width:150px;height:98px}
 .tank .bub{position:absolute;bottom:60px;width:14px;height:14px;border-radius:50%;border:2px solid rgba(255,255,255,.7);animation:rise linear infinite}
 @keyframes rise{to{transform:translateY(-700px);opacity:0}}
-.tankinfo{position:absolute;top:14px;left:18px;background:rgba(255,255,255,.85);border-radius:14px;padding:6px 14px;font-size:17px;max-width:70%}
 .shop{background:#fff;border-radius:24px;box-shadow:var(--shadow);padding:16px;display:flex;flex-direction:column;gap:12px;min-height:0}
 .shop h2{margin:0;font-size:24px}
 .tabs{display:flex;gap:8px}
-.tab{flex:1;border:2px solid var(--line);background:#fff;border-radius:12px;padding:6px;font-weight:600}
+.tab{flex:1 1 30%;border:2px solid var(--line);background:#fff;border-radius:12px;padding:6px;font-weight:600;font-size:16px;white-space:nowrap}
 .tab[aria-selected="true"]{background:var(--teal);color:#fff;border-color:var(--teal)}
 .shopgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;overflow:auto;padding:4px}
 .item{border:3px solid var(--line);background:#fff;border-radius:16px;padding:8px 4px;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:15px;font-weight:600}
@@ -468,7 +498,14 @@ function* perms(arr) { if (arr.length <= 1) { yield arr.slice(); return; } for (
 /* ============ saved state ============ */
 const KEY = 'shark-math-v1';
 const DEF = { solved: {}, hints: {}, teeth: 0, earned: 0, owned: ['c-blue', 'c-grey', 'h-none'], hat: '', color: 'blue', decor: [], creatures: [], muted: false, unlockAll: false, met: false, wdone: {} };
-function load() { try { const s = JSON.parse(localStorage.getItem(KEY)); return Object.assign(JSON.parse(JSON.stringify(DEF)), s || {}); } catch (e) { return JSON.parse(JSON.stringify(DEF)); } }
+function load() {
+  let s;
+  try { s = Object.assign(JSON.parse(JSON.stringify(DEF)), JSON.parse(localStorage.getItem(KEY)) || {}); } catch (e) { s = JSON.parse(JSON.stringify(DEF)); }
+  // older saves: one shark described by color and hat, decorations as a list of names
+  if (!Array.isArray(s.sharks) || !s.sharks.length) s.sharks = [{ name: 'Finn', body: s.color || 'blue', fin: null, pattern: 'plain', hat: s.hat || '' }];
+  s.decor = (s.decor || []).map((d, i) => typeof d === 'string' ? { id: d, x: 6 + (i * 11) % 88, y: 93, s: 1, f: 0 } : d);
+  return s;
+}
 let S = load();
 function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} }
 
@@ -493,14 +530,28 @@ const snd = {
 };
 
 /* ============ art ============ */
-const COLORS = { blue: ['#5b9bd5', '#3c7db5'], grey: ['#8fa3b3', '#6c8495'], teal: ['#2fb3ac', '#1d8f89'], green: ['#5cc28e', '#3c9f6d'], pink: ['#f497b6', '#d6719a'], purple: ['#a487df', '#8166c2'], orange: ['#ff9f5a', '#de7d38'], gold: ['#f2c14e', '#cf9d22'] };
+const COLORS = { blue: ['#5b9bd5', '#3c7db5'], grey: ['#8fa3b3', '#6c8495'], teal: ['#2fb3ac', '#1d8f89'], green: ['#5cc28e', '#3c9f6d'], pink: ['#f497b6', '#d6719a'], purple: ['#a487df', '#8166c2'], orange: ['#ff9f5a', '#de7d38'], gold: ['#f2c14e', '#cf9d22'],
+  red: ['#e8505b', '#b9343f'], navy: ['#3a5a9f', '#24396e'], black: ['#454b58', '#262a33'], white: ['#f4f7fa', '#bfcad4'], lime: ['#a6d94c', '#7fb22a'], mint: ['#8fe3c8', '#55b897'],
+  lilac: ['#cdb4f2', '#a88dd6'], brown: ['#a8784e', '#7f5634'], silver: ['#c8d0d8', '#8e9aa6'], coral: ['#ff7f6b', '#db5a46'], sky: ['#8fd1ff', '#5aa9e0'] };
+const SHARK_BODY = 'M28 66 C52 30 122 26 166 48 C186 57 197 66 189 74 C173 92 112 102 62 90 C46 85 34 76 28 66 Z';
+let svgUid = 0;
+/* a shark: o.color draws a plain shark of that colour (used in puzzles); otherwise o.shark (default Finn) with its body colour, fin colour and pattern */
 function sharkSVG(o = {}) {
-  const [c, d] = COLORS[o.color || S.color] || COLORS.blue; const hat = o.hat !== undefined ? o.hat : S.hat;
+  const sh = o.color ? { body: o.color, fin: null, pattern: 'plain', hat: '' } : (o.shark || S.sharks[0]);
+  const body = COLORS[sh.body] || COLORS.blue, fin = COLORS[sh.fin || sh.body] || body;
+  const c = body[0], d = fin[1], f0 = fin[0], hat = o.hat !== undefined ? o.hat : sh.hat, pat = sh.pattern || 'plain', id = 'sk' + (++svgUid);
+  let defs = `<clipPath id="${id}c"><path d="${SHARK_BODY}"/></clipPath>`, fill = c, over = '';
+  if (pat === 'fade') { defs += `<linearGradient id="${id}g" x1="0" x2="1"><stop offset=".1" stop-color="${f0}"/><stop offset=".85" stop-color="${c}"/></linearGradient>`; fill = `url(#${id}g)`; }
+  if (pat === 'rainbow') { defs += `<linearGradient id="${id}g" x1="0" x2="1">${['#ff5b5b', '#ffa23a', '#ffe14d', '#5fd36b', '#4fa8ff', '#9b6bff'].map((k, i) => `<stop offset="${i / 5}" stop-color="${k}"/>`).join('')}</linearGradient>`; fill = `url(#${id}g)`; }
+  if (pat === 'stripes') over = [52, 70, 88, 106].map(x => `<path d="M${x} 28 q8 22 -2 44" stroke="${d}" stroke-width="7" fill="none" stroke-linecap="round" opacity=".85"/>`).join('');
+  if (pat === 'spots') over = [[60, 62], [76, 52], [92, 60], [108, 48], [122, 64], [138, 52], [150, 64], [84, 72], [116, 76], [70, 76]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="3.6" fill="#fff" opacity=".85"/>`).join('');
+  if (pat === 'sparkle') over = [[64, 60, 1], [92, 50, 1.3], [118, 62, 1], [140, 48, 1.2], [104, 74, .9], [78, 74, .8]].map(([x, y, k]) => `<path d="M${x} ${y - 7 * k} L${x + 2 * k} ${y - 2 * k} L${x + 7 * k} ${y} L${x + 2 * k} ${y + 2 * k} L${x} ${y + 7 * k} L${x - 2 * k} ${y + 2 * k} L${x - 7 * k} ${y} L${x - 2 * k} ${y - 2 * k} Z" fill="${f0}" stroke="#fff" stroke-width="1"/>`).join('');
   const scarf = o.scarf ? `<path d="M128 44 Q138 70 130 98" stroke="${o.scarf}" stroke-width="15" fill="none" stroke-linecap="round"/><path d="M131 88 L120 116" stroke="${o.scarf}" stroke-width="11" stroke-linecap="round"/>` : '';
-  return `<svg viewBox="0 0 200 130" aria-hidden="true">
+  return `<svg viewBox="0 0 200 130" aria-hidden="true"><defs>${defs}</defs>
   <path d="M36 66 L6 32 Q16 66 6 102 Z" fill="${d}"/>
   <path d="M96 36 Q106 8 124 3 Q117 22 122 40 Z" fill="${d}"/>
-  <path d="M28 66 C52 30 122 26 166 48 C186 57 197 66 189 74 C173 92 112 102 62 90 C46 85 34 76 28 66 Z" fill="${c}"/>
+  <path d="${SHARK_BODY}" fill="${fill}"/>
+  ${over ? `<g clip-path="url(#${id}c)">${over}</g>` : ''}
   <path d="M64 87 C108 100 160 93 189 74 C168 81 118 85 64 87 Z" fill="#fff" opacity=".95"/>
   <path d="M106 86 L94 114 L134 90 Z" fill="${d}"/>
   <path d="M124 56 q-4 8 0 16 M133 55 q-4 8 0 16 M142 54 q-4 8 0 16" stroke="${d}" stroke-width="3" fill="none" stroke-linecap="round"/>
@@ -595,7 +646,7 @@ function flyTeeth(n, from) {
 function updateTop() {
   $('#teeth').textContent = '🦷 ' + S.teeth;
   $('#mute').textContent = S.muted ? '🔇 Sound off' : '🔊 Sound on';
-  $('#logo').innerHTML = sharkSVG({ hat: S.hat }) + '<span>Shark Math</span>';
+  $('#logo').innerHTML = sharkSVG() + '<span>Shark Math</span>';
 }
 $('#logo').onclick = () => showMap();
 $('#navMap').onclick = () => showMap();
@@ -606,43 +657,64 @@ function setNav(which) { $('#navMap').toggleAttribute('aria-current', which === 
 /* ============ progress ============ */
 const pid = (wi, pi) => WORLDS[wi].id + '-' + pi;
 const solvedIn = wi => WORLDS[wi].puzzles.filter((_, i) => S.solved[pid(wi, i)]).length;
+/* chapters: every world has ch (1 if not set); chapter 2 lives in chapter2.js and pushes its worlds onto WORLDS */
+const CHAPTERS = { 1: { name: 'Chapter 1', title: 'Sunny Shallows' }, 2: { name: 'Chapter 2', title: 'The Deep Blue' } };
+const chOf = wi => WORLDS[wi].ch || 1;
+const chWorlds = ch => WORLDS.map((w, wi) => wi).filter(wi => chOf(wi) === ch);
+const chapterList = () => Object.keys(CHAPTERS).map(Number).filter(ch => chWorlds(ch).length);
+const solvedInCh = ch => chWorlds(ch).reduce((a, wi) => a + solvedIn(wi), 0);
+const puzzlesInCh = ch => chWorlds(ch).reduce((a, wi) => a + WORLDS[wi].puzzles.length, 0);
 const totalSolved = () => WORLDS.reduce((a, _, wi) => a + solvedIn(wi), 0);
 const totalPuzzles = () => WORLDS.reduce((a, w) => a + w.puzzles.length, 0);
-const needFor = wi => wi * 3;
-const isOpen = wi => S.unlockAll || totalSolved() >= needFor(wi);
+const CH_NEED = 40; // puzzles solved in the chapter before, to open the next chapter
+const chapterOpen = ch => S.unlockAll || ch === 1 || solvedInCh(ch - 1) >= CH_NEED;
+const needFor = wi => chWorlds(chOf(wi)).indexOf(wi) * 3;
+const isOpen = wi => S.unlockAll || (chapterOpen(chOf(wi)) && solvedInCh(chOf(wi)) >= needFor(wi));
 const firstUnsolved = wi => { const i = WORLDS[wi].puzzles.findIndex((_, k) => !S.solved[pid(wi, k)]); return i < 0 ? 0 : i; };
 const canPlay = (wi, pi) => pi === 0 || S.solved[pid(wi, pi)] || S.solved[pid(wi, pi - 1)] || S.unlockAll;
 
 /* ============ map ============ */
 const MAPPOS = [[17, 18], [50, 18], [83, 18], [83, 52], [50, 52], [17, 52], [17, 85], [50, 85], [83, 85]];
-function showMap() {
+function showMap(chArg) {
+  if (typeof chArg !== 'number') chArg = undefined; // also used directly as a click handler
   cur = null; clearSel(); setNav('map'); updateTop();
+  const chs = chapterList();
+  let ch = chArg || S.chapter || 1;
+  if (!chs.includes(ch)) ch = 1;
+  if (chArg) { S.chapter = ch; save(); }
   const app = $('#app'); app.innerHTML = '';
-  const solved = totalSolved();
-  const nextW = WORLDS.findIndex((w, wi) => isOpen(wi) && solvedIn(wi) < w.puzzles.length);
+  const mine = chWorlds(ch);
+  const solved = solvedInCh(ch), chOpen = chapterOpen(ch);
+  const nextW = mine.find(wi => isOpen(wi) && solvedIn(wi) < WORLDS[wi].puzzles.length);
   const greet = !S.met ? `<p>Hi! I'm <b>Finn</b>, a shark who loves puzzles.</p><p>Each island has a new kind of puzzle. Solve puzzles to earn shark teeth 🦷 and open more islands.</p><p>Click the glowing island to start!</p>`
-    : solved === 0 ? `<p>Click the glowing island to start!</p>` : `<p>Welcome back! You have solved <b>${solved}</b> puzzles.</p><p>Pick any open island. The glowing one is a good next step.</p>`;
+    : !chOpen ? `<p>${CHAPTERS[ch].name} is still locked.</p><p>Solve ${CH_NEED - solvedInCh(ch - 1)} more puzzles in ${CHAPTERS[ch - 1].name} to dive down here.</p>`
+    : ch === 1 && chs.includes(2) && chapterOpen(2) && solvedInCh(2) === 0 ? `<p>Wow, you did so many puzzles!</p><p><b>${CHAPTERS[2].name}: ${CHAPTERS[2].title}</b> is open. Dive deeper with the button above the map!</p>`
+    : solved === 0 ? (ch === 1 ? `<p>Click the glowing island to start!</p>` : `<p>Welcome to the deep! The puzzles down here are trickier. Click the glowing island to start.</p>`)
+    : `<p>Welcome back! You have solved <b>${solved}</b> puzzles in ${CHAPTERS[ch].name}.</p><p>Pick any open island. The glowing one is a good next step.</p>`;
   const side = h('div', { class: 'side' },
     h('div', { class: 'shark-box', html: sharkSVG() }),
     h('div', { class: 'bubble', html: `<div class="in">${greet}</div>` }),
-    h('div', { class: 'stat' }, h('span', {}, 'Puzzles solved'), h('b', {}, `${solved} / ${totalPuzzles()}`)),
+    h('div', { class: 'stat' }, h('span', {}, 'Puzzles solved'), h('b', {}, `${solved} / ${puzzlesInCh(ch)}`)),
     h('div', { class: 'stat' }, h('span', {}, 'Sea friends'), h('b', {}, String(S.creatures.length))),
     h('button', { class: 'btn alt', onclick: showAquarium }, '🐠 Visit your aquarium'),
     h('button', { class: 'parentlink', onclick: showParent }, 'Grown-ups corner'));
-  const ocean = h('div', { class: 'ocean', role: 'region', 'aria-label': 'Island map' });
-  const pts = MAPPOS.slice(0, WORLDS.length).map(([x, y]) => `${x},${y}`).join(' ');
+  const ocean = h('div', { class: 'ocean' + (ch > 1 ? ' deep' : ''), role: 'region', 'aria-label': CHAPTERS[ch].name + ' island map' });
+  const pts = MAPPOS.slice(0, mine.length).map(([x, y]) => `${x},${chs.length > 1 ? 26 + (y - 18) * 0.9 : y}`).join(' ');
   ocean.innerHTML = `<svg class="route" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><polyline points="${pts}" fill="none" stroke="rgba(255,255,255,.75)" stroke-width=".7" stroke-dasharray="1.6 1.6" vector-effect="non-scaling-stroke" style="stroke-width:5px"/></svg>`;
-  WORLDS.forEach((w, wi) => {
-    const open = isOpen(wi), n = solvedIn(wi), N = w.puzzles.length;
-    const b = h('button', { class: 'island' + (open ? '' : ' locked') + (wi === nextW ? ' next' : ''), style: { left: MAPPOS[wi][0] + '%', top: MAPPOS[wi][1] + '%' },
+  mine.forEach((wi, k) => {
+    const w = WORLDS[wi], open = isOpen(wi), n = solvedIn(wi), N = w.puzzles.length;
+    const lockTxt = !chOpen ? `Opens with ${CHAPTERS[ch].name}` : `Solve ${needFor(wi) - solved} more to open`;
+    const b = h('button', { class: 'island' + (open ? '' : ' locked') + (wi === nextW ? ' next' : ''), style: { left: MAPPOS[k][0] + '%', top: (chs.length > 1 ? 26 + (MAPPOS[k][1] - 18) * 0.9 : MAPPOS[k][1]) + '%' },
       'aria-label': open ? `${w.name}: ${w.concept}. ${n} of ${N} solved.` : `${w.name} is locked. Solve ${needFor(wi) - solved} more puzzles to open it.` },
       h('div', { class: 'isl-blob' }, h('span', { class: 'isl-emo' }, w.emoji), open ? null : h('span', { class: 'lockbadge' }, '🔒'), n === N ? h('span', { class: 'star' }, '⭐') : null),
       h('div', { class: 'isl-name' }, w.name),
       open ? h('div', { class: 'isl-prog' }, h('i', { style: { width: (100 * n / N) + '%' } })) : null,
-      h('div', { class: 'isl-count' }, open ? `${n} of ${N} solved` : `Solve ${needFor(wi) - solved} more to open`));
-    b.onclick = () => { if (!open) { snd.soft(); $('.side .bubble').innerHTML = `<div class="in"><p>${w.name} is still locked.</p><p>Solve ${needFor(wi) - solved} more puzzles on the open islands to unlock it.</p></div>`; return; } snd.pop(); S.met = true; save(); openPuzzle(wi, firstUnsolved(wi)); };
+      h('div', { class: 'isl-count' }, open ? `${n} of ${N} solved` : lockTxt));
+    b.onclick = () => { if (!open) { snd.soft(); $('.side .bubble').innerHTML = `<div class="in"><p>${w.name} is still locked.</p><p>${chOpen ? `Solve ${needFor(wi) - solved} more puzzles on the open islands to unlock it.` : `It opens when ${CHAPTERS[ch].name} opens.`}</p></div>`; return; } snd.pop(); S.met = true; S.chapter = ch; save(); openPuzzle(wi, firstUnsolved(wi)); };
     ocean.append(b);
   });
+  if (chs.length > 1) ocean.append(h('div', { class: 'chtabs', role: 'tablist', 'aria-label': 'Chapters' }, chs.map(c => h('button', { class: 'chtab', role: 'tab', 'aria-selected': c === ch ? 'true' : 'false',
+    onclick: () => { snd.pop(); showMap(c); } }, `${chapterOpen(c) ? '' : '🔒 '}${CHAPTERS[c].name}: ${CHAPTERS[c].title}`, h('small', {}, ` ${solvedInCh(c)}/${puzzlesInCh(c)}`)))));
   app.append(h('div', { class: 'mapscreen' }, side, ocean));
 }
 
@@ -652,6 +724,7 @@ const R = {}; // renderers by type
 function openPuzzle(wi, pi) {
   clearSel(); setNav(''); updateTop();
   const W = WORLDS[wi], p = W.puzzles[pi], id = pid(wi, pi);
+  if (S.chapter !== chOf(wi)) { S.chapter = chOf(wi); save(); }
   const app = $('#app'); app.innerHTML = '';
   const bubble = h('div', { class: 'bubble', 'aria-live': 'polite' });
   const sharkBox = h('div', { class: 'shark-box', html: sharkSVG() });
@@ -2178,56 +2251,191 @@ const WORLDS = [
 
 /* ============ aquarium and wardrobe ============ */
 const SHOP = {
-  hats: [['none', '', 0], ['flower', '🌸', 3], ['cap', '🧢', 4], ['bow', '🎀', 4], ['top', '🎩', 6], ['grad', '🎓', 10], ['sun', '👒', 10], ['helmet', '⛑️', 12], ['crown', '👑', 20]],
-  colors: [['blue', 0], ['grey', 0], ['teal', 5], ['green', 6], ['pink', 6], ['purple', 8], ['orange', 8], ['gold', 20]],
-  decor: [['weed', '🌿', 2], ['coral', '🪸', 3], ['shell', '🐚', 3], ['rock', '🪨', 3], ['anchor', '⚓', 5], ['statue', '🗿', 8], ['castle', '🏰', 12], ['gem', '💎', 15], ['ship', '🚢', 15]],
+  hats: [['none', '', 0], ['flower', '🌸', 3], ['cap', '🧢', 4], ['bow', '🎀', 4], ['top', '🎩', 6], ['party', '🥳', 6], ['grad', '🎓', 10], ['sun', '👒', 10], ['helmet', '⛑️', 12], ['pirate', '🏴‍☠️', 12], ['santa', '🎅', 14], ['crown', '👑', 20]],
+  colors: [['blue', 0], ['grey', 0], ['sky', 4], ['teal', 5], ['mint', 5], ['green', 6], ['lime', 6], ['pink', 6], ['coral', 6], ['red', 7], ['orange', 8], ['purple', 8], ['lilac', 8], ['navy', 8], ['brown', 8], ['white', 10], ['black', 10], ['silver', 12], ['gold', 20]],
+  patterns: [['plain', 'Plain', 0], ['fade', 'Fade', 8], ['stripes', 'Tiger stripes', 10], ['spots', 'Whale-shark spots', 10], ['sparkle', 'Sparkles', 14], ['rainbow', 'Rainbow', 25]],
+  decor: [['weed', '🌿', 2], ['coral', '🪸', 3], ['shell', '🐚', 3], ['rock', '🪨', 3], ['lotus', '🪷', 4], ['shroom', '🍄', 4], ['anchor', '⚓', 5], ['star', '⭐', 5], ['amphora', '🏺', 6], ['buoy', '🛟', 6], ['statue', '🗿', 8], ['trident', '🔱', 8], ['pineapple', '🍍', 8], ['bag', '💰', 10], ['house', '🏠', 10], ['castle', '🏰', 12], ['volcano', '🌋', 14], ['gem', '💎', 15], ['ship', '🚢', 15]],
 };
-let aqTab = 'hats';
+const SHARK_NAMES = ['Bruce', 'Sharky', 'Toothy', 'Splash', 'Bubbles', 'Hammer', 'Captain', 'Nibbles', 'Jaws Jr', 'Zoom'];
+const MAX_SHARKS = 6;
+const sharkPrice = () => 10 + 5 * S.sharks.length;
+const CNAME = { '🦀': 'crab', '🐟': 'fish', '🐠': 'tropical fish', '🐡': 'pufferfish', '🐙': 'octopus', '🐬': 'dolphin', '🐢': 'turtle', '🦑': 'squid', '🦐': 'shrimp', '🦞': 'lobster', '🐳': 'whale', '🐋': 'big whale', '🦭': 'seal', '🪼': 'jellyfish', '🐚': 'shell', '🦈': 'shark', '🐊': 'crocodile', '🦦': 'otter', '🐧': 'penguin', '🐸': 'frog', '⭐': 'starfish', '🪸': 'coral', '🦩': 'flamingo', '🐍': 'sea snake', '🦢': 'swan' };
+const WALKERS = '🦀🦞🐢🐊🦭🦦🐧🐚⭐';
+let aqTab = 'sharks', aqPart = 'body', aqFocus = null, aqDec = -1, adopting = false;
+const selShark = () => S.sharks[Math.min(S.sel || 0, S.sharks.length - 1)];
+function syncFinn() { S.color = S.sharks[0].body; S.hat = S.sharks[0].hat; }
+function whereFrom(e) {
+  const w = WORLDS.find(w => w.creature === e || w.prize === e);
+  return w ? (w.prize === e && w.creature !== e ? `the prize for finishing ${w.name}` : `from ${w.name}`) : '';
+}
 function showAquarium() {
   cur = null; clearSel(); setNav('aq'); updateTop();
   const app = $('#app'); app.innerHTML = '';
-  const tank = h('div', { class: 'tank', role: 'img', 'aria-label': `Your aquarium with ${S.creatures.length} sea friends` });
+  const tank = h('div', { class: 'tank', role: 'img', 'aria-label': `Your aquarium with ${S.creatures.length} sea friends and ${S.sharks.length} shark${S.sharks.length === 1 ? '' : 's'}` });
   tank.append(h('div', { class: 'sandbed' }));
-  S.decor.forEach((d, i) => { const it = SHOP.decor.find(x => x[0] === d); if (it) tank.append(h('span', { class: 'decor', style: { left: (4 + (i * 11) % 88) + '%' } }, it[1])); });
   range(10).forEach(i => tank.append(h('span', { class: 'bub', style: { left: (5 + i * 9.5) + '%', animationDuration: (5 + (i % 4) * 2) + 's', animationDelay: (-i * 1.3) + 's' } })));
-  const list = S.creatures.slice(-40);
-  const swimmers = list.map((e, i) => { const s = h('span', { class: 'swim' }, e); s.style.top = (e === '🦀' ? 84 : 10 + ((i * 37) % 60)) + '%'; tank.append(s); return s; });
-  const me = h('span', { class: 'swim me', html: sharkSVG() }); me.style.top = '38%'; tank.append(me);
+  // decorations: drag to move, click to pick one and change it
+  S.decor.forEach((d, i) => {
+    const it = SHOP.decor.find(x => x[0] === d.id); if (!it) return;
+    const el = h('button', { class: 'decor' + (i === aqDec ? ' picked' : ''), 'aria-label': `${d.id} decoration, drag to move`, style: { left: d.x + '%', top: d.y + '%', fontSize: Math.round(54 * d.s) + 'px', transform: `translate(-50%,-100%) scaleX(${d.f ? -1 : 1})` } }, it[1]);
+    decorDrag(el, d, i, tank);
+    tank.append(el);
+  });
+  // sea friends: up to five of each kind swim, so every kind can be found
   const counts = {}; S.creatures.forEach(c => counts[c] = (counts[c] || 0) + 1);
-  tank.append(h('div', { class: 'tankinfo' }, S.creatures.length ? `Sea friends: ${Object.entries(counts).map(([e, n]) => `${e}×${n}`).join('  ')}` : 'Your aquarium is empty. Every puzzle you solve brings a new sea friend!'));
+  const kinds = Object.keys(counts);
+  const per = Math.max(1, Math.min(5, Math.floor(70 / Math.max(1, kinds.length))));
+  const list = kinds.flatMap(e => Array(Math.min(per, counts[e])).fill(e));
+  const anims = [];
+  const swimmers = list.map((e, i) => {
+    const s = h('span', { class: 'swim', 'data-e': e }, h('span', { class: 'bd' }, e));
+    s.style.top = (WALKERS.includes(e) ? 80 + (i % 3) * 2 : 12 + ((i * 37) % 58)) + '%';
+    tank.append(s); return s;
+  });
+  const sharkEls = S.sharks.map((sh, k) => {
+    const el = h('span', { class: 'swim me', 'data-shark': k }, h('span', { class: 'bd', html: sharkSVG({ shark: sh }) }), h('span', { class: 'nametag' }, sh.name));
+    el.style.top = (22 + k * 11) % 66 + 8 + '%';
+    tank.append(el); return el;
+  });
+  const finder = h('div', { class: 'finder' }, kinds.length ? h('span', { class: 'flabel' }, 'Find:') : h('span', {}, 'Your aquarium is empty. Every puzzle you solve brings a new sea friend!'),
+    kinds.map(e => h('button', { class: 'fchip' + (aqFocus === e ? ' on' : ''), 'aria-pressed': aqFocus === e ? 'true' : 'false', 'aria-label': `Show the ${CNAME[e] || 'sea friend'}s`, onclick: () => focusKind(aqFocus === e ? null : e) }, `${e}×${counts[e]}`)));
+  const about = h('div', { class: 'aboutfish', hidden: true });
+  tank.append(finder, about);
   const shop = h('div', { class: 'shop' });
   app.append(h('div', { class: 'aqscreen' }, tank, shop));
   const W = tank.clientWidth - 60;
-  swimmers.forEach((s, i) => { const dur = 9000 + ((i * 2917) % 12000); s.animate([{ transform: 'translateX(0) scaleX(-1)' }, { transform: `translateX(${W}px) scaleX(-1)`, offset: .49 }, { transform: `translateX(${W}px) scaleX(1)`, offset: .5 }, { transform: 'translateX(0) scaleX(1)' }], { duration: dur, iterations: Infinity, delay: -((i * 1777) % dur) }); });
-  me.animate([{ transform: 'translateX(0) scaleX(1)' }, { transform: `translateX(${W - 100}px) scaleX(1)`, offset: .49 }, { transform: `translateX(${W - 100}px) scaleX(-1)`, offset: .5 }, { transform: 'translateX(0) scaleX(-1)' }], { duration: 16000, iterations: Infinity });
+  swimmers.forEach((s, i) => { const dur = 9000 + ((i * 2917) % 12000); anims.push([s, s.animate([{ transform: 'translateX(0) scaleX(-1)' }, { transform: `translateX(${W}px) scaleX(-1)`, offset: .49 }, { transform: `translateX(${W}px) scaleX(1)`, offset: .5 }, { transform: 'translateX(0) scaleX(1)' }], { duration: dur, iterations: Infinity, delay: -((i * 1777) % dur) })]); });
+  sharkEls.forEach((el, k) => {
+    const dur = 16000 + k * 2300, d0 = -k * 3100;
+    const a = el.querySelector('.bd').animate([{ transform: 'scaleX(1)' }, { transform: 'scaleX(1)', offset: .49 }, { transform: 'scaleX(-1)', offset: .5 }, { transform: 'scaleX(-1)' }], { duration: dur, iterations: Infinity, delay: d0 });
+    const m = el.animate([{ transform: 'translateX(0)' }, { transform: `translateX(${W - 100}px)`, offset: .5 }, { transform: 'translateX(0)' }], { duration: dur, iterations: Infinity, delay: d0 });
+    anims.push([el, m], [el, a]);
+  });
+  // spotlight one kind of sea friend: they stop, glow and get a name tag
+  function focusKind(e) {
+    aqFocus = e; snd.pop();
+    $$('.fchip', finder).forEach(b => { const on = b.textContent.startsWith(e || '#'); b.classList.toggle('on', on); b.setAttribute('aria-pressed', on ? 'true' : 'false'); });
+    anims.forEach(([el, a]) => { const hit = e && el.dataset.e === e; el.classList.toggle('spot', !!hit); hit ? a.pause() : a.play(); });
+    tank.classList.toggle('focusing', !!e);
+    if (e) { about.hidden = false; about.innerHTML = `<b>${e} ${CNAME[e] || 'sea friend'}</b> · you have ${counts[e]} · ${whereFrom(e)}`; }
+    else about.hidden = true;
+  }
+  tank.addEventListener('click', ev => {
+    const sw = ev.target.closest('.swim');
+    if (sw && sw.dataset.e) return focusKind(aqFocus === sw.dataset.e ? null : sw.dataset.e);
+    if (sw && sw.dataset.shark) { S.sel = +sw.dataset.shark; save(); aqTab = aqTab === 'decor' ? 'sharks' : aqTab; snd.pop(); drawShop(shop); sw.classList.add('spot'); setTimeout(() => sw.classList.remove('spot'), 1500); return; }
+    if (!ev.target.closest('.decor') && !ev.target.closest('.dtools') && aqDec >= 0) { aqDec = -1; showAquarium(); }
+  });
+  if (aqFocus && counts[aqFocus]) focusKind(aqFocus); else aqFocus = null;
+  if (aqDec >= 0 && S.decor[aqDec]) tank.append(decorTools(S.decor[aqDec], tank));
   drawShop(shop);
+}
+function decorDrag(el, d, i, tank) {
+  el.addEventListener('pointerdown', ev => {
+    ev.preventDefault();
+    const r = tank.getBoundingClientRect(), x0 = ev.clientX, y0 = ev.clientY;
+    let moved = false;
+    el.setPointerCapture(ev.pointerId);
+    const move = e => {
+      if (!moved && Math.hypot(e.clientX - x0, e.clientY - y0) < 5) return;
+      moved = true; el.classList.add('dragging');
+      d.x = Math.max(3, Math.min(97, (e.clientX - r.left) / r.width * 100));
+      d.y = Math.max(14, Math.min(98, (e.clientY - r.top) / r.height * 100));
+      el.style.left = d.x + '%'; el.style.top = d.y + '%';
+      const t = $('.dtools', tank); if (t) t.remove();
+    };
+    const up = () => {
+      el.removeEventListener('pointermove', move); el.removeEventListener('pointerup', up); el.removeEventListener('pointercancel', up);
+      el.classList.remove('dragging');
+      if (moved) { save(); snd.pop(); aqDec = i; showAquarium(); }
+      else { aqDec = aqDec === i ? -1 : i; snd.pop(); showAquarium(); }
+    };
+    el.addEventListener('pointermove', move); el.addEventListener('pointerup', up); el.addEventListener('pointercancel', up);
+  });
+  el.addEventListener('keydown', ev => {
+    const step = { ArrowLeft: [-2, 0], ArrowRight: [2, 0], ArrowUp: [0, -2], ArrowDown: [0, 2] }[ev.key];
+    if (!step) return;
+    ev.preventDefault(); d.x = Math.max(3, Math.min(97, d.x + step[0])); d.y = Math.max(14, Math.min(98, d.y + step[1])); el.style.left = d.x + '%'; el.style.top = d.y + '%'; save();
+  });
+}
+function decorTools(d, tank) {
+  const set = fn => () => { fn(); save(); snd.pop(); showAquarium(); };
+  const t = h('div', { class: 'dtools', style: { left: Math.max(12, Math.min(88, d.x)) + '%', top: Math.max(14, d.y - (58 * d.s + 14) / Math.max(1, tank.clientHeight) * 100) + '%' } },
+    h('button', { 'aria-label': 'Smaller', onclick: set(() => { d.s = Math.max(.6, +(d.s - .2).toFixed(1)); }) }, '➖'),
+    h('button', { 'aria-label': 'Bigger', onclick: set(() => { d.s = Math.min(2.4, +(d.s + .2).toFixed(1)); }) }, '➕'),
+    h('button', { 'aria-label': 'Flip', onclick: set(() => { d.f = d.f ? 0 : 1; }) }, '↔️'),
+    h('button', { 'aria-label': 'Put it away', onclick: set(() => { S.decor.splice(aqDec, 1); aqDec = -1; }) }, '📥'));
+  return t;
 }
 function drawShop(shop) {
   shop.innerHTML = '';
-  shop.append(h('h2', {}, 'Finn’s wardrobe'), h('div', { class: 'mini', html: sharkSVG() }), h('div', { class: 'note' }, `You have 🦷 ${S.teeth} teeth to spend.`));
+  const sh = selShark();
+  shop.append(h('h2', {}, S.sharks.length > 1 ? `Dressing ${sh.name}` : `${sh.name}’s wardrobe`), h('div', { class: 'mini', html: sharkSVG({ shark: sh }) }), h('div', { class: 'note' }, `You have 🦷 ${S.teeth} teeth to spend.`));
   const tabs = h('div', { class: 'tabs', role: 'tablist' });
-  [['hats', 'Hats'], ['colors', 'Colours'], ['decor', 'Decorations']].forEach(([k, l]) => tabs.append(h('button', { class: 'tab', role: 'tab', 'aria-selected': aqTab === k ? 'true' : 'false', onclick: () => { aqTab = k; snd.pop(); drawShop(shop); } }, l)));
+  [['sharks', '🦈 Sharks'], ['hats', '🎩 Hats'], ['colors', '🎨 Colours'], ['patterns', '✨ Patterns'], ['decor', '🪸 Decor']].forEach(([k, l]) => tabs.append(h('button', { class: 'tab', role: 'tab', 'aria-selected': aqTab === k ? 'true' : 'false', onclick: () => { aqTab = k; adopting = false; snd.pop(); drawShop(shop); } }, l)));
   shop.append(tabs);
   const grid = h('div', { class: 'shopgrid' });
+  const redraw = () => { save(); updateTop(); showAquarium(); };
   const buy = (key, price, after) => {
     if (!S.owned.includes(key)) { if (S.teeth < price) { snd.soft(); return; } S.teeth -= price; S.owned.push(key); snd.good(); }
     else snd.pop();
-    after(); save(); updateTop();
-    if (aqTab === 'decor') showAquarium(); else drawShop(shop);
+    after(); syncFinn(); redraw();
   };
+  const own = (key, pr) => pr === 0 || S.owned.includes(key);
+  if (aqTab === 'sharks') {
+    grid.classList.add('wide');
+    S.sharks.forEach((s, k) => grid.append(h('button', { class: 'item' + (k === (S.sel || 0) ? ' on' : ''), onclick: () => { S.sel = k; snd.pop(); save(); drawShop(shop); } },
+      h('span', { class: 'ic shk', html: sharkSVG({ shark: s }) }), h('span', {}, s.name))));
+    if (adopting) {
+      const inp = h('input', { class: 'namein', maxlength: 12, placeholder: 'Name', 'aria-label': 'New shark name', value: pick(SHARK_NAMES.filter(n => !S.sharks.some(s => s.name === n))) || 'Shark' });
+      const ok = () => {
+        const name = inp.value.trim().slice(0, 12) || 'Shark', pr = sharkPrice();
+        if (S.teeth < pr) return snd.soft();
+        S.teeth -= pr; S.sharks.push({ name, body: pick(['grey', 'blue']), fin: null, pattern: 'plain', hat: '' }); S.sel = S.sharks.length - 1; adopting = false; snd.good(); redraw();
+      };
+      inp.onkeydown = e => { if (e.key === 'Enter') ok(); };
+      shop.append(grid, h('div', { class: 'adopt' }, h('div', {}, 'What is the new shark called?'), inp,
+        h('div', { class: 'row' }, h('button', { class: 'btn', onclick: ok }, `Adopt · 🦷 ${sharkPrice()}`), h('button', { class: 'btn alt', onclick: () => { adopting = false; drawShop(shop); } }, 'Cancel'))));
+      setTimeout(() => { inp.focus(); inp.select(); }, 30);
+      return;
+    }
+    shop.append(grid);
+    if (S.sharks.length < MAX_SHARKS) shop.append(h('button', { class: 'btn coral', disabled: S.teeth < sharkPrice(), onclick: () => { adopting = true; snd.pop(); drawShop(shop); } }, `➕ Adopt a new shark · 🦷 ${sharkPrice()}`));
+    else shop.append(h('div', { class: 'note' }, `The tank is full: ${MAX_SHARKS} sharks!`));
+    shop.append(h('div', { class: 'note' }, 'Pick a shark here or click one in the tank, then dress it with the other tabs.'));
+    return;
+  }
   if (aqTab === 'hats') SHOP.hats.forEach(([id, em, pr]) => {
-    const key = 'h-' + id, own = S.owned.includes(key) || pr === 0, on = S.hat === em;
-    grid.append(h('button', { class: 'item' + (on ? ' on' : ''), disabled: !own && S.teeth < pr, onclick: () => buy(key, pr, () => { S.hat = em; }) }, h('span', { class: 'ic' }, em || '🚫'), h('span', {}, on ? 'Wearing' : own ? 'Wear' : `🦷 ${pr}`)));
+    const key = 'h-' + id, on = sh.hat === em;
+    grid.append(h('button', { class: 'item' + (on ? ' on' : ''), disabled: !own(key, pr) && S.teeth < pr, onclick: () => buy(key, pr, () => { sh.hat = em; }) }, h('span', { class: 'ic' }, em || '🚫'), h('span', {}, on ? 'Wearing' : own(key, pr) ? 'Wear' : `🦷 ${pr}`)));
   });
-  if (aqTab === 'colors') SHOP.colors.forEach(([id, pr]) => {
-    const key = 'c-' + id, own = S.owned.includes(key) || pr === 0, on = S.color === id;
-    grid.append(h('button', { class: 'item' + (on ? ' on' : ''), disabled: !own && S.teeth < pr, 'aria-label': id + ' colour', onclick: () => buy(key, pr, () => { S.color = id; }) }, h('span', { class: 'ic' }, h('span', { class: 'sw', style: { background: COLORS[id][0] } })), h('span', {}, on ? 'Wearing' : own ? id : `🦷 ${pr}`)));
-  });
+  if (aqTab === 'colors') {
+    shop.append(h('div', { class: 'parts' }, [['body', 'Body'], ['fin', 'Fins and tail']].map(([k, l]) => h('button', { class: 'tab', 'aria-pressed': aqPart === k ? 'true' : 'false', 'aria-selected': aqPart === k ? 'true' : 'false', onclick: () => { aqPart = k; snd.pop(); drawShop(shop); } }, l))));
+    const curC = aqPart === 'body' ? sh.body : (sh.fin || sh.body);
+    SHOP.colors.forEach(([id, pr]) => {
+      const key = 'c-' + id, on = curC === id;
+      grid.append(h('button', { class: 'item' + (on ? ' on' : ''), disabled: !own(key, pr) && S.teeth < pr, 'aria-label': id + ' colour', onclick: () => buy(key, pr, () => { if (aqPart === 'body') sh.body = id; else sh.fin = id; }) },
+        h('span', { class: 'ic' }, h('span', { class: 'sw', style: { background: `linear-gradient(135deg,${COLORS[id][0]} 50%,${COLORS[id][1]} 50%)` } })), h('span', {}, on ? 'On' : own(key, pr) ? id : `🦷 ${pr}`)));
+    });
+    shop.append(grid, h('div', { class: 'note' }, 'Mix two colours: give the body one colour and the fins another. Patterns use both.'));
+    return;
+  }
+  if (aqTab === 'patterns') {
+    grid.classList.add('wide');
+    SHOP.patterns.forEach(([id, label, pr]) => {
+      const key = 'p-' + id, on = (sh.pattern || 'plain') === id;
+      grid.append(h('button', { class: 'item' + (on ? ' on' : ''), disabled: !own(key, pr) && S.teeth < pr, onclick: () => buy(key, pr, () => { sh.pattern = id; }) },
+        h('span', { class: 'ic shk', html: sharkSVG({ shark: Object.assign({}, sh, { pattern: id }) }) }), h('span', {}, on ? `${label} ✓` : own(key, pr) ? label : `${label} · 🦷 ${pr}`)));
+    });
+    shop.append(grid, h('div', { class: 'note' }, 'Fade, stripes and sparkles mix the body colour with the fin colour.'));
+    return;
+  }
   if (aqTab === 'decor') SHOP.decor.forEach(([id, em, pr]) => {
-    const key = 'd-' + id, own = S.owned.includes(key), on = S.decor.includes(id);
-    grid.append(h('button', { class: 'item' + (on ? ' on' : ''), disabled: !own && S.teeth < pr, onclick: () => buy(key, pr, () => { if (on) S.decor = S.decor.filter(x => x !== id); else S.decor.push(id); }) }, h('span', { class: 'ic' }, em), h('span', {}, on ? 'In the tank' : own ? 'Put in' : `🦷 ${pr}`)));
+    const key = 'd-' + id, owned = S.owned.includes(key), n = S.decor.filter(d => d.id === id).length;
+    grid.append(h('button', { class: 'item' + (n ? ' on' : ''), disabled: (!owned && S.teeth < pr) || n >= 6, onclick: () => buy(key, pr, () => { S.decor.push({ id, x: 8 + Math.random() * 84, y: 88 + Math.random() * 8, s: 1, f: 0 }); aqDec = S.decor.length - 1; }) },
+      h('span', { class: 'ic' }, em), h('span', {}, !owned ? `🦷 ${pr}` : n ? `Add one (${n})` : 'Put in')));
   });
-  shop.append(grid, h('div', { class: 'note' }, 'Solve puzzles to earn teeth: 3 with no hints, 2 with hints, 1 if Finn shows you how.'));
+  shop.append(grid, h('div', { class: 'note' }, aqTab === 'decor' ? 'Drag decorations around the tank. Click one to make it bigger, smaller, flip it or put it away.' : 'Solve puzzles to earn teeth: 3 with no hints, 2 with hints, 1 if Finn shows you how.'));
 }
 
 /* ============ grown-ups corner ============ */
@@ -2236,6 +2444,7 @@ function showParent() {
   const close = () => { m.hidden = true; showMap(); };
   const tb = h('table', { class: 'ptable' }, h('tr', {}, h('th', {}, 'Island'), h('th', {}, 'What it teaches'), h('th', {}, 'Solved'), h('th', {}, 'Used hints')));
   WORLDS.forEach((w, wi) => {
+    if (chapterList().length > 1 && chWorlds(chOf(wi))[0] === wi) tb.append(h('tr', {}, h('th', { colspan: 4 }, `${CHAPTERS[chOf(wi)].name}: ${CHAPTERS[chOf(wi)].title}`)));
     const hinted = w.puzzles.filter((_, i) => (S.hints[pid(wi, i)] || 0) > 0).length;
     tb.append(h('tr', {}, h('td', {}, `${w.emoji} ${w.name}`), h('td', {}, w.teaches), h('td', {}, `${solvedIn(wi)} / ${w.puzzles.length}`), h('td', {}, String(hinted))));
   });
@@ -2256,9 +2465,10 @@ function showParent() {
 }
 
 /* ============ boot ============ */
-updateTop();
-showMap();
-window.SM = { get S() { return S; }, WORLDS, openPuzzle, showMap, showAquarium, showParent, get cur() { return cur; }, liarSolutions, seatSolutions, sumSolutions, pid };
+// chapter2.js loads after this script and adds its worlds, so the first screen waits for the page to finish loading
+addEventListener('DOMContentLoaded', () => { updateTop(); showMap(); });
+window.SM = { get S() { return S; }, WORLDS, CHAPTERS, chWorlds, openPuzzle, showMap, showAquarium, showParent, get cur() { return cur; }, liarSolutions, seatSolutions, sumSolutions, pid };
 </script>
+<script src="chapter2.js"></script>
 </body>
 </html>
