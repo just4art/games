@@ -815,9 +815,9 @@ function showMap(chArg) {
   const solved = solvedInCh(ch), chOpen = chapterOpen(ch);
   const nextW = mine.find(wi => isOpen(wi) && solvedIn(wi) < WORLDS[wi].puzzles.length);
   const greet = !S.met ? `<p>Hi! I'm <b>Finn</b>, a shark who loves puzzles.</p><p>Each island has a new kind of puzzle. Solve puzzles to earn shark teeth 🦷 and open more islands.</p><p>Click the glowing island to start!</p>`
-    : !chOpen ? `<p>${CHAPTERS[ch].name} is still locked.</p><p>Solve ${CH_NEED - solvedInCh(ch - 1)} more puzzles in ${CHAPTERS[ch - 1].name} to dive down here.</p>`
+    : !chOpen ? `<p>${CHAPTERS[ch].name} is still locked.</p><p>Solve ${CH_NEED - solvedInCh(ch - 1)} more ${CH_NEED - solvedInCh(ch - 1) === 1 ? 'puzzle' : 'puzzles'} in ${CHAPTERS[ch - 1].name} to dive down here.</p>`
     : chs.includes(ch + 1) && chapterOpen(ch + 1) && solvedInCh(ch + 1) === 0 ? `<p>Wow, you did so many puzzles!</p><p><b>${CHAPTERS[ch + 1].name}: ${CHAPTERS[ch + 1].title}</b> is open. Dive deeper with the button above the map!</p>`
-    : solved === 0 ? (ch === 1 ? `<p>Click the glowing island to start!</p>` : `<p>Welcome to the deep! The puzzles down here are trickier. Click the glowing island to start.</p>`)
+    : solved === 0 ? (ch === 1 ? `<p>Click the glowing island to start!</p>` : ch === 2 ? `<p>Welcome to the deep! The puzzles down here are trickier. Click the glowing island to start.</p>` : `<p>Welcome to the Sunken City! An old shark town full of games, maps and tricks. Click the glowing island to start.</p>`)
     : `<p>Welcome back! You have solved <b>${solved}</b> puzzles in ${CHAPTERS[ch].name}.</p><p>Pick any open island. The glowing one is a good next step.</p>`;
   const side = h('div', { class: 'side' },
     h('div', { class: 'shark-box', html: sharkSVG() }),
@@ -833,12 +833,12 @@ function showMap(chArg) {
     const w = WORLDS[wi], open = isOpen(wi), n = solvedIn(wi), N = w.puzzles.length;
     const lockTxt = !chOpen ? `Opens with ${CHAPTERS[ch].name}` : `Solve ${needFor(wi) - solved} more to open`;
     const b = h('button', { class: 'island' + (open ? '' : ' locked') + (wi === nextW ? ' next' : ''), style: { left: MAPPOS[k][0] + '%', top: (chs.length > 1 ? 26 + (MAPPOS[k][1] - 18) * 0.9 : MAPPOS[k][1]) + '%' },
-      'aria-label': open ? `${w.name}: ${w.concept}. ${n} of ${N} solved.` : `${w.name} is locked. Solve ${needFor(wi) - solved} more puzzles to open it.` },
+      'aria-label': open ? `${w.name}: ${w.concept}. ${n} of ${N} solved.` : `${w.name} is locked. Solve ${needFor(wi) - solved} more ${needFor(wi) - solved === 1 ? 'puzzle' : 'puzzles'} to open it.` },
       h('div', { class: 'isl-blob' }, h('span', { class: 'isl-emo' }, w.emoji), open ? null : h('span', { class: 'lockbadge' }, '🔒'), n === N ? h('span', { class: 'star' }, '⭐') : null),
       h('div', { class: 'isl-name' }, w.name),
       open ? h('div', { class: 'isl-prog' }, h('i', { style: { width: (100 * n / N) + '%' } })) : null,
       h('div', { class: 'isl-count' }, open ? `${n} of ${N} solved` : lockTxt));
-    b.onclick = () => { if (!open) { snd.soft(); $('.side .bubble').innerHTML = `<div class="in"><p>${w.name} is still locked.</p><p>${chOpen ? `Solve ${needFor(wi) - solved} more puzzles on the open islands to unlock it.` : `It opens when ${CHAPTERS[ch].name} opens.`}</p></div>`; return; } snd.pop(); S.met = true; S.chapter = ch; save(); openPuzzle(wi, firstUnsolved(wi)); };
+    b.onclick = () => { if (!open) { snd.soft(); $('.side .bubble').innerHTML = `<div class="in"><p>${w.name} is still locked.</p><p>${chOpen ? `Solve ${needFor(wi) - solved} more ${needFor(wi) - solved === 1 ? 'puzzle' : 'puzzles'} on the open islands to unlock it.` : `It opens when ${CHAPTERS[ch].name} opens.`}</p></div>`; return; } snd.pop(); S.met = true; S.chapter = ch; save(); openPuzzle(wi, firstUnsolved(wi)); };
     ocean.append(b);
   });
   if (chs.length > 1) ocean.append(h('div', { class: 'chtabs', role: 'tablist', 'aria-label': 'Chapters' }, chs.map(c => h('button', { class: 'chtab', role: 'tab', 'aria-selected': c === ch ? 'true' : 'false',
