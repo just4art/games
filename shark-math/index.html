@@ -198,8 +198,39 @@ body.picking [data-drop],body.dragging [data-drop]{outline:3px dashed rgba(13,13
 .item .sw{width:40px;height:40px;border-radius:50%;border:3px solid #fff;box-shadow:0 0 0 2px var(--line)}
 .item.on{border-color:var(--good);background:var(--good-l)}
 .item:disabled{opacity:.5;cursor:default}
-.shop .mini svg{width:200px;height:130px}
-.shop .mini{display:flex;justify-content:center}
+.shop .mini svg{width:170px;height:110px}
+.shop .mini{display:flex;justify-content:center;border:0;background:none;padding:0;cursor:pointer}
+.shopgrid.kinds{grid-template-columns:repeat(3,1fr)}.shopgrid.kinds .ic.shk,.shopgrid.kinds .ic.shk svg{width:92px;height:60px}.shopgrid.kinds .item{font-size:14px;padding:6px 2px}
+.item .price{font-size:13px;color:var(--ink2);font-weight:500}
+.tank .swim.me svg,.studio svg{overflow:visible}
+.studio{max-width:1240px;width:calc(100% - 40px);height:calc(100vh - 50px);display:flex;flex-direction:column;gap:10px;padding:16px 22px;overflow:hidden}
+.sthead{display:flex;align-items:center;gap:14px}.sthead h2{margin:0;flex:1}
+.stbody{display:grid;grid-template-columns:1fr 400px;gap:18px;flex:1;min-height:0}
+.stleft{display:flex;flex-direction:column;gap:10px;min-height:0}
+.ststage{flex:1;min-height:0;border-radius:22px;background:radial-gradient(ellipse at 50% 35%,#c9f0f7,#7fcbe0 70%,#5bb3cf);display:grid;place-items:center;overflow:hidden;touch-action:none}
+.ststage svg{width:92%;max-height:94%;height:auto}
+.ststage .acc{cursor:grab}.ststage [data-part]{cursor:crosshair}
+.sttools{display:flex;gap:6px;align-items:center;justify-content:center;flex-wrap:wrap;min-height:50px}
+.sttools button{border:0;background:var(--teal-l);border-radius:12px;min-width:48px;height:44px;font-size:20px;font-weight:600;padding:0 10px}
+.sttools button:disabled{opacity:.4}
+.sttools .stwhat{font-size:34px;margin-right:6px}
+.stpanel{display:flex;flex-direction:column;gap:10px;min-height:0}
+.stpanel .shopgrid{flex:1 1 auto}
+.stpanel .tabs{flex-wrap:nowrap}.stpanel .tabs .tab{flex:1 1 0;padding:6px 2px}
+.shopgrid{align-content:start}
+.shopgrid.swatches{grid-template-columns:repeat(4,1fr)}
+.shopgrid.swatches .item{font-size:13px;padding:6px 2px}
+.parts.wrap{flex-wrap:wrap}.parts.wrap .tab{flex:1 1 28%;display:flex;align-items:center;justify-content:center;gap:6px}
+.dotc{width:16px;height:16px;border-radius:50%;box-shadow:0 0 0 2px #fff,0 0 0 3px var(--line);flex:none}
+.stsay.flash{animation:stflash .8s}
+@keyframes stflash{30%{color:var(--coral-d);transform:scale(1.04)}}
+.bucket{display:flex;gap:14px;align-items:center;background:var(--teal-l);border-radius:18px;padding:10px 12px}
+.bucket .paint{width:96px;height:96px;flex:none;border-radius:50% 50% 46% 46%;box-shadow:inset 0 -10px 0 rgba(0,0,0,.12),0 0 0 5px #fff,0 0 0 7px var(--line);display:grid;place-items:center;color:var(--ink2);font-size:16px;transition:background .3s}
+.bucket .drops{display:flex;flex-direction:column;gap:4px;align-items:flex-start}
+.bucket .drop{border:0;background:#fff;border-radius:10px;padding:3px 10px;font-size:16px;font-weight:600;display:flex;align-items:center;gap:4px}
+.bucket .drop .sw{display:inline-block;width:16px;height:16px;border-radius:50%}
+.bucket .drop small{color:var(--ink2);font-weight:500}
+.tank .decor{transform-origin:50% 100%}
 </style>
 </head>
 <body>
@@ -504,6 +535,9 @@ function load() {
   // older saves: one shark described by color and hat, decorations as a list of names
   if (!Array.isArray(s.sharks) || !s.sharks.length) s.sharks = [{ name: 'Finn', body: s.color || 'blue', fin: null, pattern: 'plain', hat: s.hat || '' }];
   s.decor = (s.decor || []).map((d, i) => typeof d === 'string' ? { id: d, x: 6 + (i * 11) % 88, y: 93, s: 1, f: 0 } : d);
+  // sharks before the studio: one hat each and no species
+  s.sharks.forEach(sh => { if (!sh.kind) sh.kind = 'reef'; if (!Array.isArray(sh.acc)) { sh.acc = sh.hat ? [{ e: sh.hat, x: 160, y: 27, s: 1, r: 0, f: 0, b: 0 }] : []; delete sh.hat; } });
+  if (!Array.isArray(s.mixes)) s.mixes = [];
   return s;
 }
 let S = load();
@@ -532,34 +566,128 @@ const snd = {
 /* ============ art ============ */
 const COLORS = { blue: ['#5b9bd5', '#3c7db5'], grey: ['#8fa3b3', '#6c8495'], teal: ['#2fb3ac', '#1d8f89'], green: ['#5cc28e', '#3c9f6d'], pink: ['#f497b6', '#d6719a'], purple: ['#a487df', '#8166c2'], orange: ['#ff9f5a', '#de7d38'], gold: ['#f2c14e', '#cf9d22'],
   red: ['#e8505b', '#b9343f'], navy: ['#3a5a9f', '#24396e'], black: ['#454b58', '#262a33'], white: ['#f4f7fa', '#bfcad4'], lime: ['#a6d94c', '#7fb22a'], mint: ['#8fe3c8', '#55b897'],
-  lilac: ['#cdb4f2', '#a88dd6'], brown: ['#a8784e', '#7f5634'], silver: ['#c8d0d8', '#8e9aa6'], coral: ['#ff7f6b', '#db5a46'], sky: ['#8fd1ff', '#5aa9e0'] };
+  lilac: ['#cdb4f2', '#a88dd6'], brown: ['#a8784e', '#7f5634'], silver: ['#c8d0d8', '#8e9aa6'], coral: ['#ff7f6b', '#db5a46'], sky: ['#8fd1ff', '#5aa9e0'],
+  peach: ['#ffc29b', '#e89a6c'], cream: ['#fff1c9', '#e0cc8f'], sand: ['#e8cf9a', '#c4a76a'], yellow: ['#ffe14d', '#e0b81f'], turquoise: ['#3fd6d0', '#20aaa5'], indigo: ['#5a4fcf', '#3d33a3'],
+  magenta: ['#e04fb0', '#b02f87'], plum: ['#8e4a8c', '#6a2f69'], olive: ['#9a9a3c', '#76762a'], maroon: ['#8e2f3c', '#661d28'], ice: ['#d9f3ff', '#a6d6ee'],
+  neonpink: ['#ff4fd8', '#d32fae'], neongreen: ['#5dff6a', '#2ed13d'] };
+/* colours mixed in the studio live in the save as { id: 'mix3', c: [main, dark], from } */
+const colOf = id => COLORS[id] || ((S.mixes || []).find(m => m.id === id) || {}).c || COLORS.blue;
+const colName = id => COLORS[id] ? id : ((S.mixes || []).find(m => m.id === id) || {}).name || 'mix';
+/* paint-like mixing: Kubelka-Munk on each channel, so blue and yellow make green rather than grey */
+const toLin = hex => [1, 3, 5].map(i => { const v = parseInt(hex.slice(i, i + 2), 16) / 255; return v <= .04045 ? v / 12.92 : ((v + .055) / 1.055) ** 2.4; });
+const toHex = lin => '#' + lin.map(v => { v = Math.max(0, Math.min(1, v)); v = v <= .0031308 ? v * 12.92 : 1.055 * v ** (1 / 2.4) - .055; return Math.round(v * 255).toString(16).padStart(2, '0'); }).join('');
+function mixPaint(drops) {
+  const tot = drops.reduce((a, [, n]) => a + n, 0), ks = [0, 0, 0];
+  drops.forEach(([hex, n]) => toLin(hex).forEach((v, i) => { v = Math.max(.003, Math.min(.997, v)); ks[i] += n / tot * (1 - v) ** 2 / (2 * v); }));
+  const main = ks.map(k => 1 + k - Math.sqrt(k * k + 2 * k));
+  return [toHex(main), toHex(main.map(v => v * .55))];
+}
+
+/* shark species: outlines in a 200 x 130 box facing right; anc are the default spots for things to wear */
 const SHARK_BODY = 'M28 66 C52 30 122 26 166 48 C186 57 197 66 189 74 C173 92 112 102 62 90 C46 85 34 76 28 66 Z';
+const REEF = { name: 'Reef shark', extra: 0, size: 1, def: { body: 'grey' },
+  body: SHARK_BODY, tail: 'M36 66 L6 32 Q16 66 6 102 Z', dorsal: 'M96 36 Q106 8 124 3 Q117 22 122 40 Z', pect: 'M106 86 L94 114 L134 90 Z',
+  belly: 'M64 87 C108 100 160 93 189 74 C168 81 118 85 64 87 Z', gills: 'M124 56 q-4 8 0 16 M133 55 q-4 8 0 16 M142 54 q-4 8 0 16',
+  eye: [164, 56, 8], cheek: [158, 72], mouth: 'M160 79 Q173 86 185 76',
+  anc: { head: [160, 27], eye: [164, 56], neck: [136, 86], fin: [116, 104], back: [110, 18], tail: [20, 66], body: [90, 64], mouth: [186, 80] } };
+const GREAT = Object.assign({}, REEF, { name: 'Great white', extra: 8, size: 1.15, def: { body: 'grey' },
+  body: 'M28 66 C52 30 122 24 166 42 C184 50 198 60 198 66 C190 82 120 100 62 90 C46 85 34 76 28 66 Z',
+  tail: 'M40 66 C28 52 16 36 4 20 C14 44 18 58 22 66 C18 74 14 88 6 106 C18 92 30 80 40 66 Z', dorsal: 'M92 36 Q100 2 118 -2 Q112 20 124 40 Z', pect: 'M104 84 L84 116 L136 88 Z',
+  belly: 'M64 87 C108 100 172 90 197 68 C176 80 118 85 64 87 Z', eye: [160, 53, 7], cheek: [154, 70], mouth: 'M150 80 Q172 90 193 73', teeth: [[157, 83], [164, 85], [171, 85], [178, 83], [185, 80]],
+  anc: { head: [156, 22], eye: [160, 53], neck: [136, 86], fin: [110, 104], back: [106, 14], tail: [16, 66], body: [90, 64], mouth: [190, 80] } });
+const KINDS = {
+  reef: REEF,
+  baby: Object.assign({}, REEF, { name: 'Baby shark', extra: 0, size: .72, def: { body: 'sky' },
+    body: 'M48 68 C58 38 120 30 156 46 C176 56 186 68 180 78 C166 96 112 102 76 94 C60 90 50 80 48 68 Z', tail: 'M56 68 L30 44 Q38 68 30 94 Z',
+    dorsal: 'M104 38 Q110 18 124 14 Q120 28 124 42 Z', pect: 'M114 92 L106 112 L136 94 Z', belly: 'M80 92 C116 102 162 94 180 78 C160 86 120 90 80 92 Z',
+    gills: 'M128 58 q-4 7 0 14 M136 57 q-4 7 0 14', eye: [156, 58, 11], cheek: [148, 76], mouth: 'M160 82 Q169 87 177 80',
+    anc: { head: [152, 24], eye: [156, 58], neck: [132, 90], fin: [122, 106], back: [116, 20], tail: [38, 68], body: [100, 68], mouth: [178, 84] } }),
+  hammer: Object.assign({}, REEF, { name: 'Hammerhead', extra: 5, size: 1.05, def: { body: 'silver' },
+    body: 'M28 66 C52 30 122 26 162 46 C174 52 180 62 176 72 C160 92 112 102 62 90 C46 85 34 76 28 66 Z',
+    front: 'M164 52 C166 36 172 20 182 18 C190 17 194 22 191 30 C186 44 186 76 190 90 C193 98 190 104 182 103 C172 102 166 90 164 80 Z',
+    dorsal: 'M92 36 Q100 2 120 -2 Q114 20 120 40 Z', belly: 'M64 87 C108 100 150 94 172 80 C150 84 118 85 64 87 Z',
+    gills: 'M120 56 q-4 8 0 16 M129 55 q-4 8 0 16 M138 54 q-4 8 0 16', eye: [184, 27, 6], eye2: [184, 95, 4.5], cheek: [166, 72], mouth: 'M160 82 Q168 88 177 82',
+    anc: { head: [178, 4], eye: [184, 27], neck: [136, 86], fin: [116, 104], back: [108, 14], tail: [20, 66], body: [90, 64], mouth: [174, 88] } }),
+  thresher: Object.assign({}, REEF, { name: 'Thresher', extra: 5, size: 1.05, def: { body: 'purple' },
+    tail: 'M40 64 C28 50 14 28 2 -4 C10 26 20 50 28 66 C24 74 18 84 12 94 C24 88 34 80 40 70 Z', pect: 'M106 86 L90 118 L134 90 Z', eye: [164, 55, 10],
+    anc: Object.assign({}, REEF.anc, { tail: [16, 30] }) }),
+  saw: Object.assign({}, REEF, { name: 'Sawshark', extra: 8, size: .95, def: { body: 'sand' },
+    body: 'M28 66 C52 34 116 30 150 48 C164 56 172 64 168 72 C152 88 106 98 62 90 C46 85 34 76 28 66 Z', saw: true,
+    dorsal: 'M84 38 Q94 12 110 8 Q104 24 108 42 Z', pect: 'M96 86 L84 112 L120 90 Z', belly: 'M64 87 C100 98 142 92 166 72 C148 80 108 85 64 87 Z',
+    gills: 'M104 56 q-4 8 0 16 M113 55 q-4 8 0 16 M122 54 q-4 8 0 16', eye: [144, 54, 7], cheek: [140, 70], mouth: 'M138 78 Q150 84 162 76',
+    anc: { head: [140, 26], eye: [144, 54], neck: [116, 86], fin: [104, 102], back: [98, 18], tail: [20, 66], body: [84, 64], mouth: [160, 82] } }),
+  great: GREAT,
+  goblin: Object.assign({}, REEF, { name: 'Goblin shark', extra: 10, size: 1.05, def: { body: 'pink' },
+    front: 'M158 46 C176 38 194 39 200 43 C199 50 186 55 168 60 Z', eye: [156, 58, 6], mouth: 'M154 80 Q172 98 190 82', teeth: [[160, 85], [167, 89], [174, 90], [181, 88]],
+    anc: Object.assign({}, REEF.anc, { head: [150, 30], eye: [156, 58], mouth: [186, 90] }) }),
+  lantern: Object.assign({}, REEF, { name: 'Lantern shark', extra: 10, size: .62, def: { body: 'black', eye: 'turquoise' }, glow: true, eye: [164, 56, 10] }),
+  whale: Object.assign({}, REEF, { name: 'Whale shark', extra: 12, size: 1.4, def: { body: 'navy', pattern: 'spots' },
+    body: 'M22 66 C44 28 128 22 174 42 C190 49 197 60 196 70 C194 84 170 96 120 98 C88 99 60 94 44 86 C32 80 26 74 22 66 Z', tail: 'M32 66 L2 32 Q12 66 2 102 Z',
+    dorsal: 'M88 34 Q98 6 116 2 Q110 20 116 36 Z', pect: 'M102 92 L86 122 L130 96 Z', belly: 'M46 88 C96 102 168 98 194 78 C168 88 110 92 46 88 Z',
+    gills: 'M140 58 q-5 10 0 20 M149 57 q-5 10 0 20 M158 56 q-5 10 0 20', eye: [174, 58, 5], cheek: null, mouth: 'M171 76 Q185 80 197 73',
+    anc: { head: [168, 28], eye: [174, 58], neck: [150, 90], fin: [110, 112], back: [104, 14], tail: [16, 66], body: [90, 64], mouth: [192, 78] } }),
+  mega: Object.assign({}, GREAT, { name: 'Megalodon', extra: 20, size: 1.5, def: { body: 'black' } }),
+};
+const PATTERNS = [['plain', 'Plain', 0], ['fade', 'Fade', 8], ['stripes', 'Tiger stripes', 10], ['spots', 'Whale-shark spots', 10], ['polka', 'Polka dots', 10], ['hearts', 'Hearts', 12],
+  ['zigzag', 'Zigzag', 12], ['scales', 'Fish scales', 12], ['sparkle', 'Sparkles', 14], ['checks', 'Checkers', 14], ['leopard', 'Leopard', 16], ['camo', 'Camouflage', 16],
+  ['lightning', 'Lightning', 18], ['flames', 'Flames', 20], ['galaxy', 'Galaxy', 25], ['rainbow', 'Rainbow', 25]];
+/* a pattern is drawn over the body inside its outline; P is the pattern colour the child picked, or null for the pattern's own */
+function patternArt(pat, id, c, d, f0, P) {
+  let defs = '', fill = c, over = '';
+  const star = (x, y, k, col) => `<path d="M${x} ${y - 7 * k} L${x + 2 * k} ${y - 2 * k} L${x + 7 * k} ${y} L${x + 2 * k} ${y + 2 * k} L${x} ${y + 7 * k} L${x - 2 * k} ${y + 2 * k} L${x - 7 * k} ${y} L${x - 2 * k} ${y - 2 * k} Z" fill="${col}" stroke="#fff" stroke-width="1"/>`;
+  if (pat === 'fade') { defs = `<linearGradient id="${id}g" x1="0" x2="1"><stop offset=".1" stop-color="${P || f0}"/><stop offset=".85" stop-color="${c}"/></linearGradient>`; fill = `url(#${id}g)`; }
+  if (pat === 'rainbow') { defs = `<linearGradient id="${id}g" x1="0" x2="1">${['#ff5b5b', '#ffa23a', '#ffe14d', '#5fd36b', '#4fa8ff', '#9b6bff'].map((k, i) => `<stop offset="${i / 5}" stop-color="${k}"/>`).join('')}</linearGradient>`; fill = `url(#${id}g)`; }
+  if (pat === 'galaxy') {
+    defs = `<radialGradient id="${id}g" cx=".55" cy=".45" r=".6"><stop offset="0" stop-color="${P || '#b07bff'}"/><stop offset=".45" stop-color="#3a2a8a"/><stop offset="1" stop-color="#120f33"/></radialGradient>`; fill = `url(#${id}g)`;
+    over = [[50, 62, 1.2], [66, 50, .8], [80, 76, 1], [96, 44, 1.4], [108, 66, .9], [122, 52, 1.1], [136, 74, .8], [150, 48, 1], [70, 64, .7], [114, 82, .7], [160, 66, .9], [88, 58, .6]].map(([x, y, r]) => `<circle cx="${x}" cy="${y}" r="${r}" fill="#fff"/>`).join('') + star(128, 62, .8, '#fff');
+  }
+  if (pat === 'stripes') over = [52, 70, 88, 106].map(x => `<path d="M${x} 28 q8 22 -2 44" stroke="${P || d}" stroke-width="7" fill="none" stroke-linecap="round" opacity=".85"/>`).join('');
+  if (pat === 'spots') over = [[60, 62], [76, 52], [92, 60], [108, 48], [122, 64], [138, 52], [150, 64], [84, 72], [116, 76], [70, 76]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="3.6" fill="${P || '#fff'}" opacity=".85"/>`).join('');
+  if (pat === 'polka') over = [[52, 58], [74, 46], [70, 74], [96, 60], [118, 44], [118, 78], [140, 60], [162, 50], [92, 86], [148, 84]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="7" fill="${P || '#fff'}" opacity=".92"/>`).join('');
+  if (pat === 'sparkle') over = [[64, 60, 1], [92, 50, 1.3], [118, 62, 1], [140, 48, 1.2], [104, 74, .9], [78, 74, .8]].map(([x, y, k]) => star(x, y, k, P || f0)).join('');
+  if (pat === 'hearts') over = [[58, 62, 1], [82, 50, 1.2], [104, 68, 1.1], [128, 50, 1.2], [148, 68, 1], [84, 78, .8], [62, 80, .7], [124, 80, .8]].map(([x, y, k]) => `<path transform="translate(${x} ${y}) scale(${k})" d="M0 5 C-10 -1 -6 -11 0 -5.5 C6 -11 10 -1 0 5 Z" fill="${P || '#ff5c8d'}" stroke="#fff" stroke-width="1"/>`).join('');
+  if (pat === 'zigzag') over = [52, 70].map(y => `<path d="M20 ${y}${range(19).map(i => ` L${30 + i * 10} ${y + (i % 2 ? -8 : 0)}`).join('')}" stroke="${P || d}" stroke-width="5" fill="none" stroke-linejoin="round" opacity=".9"/>`).join('');
+  if (pat === 'scales') over = range(7).flatMap(r => range(15).map(k => { const x = 30 + k * 12 + (r % 2) * 6, y = 38 + r * 9; return `<path d="M${x - 6} ${y} a6 6 0 0 0 12 0" stroke="${P || d}" stroke-width="2" fill="none" opacity=".75"/>`; })).join('');
+  if (pat === 'checks') over = range(8).flatMap(r => range(15).filter(k => (r + k) % 2).map(k => `<rect x="${22 + k * 12}" y="${22 + r * 12}" width="12" height="12" fill="${P || d}" opacity=".7"/>`)).join('');
+  if (pat === 'leopard') over = [[56, 60], [74, 48], [72, 76], [92, 62], [112, 46], [110, 80], [130, 62], [150, 50], [150, 76], [92, 88]].map(([x, y], i) => `<ellipse cx="${x}" cy="${y}" rx="${6 + i % 3}" ry="5" fill="${P || '#e8b04a'}" stroke="${d}" stroke-width="3" stroke-dasharray="8 5"/>`).join('');
+  if (pat === 'camo') over = [[50, 56, 16, 9, 20, d], [86, 46, 18, 8, -15, P || '#6f7d3c'], [76, 74, 15, 9, 10, f0], [118, 60, 20, 10, 25, d], [146, 46, 14, 7, -10, P || '#6f7d3c'], [150, 76, 16, 8, 5, f0], [110, 86, 14, 6, 0, P || '#6f7d3c'], [176, 62, 10, 7, 30, d]]
+    .map(([x, y, rx, ry, a, col]) => `<ellipse cx="${x}" cy="${y}" rx="${rx}" ry="${ry}" transform="rotate(${a} ${x} ${y})" fill="${col}" opacity=".85"/>`).join('');
+  if (pat === 'lightning') over = `<path d="M54 46 L104 42 L90 58 L134 58 L70 94 L88 68 L50 70 Z" fill="${P || '#ffe14d'}" stroke="${d}" stroke-width="2.5" stroke-linejoin="round"/>`;
+  if (pat === 'flames') over = `<path d="M20 42 Q56 46 78 34 Q70 50 98 48 Q82 58 110 64 Q82 70 98 82 Q70 80 80 96 Q54 86 20 92 Z" fill="${P || '#ff7a1f'}"/><path d="M20 54 Q48 56 62 48 Q58 60 78 62 Q58 68 70 80 Q48 76 20 80 Z" fill="#ffd84a"/>`;
+  return { defs, fill, over };
+}
 let svgUid = 0;
-/* a shark: o.color draws a plain shark of that colour (used in puzzles); otherwise o.shark (default Finn) with its body colour, fin colour and pattern */
+/* a shark: o.color draws a plain reef shark of that colour (used in puzzles); otherwise o.shark (default Finn) in its own species, colours, pattern and things to wear.
+   o.edit adds data-part and data-acc hooks for the studio, o.sel rings the selected thing */
 function sharkSVG(o = {}) {
-  const sh = o.color ? { body: o.color, fin: null, pattern: 'plain', hat: '' } : (o.shark || S.sharks[0]);
-  const body = COLORS[sh.body] || COLORS.blue, fin = COLORS[sh.fin || sh.body] || body;
-  const c = body[0], d = fin[1], f0 = fin[0], hat = o.hat !== undefined ? o.hat : sh.hat, pat = sh.pattern || 'plain', id = 'sk' + (++svgUid);
-  let defs = `<clipPath id="${id}c"><path d="${SHARK_BODY}"/></clipPath>`, fill = c, over = '';
-  if (pat === 'fade') { defs += `<linearGradient id="${id}g" x1="0" x2="1"><stop offset=".1" stop-color="${f0}"/><stop offset=".85" stop-color="${c}"/></linearGradient>`; fill = `url(#${id}g)`; }
-  if (pat === 'rainbow') { defs += `<linearGradient id="${id}g" x1="0" x2="1">${['#ff5b5b', '#ffa23a', '#ffe14d', '#5fd36b', '#4fa8ff', '#9b6bff'].map((k, i) => `<stop offset="${i / 5}" stop-color="${k}"/>`).join('')}</linearGradient>`; fill = `url(#${id}g)`; }
-  if (pat === 'stripes') over = [52, 70, 88, 106].map(x => `<path d="M${x} 28 q8 22 -2 44" stroke="${d}" stroke-width="7" fill="none" stroke-linecap="round" opacity=".85"/>`).join('');
-  if (pat === 'spots') over = [[60, 62], [76, 52], [92, 60], [108, 48], [122, 64], [138, 52], [150, 64], [84, 72], [116, 76], [70, 76]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="3.6" fill="#fff" opacity=".85"/>`).join('');
-  if (pat === 'sparkle') over = [[64, 60, 1], [92, 50, 1.3], [118, 62, 1], [140, 48, 1.2], [104, 74, .9], [78, 74, .8]].map(([x, y, k]) => `<path d="M${x} ${y - 7 * k} L${x + 2 * k} ${y - 2 * k} L${x + 7 * k} ${y} L${x + 2 * k} ${y + 2 * k} L${x} ${y + 7 * k} L${x - 2 * k} ${y + 2 * k} L${x - 7 * k} ${y} L${x - 2 * k} ${y - 2 * k} Z" fill="${f0}" stroke="#fff" stroke-width="1"/>`).join('');
+  const sh = o.color ? { kind: 'reef', body: o.color, pattern: 'plain', acc: [] } : (o.shark || S.sharks[0]);
+  const K = KINDS[sh.kind] || REEF, ed = !!o.edit, part = p => ed ? ` data-part="${p}"` : '';
+  const body = colOf(sh.body), fin = colOf(sh.fin || sh.body), tl = colOf(sh.tail || sh.fin || sh.body);
+  const c = body[0], d = fin[1], f0 = fin[0], td = tl[1], id = 'sk' + (++svgUid);
+  const belly = sh.belly ? colOf(sh.belly)[0] : '#fff', eyeC = sh.eye ? colOf(sh.eye)[1] : K.def.eye ? colOf(K.def.eye)[0] : '#14365a';
+  const pa = patternArt(sh.pattern || 'plain', id, c, d, f0, sh.pc ? colOf(sh.pc)[0] : null);
+  const defs = `<clipPath id="${id}c"><path d="${K.body}"/></clipPath>${pa.defs}`;
+  const [ex, ey, er] = K.eye;
+  const eyeArt = (x, y, r) => `<circle cx="${x}" cy="${y}" r="${r}" fill="#fff"/><circle cx="${x + r * .25}" cy="${y + r * .12}" r="${r * .58}" fill="${eyeC}"${part('eye')}/><circle cx="${x + r * .45}" cy="${y - r * .12}" r="${r * .21}" fill="#fff"/>`;
+  const acc = o.hat !== undefined ? (o.hat ? [{ e: o.hat, x: 160, y: 27, s: 1 }] : []) : (sh.acc || []);
+  const accArt = behind => acc.map((a, i) => (!!a.b === behind) ? `<g${ed ? ` data-acc="${i}" class="acc"` : ''} transform="translate(${a.x} ${a.y}) rotate(${a.r || 0}) scale(${(a.f ? -1 : 1) * (a.s || 1)} ${a.s || 1})"><text font-size="40" text-anchor="middle" dominant-baseline="central">${a.e}</text></g>` : '').join('');
+  const saw = K.saw ? `<g fill="${d}"${part('fin')}><path d="M160 62 L199 63 L199 68 L160 72 Z"/>${range(6).map(k => `<path d="M${168 + k * 5} 63 l2 -5 l2 5 Z M${168 + k * 5} 68 l2 5 l2 -5 Z"/>`).join('')}</g><path d="M182 69 q3 8 -1 14 M188 69 q3 8 -1 14" stroke="${d}" stroke-width="1.6" fill="none"/>` : '';
+  const teeth = K.teeth ? K.teeth.map(([x, y]) => `<path d="M${x - 3} ${y - 1} L${x} ${y + 5} L${x + 3} ${y - 1} Z" fill="#fff" stroke="#14365a" stroke-width=".8"/>`).join('') : '';
+  const glow = K.glow ? [[70, 88], [86, 91], [102, 92], [118, 92], [134, 90], [150, 87], [166, 82]].map(([x, y], i) => `<circle cx="${x}" cy="${y}" r="2.6" fill="#8ff8ff"><animate attributeName="opacity" values=".35;1;.35" dur="2.2s" begin="${-i * .3}s" repeatCount="indefinite"/></circle>`).join('') : '';
   const scarf = o.scarf ? `<path d="M128 44 Q138 70 130 98" stroke="${o.scarf}" stroke-width="15" fill="none" stroke-linecap="round"/><path d="M131 88 L120 116" stroke="${o.scarf}" stroke-width="11" stroke-linecap="round"/>` : '';
-  return `<svg viewBox="0 0 200 130" aria-hidden="true"><defs>${defs}</defs>
-  <path d="M36 66 L6 32 Q16 66 6 102 Z" fill="${d}"/>
-  <path d="M96 36 Q106 8 124 3 Q117 22 122 40 Z" fill="${d}"/>
-  <path d="${SHARK_BODY}" fill="${fill}"/>
-  ${over ? `<g clip-path="url(#${id}c)">${over}</g>` : ''}
-  <path d="M64 87 C108 100 160 93 189 74 C168 81 118 85 64 87 Z" fill="#fff" opacity=".95"/>
-  <path d="M106 86 L94 114 L134 90 Z" fill="${d}"/>
-  <path d="M124 56 q-4 8 0 16 M133 55 q-4 8 0 16 M142 54 q-4 8 0 16" stroke="${d}" stroke-width="3" fill="none" stroke-linecap="round"/>
-  ${scarf}
-  <circle cx="164" cy="56" r="8" fill="#fff"/><circle cx="166" cy="57" r="4.6" fill="#14365a"/><circle cx="167.6" cy="55" r="1.7" fill="#fff"/>
-  <ellipse cx="158" cy="72" rx="6" ry="3.5" fill="#ff8fa8" opacity=".55"/>
-  <path d="M160 79 Q173 86 185 76" stroke="#14365a" stroke-width="3" fill="none" stroke-linecap="round"/>
-  ${hat ? `<text x="160" y="42" font-size="42" text-anchor="middle">${hat}</text>` : ''}
+  return `<svg viewBox="0 0 200 130" aria-hidden="true"><defs>${defs}</defs>${accArt(true)}
+  <path d="${K.tail}" fill="${td}"${part('tail')}/>
+  <path d="${K.dorsal}" fill="${d}"${part('fin')}/>
+  <path d="${K.body}" fill="${pa.fill}"${part('body')}/>
+  ${pa.over ? `<g clip-path="url(#${id}c)"${part('pc')}>${pa.over}</g>` : ''}
+  ${K.front ? `<path d="${K.front}" fill="${c}"${part('body')}/>` : ''}${saw}
+  <path d="${K.belly}" fill="${belly}" opacity=".95"${part('belly')}/>
+  <path d="${K.pect}" fill="${d}"${part('fin')}/>
+  <path d="${K.gills}" stroke="${d}" stroke-width="3" fill="none" stroke-linecap="round"/>
+  ${scarf}${glow}${eyeArt(ex, ey, er)}${K.eye2 ? eyeArt(...K.eye2) : ''}
+  ${K.cheek ? `<ellipse cx="${K.cheek[0]}" cy="${K.cheek[1]}" rx="6" ry="3.5" fill="#ff8fa8" opacity=".55"/>` : ''}
+  ${teeth}<path d="${K.mouth}" stroke="#14365a" stroke-width="3" fill="none" stroke-linecap="round"/>
+  ${accArt(false)}${acc[o.sel] ? `<circle cx="${acc[o.sel].x}" cy="${acc[o.sel].y}" r="${27 * (acc[o.sel].s || 1)}" fill="none" stroke="#ffb703" stroke-width="2.5" stroke-dasharray="5 4" pointer-events="none"/>` : ''}
 </svg>`;
 }
 function eelSVG(s = 64) {
@@ -657,8 +785,8 @@ function setNav(which) { $('#navMap').toggleAttribute('aria-current', which === 
 /* ============ progress ============ */
 const pid = (wi, pi) => WORLDS[wi].id + '-' + pi;
 const solvedIn = wi => WORLDS[wi].puzzles.filter((_, i) => S.solved[pid(wi, i)]).length;
-/* chapters: every world has ch (1 if not set); chapter 2 lives in chapter2.js and pushes its worlds onto WORLDS */
-const CHAPTERS = { 1: { name: 'Chapter 1', title: 'Sunny Shallows' }, 2: { name: 'Chapter 2', title: 'The Deep Blue' } };
+/* chapters: every world has ch (1 if not set); chapters 2 and 3 live in chapter2.js and chapter3.js and push their worlds onto WORLDS */
+const CHAPTERS = { 1: { name: 'Chapter 1', title: 'Sunny Shallows' }, 2: { name: 'Chapter 2', title: 'The Deep Blue' }, 3: { name: 'Chapter 3', title: 'The Sunken City' } };
 const chOf = wi => WORLDS[wi].ch || 1;
 const chWorlds = ch => WORLDS.map((w, wi) => wi).filter(wi => chOf(wi) === ch);
 const chapterList = () => Object.keys(CHAPTERS).map(Number).filter(ch => chWorlds(ch).length);
@@ -688,7 +816,7 @@ function showMap(chArg) {
   const nextW = mine.find(wi => isOpen(wi) && solvedIn(wi) < WORLDS[wi].puzzles.length);
   const greet = !S.met ? `<p>Hi! I'm <b>Finn</b>, a shark who loves puzzles.</p><p>Each island has a new kind of puzzle. Solve puzzles to earn shark teeth 🦷 and open more islands.</p><p>Click the glowing island to start!</p>`
     : !chOpen ? `<p>${CHAPTERS[ch].name} is still locked.</p><p>Solve ${CH_NEED - solvedInCh(ch - 1)} more puzzles in ${CHAPTERS[ch - 1].name} to dive down here.</p>`
-    : ch === 1 && chs.includes(2) && chapterOpen(2) && solvedInCh(2) === 0 ? `<p>Wow, you did so many puzzles!</p><p><b>${CHAPTERS[2].name}: ${CHAPTERS[2].title}</b> is open. Dive deeper with the button above the map!</p>`
+    : chs.includes(ch + 1) && chapterOpen(ch + 1) && solvedInCh(ch + 1) === 0 ? `<p>Wow, you did so many puzzles!</p><p><b>${CHAPTERS[ch + 1].name}: ${CHAPTERS[ch + 1].title}</b> is open. Dive deeper with the button above the map!</p>`
     : solved === 0 ? (ch === 1 ? `<p>Click the glowing island to start!</p>` : `<p>Welcome to the deep! The puzzles down here are trickier. Click the glowing island to start.</p>`)
     : `<p>Welcome back! You have solved <b>${solved}</b> puzzles in ${CHAPTERS[ch].name}.</p><p>Pick any open island. The glowing one is a good next step.</p>`;
   const side = h('div', { class: 'side' },
@@ -698,7 +826,7 @@ function showMap(chArg) {
     h('div', { class: 'stat' }, h('span', {}, 'Sea friends'), h('b', {}, String(S.creatures.length))),
     h('button', { class: 'btn alt', onclick: showAquarium }, '🐠 Visit your aquarium'),
     h('button', { class: 'parentlink', onclick: showParent }, 'Grown-ups corner'));
-  const ocean = h('div', { class: 'ocean' + (ch > 1 ? ' deep' : ''), role: 'region', 'aria-label': CHAPTERS[ch].name + ' island map' });
+  const ocean = h('div', { class: 'ocean' + (ch > 1 ? ' deep' : '') + ' ch' + ch, role: 'region', 'aria-label': CHAPTERS[ch].name + ' island map' });
   const pts = MAPPOS.slice(0, mine.length).map(([x, y]) => `${x},${chs.length > 1 ? 26 + (y - 18) * 0.9 : y}`).join(' ');
   ocean.innerHTML = `<svg class="route" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><polyline points="${pts}" fill="none" stroke="rgba(255,255,255,.75)" stroke-width=".7" stroke-dasharray="1.6 1.6" vector-effect="non-scaling-stroke" style="stroke-width:5px"/></svg>`;
   mine.forEach((wi, k) => {
@@ -2251,22 +2379,46 @@ const WORLDS = [
 
 /* ============ aquarium and wardrobe ============ */
 const SHOP = {
-  hats: [['none', '', 0], ['flower', '🌸', 3], ['cap', '🧢', 4], ['bow', '🎀', 4], ['top', '🎩', 6], ['party', '🥳', 6], ['grad', '🎓', 10], ['sun', '👒', 10], ['helmet', '⛑️', 12], ['pirate', '🏴‍☠️', 12], ['santa', '🎅', 14], ['crown', '👑', 20]],
-  colors: [['blue', 0], ['grey', 0], ['sky', 4], ['teal', 5], ['mint', 5], ['green', 6], ['lime', 6], ['pink', 6], ['coral', 6], ['red', 7], ['orange', 8], ['purple', 8], ['lilac', 8], ['navy', 8], ['brown', 8], ['white', 10], ['black', 10], ['silver', 12], ['gold', 20]],
-  patterns: [['plain', 'Plain', 0], ['fade', 'Fade', 8], ['stripes', 'Tiger stripes', 10], ['spots', 'Whale-shark spots', 10], ['sparkle', 'Sparkles', 14], ['rainbow', 'Rainbow', 25]],
+  // things to wear: [id, emoji, price, where it goes first]; ids of the first eleven match the old hat ids so old purchases stay owned
+  wear: [['flower', '🌸', 3, 'head'], ['ladybug', '🐞', 3, 'head'], ['heart', '❤️', 3, 'body'], ['star', '⭐', 3, 'body'], ['bubbles', '🫧', 3, 'mouth'], ['plaster', '🩹', 3, 'body'],
+    ['cap', '🧢', 4, 'head'], ['bow', '🎀', 4, 'head'], ['rose', '🌹', 4, 'fin'], ['sunflower', '🌻', 4, 'head'], ['glasses', '👓', 5, 'eye'], ['balloon', '🎈', 5, 'fin'], ['lolly', '🍭', 5, 'fin'], ['bolt', '⚡', 5, 'body'],
+    ['top', '🎩', 6, 'head'], ['party', '🥳', 6, 'head'], ['medal', '🏅', 6, 'neck'], ['beads', '📿', 6, 'neck'], ['scarf', '🧣', 6, 'neck'], ['butterfly', '🦋', 6, 'head'], ['icecream', '🍦', 6, 'fin'], ['pizza', '🍕', 6, 'fin'], ['ball', '⚽', 6, 'fin'],
+    ['shades', '🕶️', 8, 'eye'], ['goggles', '🥽', 8, 'eye'], ['mic', '🎤', 8, 'fin'], ['watch', '⌚', 8, 'fin'], ['kite', '🪁', 8, 'tail'], ['fire', '🔥', 8, 'tail'],
+    ['grad', '🎓', 10, 'head'], ['sun', '👒', 10, 'head'], ['phones', '🎧', 10, 'head'], ['backpack', '🎒', 10, 'back'], ['rainbow', '🌈', 10, 'back'],
+    ['helmet', '⛑️', 12, 'head'], ['pirate', '🏴‍☠️', 12, 'head'], ['cowboy', '🤠', 12, 'head'], ['guitar', '🎸', 12, 'fin'], ['wand', '🪄', 12, 'fin'],
+    ['santa', '🎅', 14, 'head'], ['trophy', '🏆', 15, 'fin'], ['ring', '💍', 15, 'fin'], ['gem', '💎', 15, 'head'], ['crown', '👑', 20, 'head']],
+  colors: [['blue', 0], ['grey', 0], ['sky', 4], ['ice', 4], ['cream', 4], ['teal', 5], ['mint', 5], ['sand', 5], ['peach', 5], ['green', 6], ['lime', 6], ['pink', 6], ['coral', 6], ['yellow', 6],
+    ['red', 7], ['turquoise', 7], ['orange', 8], ['purple', 8], ['lilac', 8], ['navy', 8], ['brown', 8], ['olive', 8], ['indigo', 9], ['magenta', 9], ['plum', 9], ['maroon', 9],
+    ['white', 10], ['black', 10], ['silver', 12], ['neonpink', 14], ['neongreen', 14], ['gold', 20]],
   decor: [['weed', '🌿', 2], ['coral', '🪸', 3], ['shell', '🐚', 3], ['rock', '🪨', 3], ['lotus', '🪷', 4], ['shroom', '🍄', 4], ['anchor', '⚓', 5], ['star', '⭐', 5], ['amphora', '🏺', 6], ['buoy', '🛟', 6], ['statue', '🗿', 8], ['trident', '🔱', 8], ['pineapple', '🍍', 8], ['bag', '💰', 10], ['house', '🏠', 10], ['castle', '🏰', 12], ['volcano', '🌋', 14], ['gem', '💎', 15], ['ship', '🚢', 15]],
 };
-const SHARK_NAMES = ['Bruce', 'Sharky', 'Toothy', 'Splash', 'Bubbles', 'Hammer', 'Captain', 'Nibbles', 'Jaws Jr', 'Zoom'];
+const SLOT_SIZE = { eye: .8, neck: .75, fin: .8, body: .6, mouth: .6, tail: .9 };
+const MAX_WEAR = 12, MAX_MIXES = 24, MIX_PRICE = 3;
+const SHARK_NAMES = ['Bruce', 'Sharky', 'Toothy', 'Splash', 'Bubbles', 'Hammer', 'Captain', 'Nibbles', 'Jaws Jr', 'Zoom', 'Pebble', 'Comet'];
 const MAX_SHARKS = 6;
 const sharkPrice = () => 10 + 5 * S.sharks.length;
-const CNAME = { '🦀': 'crab', '🐟': 'fish', '🐠': 'tropical fish', '🐡': 'pufferfish', '🐙': 'octopus', '🐬': 'dolphin', '🐢': 'turtle', '🦑': 'squid', '🦐': 'shrimp', '🦞': 'lobster', '🐳': 'whale', '🐋': 'big whale', '🦭': 'seal', '🪼': 'jellyfish', '🐚': 'shell', '🦈': 'shark', '🐊': 'crocodile', '🦦': 'otter', '🐧': 'penguin', '🐸': 'frog', '⭐': 'starfish', '🪸': 'coral', '🦩': 'flamingo', '🐍': 'sea snake', '🦢': 'swan' };
-const WALKERS = '🦀🦞🐢🐊🦭🦦🐧🐚⭐';
-let aqTab = 'sharks', aqPart = 'body', aqFocus = null, aqDec = -1, adopting = false;
+const CNAME = { '🦀': 'crab', '🐟': 'fish', '🐠': 'tropical fish', '🐡': 'pufferfish', '🐙': 'octopus', '🐬': 'dolphin', '🐢': 'turtle', '🦑': 'squid', '🦐': 'shrimp', '🦞': 'lobster', '🐳': 'whale', '🐋': 'big whale', '🦭': 'seal', '🪼': 'jellyfish', '🐚': 'shell', '🦈': 'shark', '🐊': 'crocodile', '🦦': 'otter', '🐧': 'penguin', '🐸': 'frog', '⭐': 'starfish', '🪸': 'coral', '🦩': 'flamingo', '🐍': 'sea snake', '🦢': 'swan',
+  '🐉': 'sea dragon', '🐌': 'sea snail', '🦕': 'sea monster', '🦜': 'parrot', '🐲': 'treasure dragon', '🐻‍❄️': 'polar bear', '🦆': 'duck', '🦪': 'oyster', '🧜‍♀️': 'mermaid', '🦎': 'lizard', '🧜‍♂️': 'merman', '🦣': 'woolly mammoth', '🦫': 'beaver', '🦛': 'hippo' };
+const WALKERS = '🦀🦞🐢🐊🦭🦦🐧🐚⭐🦛🦣🦫🦎🐌';
+let aqTab = 'sharks', aqPart = 'body', aqFocus = null, aqDec = -1, adopting = null;
 const selShark = () => S.sharks[Math.min(S.sel || 0, S.sharks.length - 1)];
-function syncFinn() { S.color = S.sharks[0].body; S.hat = S.sharks[0].hat; }
+function syncFinn() { S.color = S.sharks[0].body; }
 function whereFrom(e) {
   const w = WORLDS.find(w => w.creature === e || w.prize === e);
   return w ? (w.prize === e && w.creature !== e ? `the prize for finishing ${w.name}` : `from ${w.name}`) : '';
+}
+const ownedColors = () => SHOP.colors.filter(([id, pr]) => pr === 0 || S.owned.includes('c-' + id)).map(([id]) => id).concat((S.mixes || []).map(m => m.id));
+/* pay for something once; false if there are not enough teeth */
+function buyOnce(key, price) {
+  if (price === 0 || S.owned.includes(key)) return true;
+  if (S.teeth < price) { snd.soft(); return false; }
+  S.teeth -= price; S.owned.push(key); snd.good(); save(); updateTop(); return true;
+}
+function wearAdd(sh, em, slot) {
+  if ((sh.acc = sh.acc || []).length >= MAX_WEAR) { snd.soft(); return -1; }
+  const K = KINDS[sh.kind] || REEF, [x, y] = K.anc[slot] || K.anc.head, n = sh.acc.filter(a => Math.abs(a.x - x) < 4 && Math.abs(a.y - y) < 4).length;
+  sh.acc.push({ e: em, x: x + n * 9, y: y + n * 5, s: SLOT_SIZE[slot] || 1, r: 0, f: 0, b: 0 });
+  return sh.acc.length - 1;
 }
 function showAquarium() {
   cur = null; clearSel(); setNav('aq'); updateTop();
@@ -2277,7 +2429,7 @@ function showAquarium() {
   // decorations: drag to move, click to pick one and change it
   S.decor.forEach((d, i) => {
     const it = SHOP.decor.find(x => x[0] === d.id); if (!it) return;
-    const el = h('button', { class: 'decor' + (i === aqDec ? ' picked' : ''), 'aria-label': `${d.id} decoration, drag to move`, style: { left: d.x + '%', top: d.y + '%', fontSize: Math.round(54 * d.s) + 'px', transform: `translate(-50%,-100%) scaleX(${d.f ? -1 : 1})` } }, it[1]);
+    const el = h('button', { class: 'decor' + (i === aqDec ? ' picked' : ''), 'aria-label': `${d.id} decoration, drag to move`, style: { left: d.x + '%', top: d.y + '%', fontSize: Math.round(54 * d.s) + 'px', transform: `translate(-50%,-100%) rotate(${d.r || 0}deg) scaleX(${d.f ? -1 : 1})` } }, it[1]);
     decorDrag(el, d, i, tank);
     tank.append(el);
   });
@@ -2289,16 +2441,18 @@ function showAquarium() {
   const anims = [];
   const swimmers = list.map((e, i) => {
     const s = h('span', { class: 'swim', 'data-e': e }, h('span', { class: 'bd' }, e));
-    s.style.top = (WALKERS.includes(e) ? 80 + (i % 3) * 2 : 12 + ((i * 37) % 58)) + '%';
+    s.style.top = ([...WALKERS].includes(e) ? 80 + (i % 3) * 2 : 12 + ((i * 37) % 58)) + '%';
     tank.append(s); return s;
   });
   const sharkEls = S.sharks.map((sh, k) => {
+    const z = (KINDS[sh.kind] || REEF).size;
     const el = h('span', { class: 'swim me', 'data-shark': k }, h('span', { class: 'bd', html: sharkSVG({ shark: sh }) }), h('span', { class: 'nametag' }, sh.name));
-    el.style.top = (22 + k * 11) % 66 + 8 + '%';
+    Object.assign(el.querySelector('svg').style, { width: 150 * z + 'px', height: 98 * z + 'px' });
+    el.style.top = Math.min(68 - 14 * z, 24 + (k * 13) % 42) + '%';
     tank.append(el); return el;
   });
   const finder = h('div', { class: 'finder' }, kinds.length ? h('span', { class: 'flabel' }, 'Find:') : h('span', {}, 'Your aquarium is empty. Every puzzle you solve brings a new sea friend!'),
-    kinds.map(e => h('button', { class: 'fchip' + (aqFocus === e ? ' on' : ''), 'aria-pressed': aqFocus === e ? 'true' : 'false', 'aria-label': `Show the ${CNAME[e] || 'sea friend'}s`, onclick: () => focusKind(aqFocus === e ? null : e) }, `${e}×${counts[e]}`)));
+    kinds.map(e => h('button', { class: 'fchip' + (aqFocus === e ? ' on' : ''), 'data-e': e, 'aria-pressed': aqFocus === e ? 'true' : 'false', 'aria-label': `Show the ${CNAME[e] || 'sea friend'}s`, onclick: () => focusKind(aqFocus === e ? null : e) }, `${e}×${counts[e]}`)));
   const about = h('div', { class: 'aboutfish', hidden: true });
   tank.append(finder, about);
   const shop = h('div', { class: 'shop' });
@@ -2306,15 +2460,15 @@ function showAquarium() {
   const W = tank.clientWidth - 60;
   swimmers.forEach((s, i) => { const dur = 9000 + ((i * 2917) % 12000); anims.push([s, s.animate([{ transform: 'translateX(0) scaleX(-1)' }, { transform: `translateX(${W}px) scaleX(-1)`, offset: .49 }, { transform: `translateX(${W}px) scaleX(1)`, offset: .5 }, { transform: 'translateX(0) scaleX(1)' }], { duration: dur, iterations: Infinity, delay: -((i * 1777) % dur) })]); });
   sharkEls.forEach((el, k) => {
-    const dur = 16000 + k * 2300, d0 = -k * 3100;
+    const z = (KINDS[S.sharks[k].kind] || REEF).size, dur = (16000 + k * 2300) * (.8 + z * .2), d0 = -k * 3100;
     const a = el.querySelector('.bd').animate([{ transform: 'scaleX(1)' }, { transform: 'scaleX(1)', offset: .49 }, { transform: 'scaleX(-1)', offset: .5 }, { transform: 'scaleX(-1)' }], { duration: dur, iterations: Infinity, delay: d0 });
-    const m = el.animate([{ transform: 'translateX(0)' }, { transform: `translateX(${W - 100}px)`, offset: .5 }, { transform: 'translateX(0)' }], { duration: dur, iterations: Infinity, delay: d0 });
+    const m = el.animate([{ transform: 'translateX(0)' }, { transform: `translateX(${W - 150 * z + 50}px)`, offset: .5 }, { transform: 'translateX(0)' }], { duration: dur, iterations: Infinity, delay: d0 });
     anims.push([el, m], [el, a]);
   });
   // spotlight one kind of sea friend: they stop, glow and get a name tag
   function focusKind(e) {
     aqFocus = e; snd.pop();
-    $$('.fchip', finder).forEach(b => { const on = b.textContent.startsWith(e || '#'); b.classList.toggle('on', on); b.setAttribute('aria-pressed', on ? 'true' : 'false'); });
+    $$('.fchip', finder).forEach(b => { const on = b.dataset.e === e; b.classList.toggle('on', on); b.setAttribute('aria-pressed', on ? 'true' : 'false'); });
     anims.forEach(([el, a]) => { const hit = e && el.dataset.e === e; el.classList.toggle('spot', !!hit); hit ? a.pause() : a.play(); });
     tank.classList.toggle('focusing', !!e);
     if (e) { about.hidden = false; about.innerHTML = `<b>${e} ${CNAME[e] || 'sea friend'}</b> · you have ${counts[e]} · ${whereFrom(e)}`; }
@@ -2360,82 +2514,243 @@ function decorDrag(el, d, i, tank) {
 }
 function decorTools(d, tank) {
   const set = fn => () => { fn(); save(); snd.pop(); showAquarium(); };
-  const t = h('div', { class: 'dtools', style: { left: Math.max(12, Math.min(88, d.x)) + '%', top: Math.max(14, d.y - (58 * d.s + 14) / Math.max(1, tank.clientHeight) * 100) + '%' } },
-    h('button', { 'aria-label': 'Smaller', onclick: set(() => { d.s = Math.max(.6, +(d.s - .2).toFixed(1)); }) }, '➖'),
-    h('button', { 'aria-label': 'Bigger', onclick: set(() => { d.s = Math.min(2.4, +(d.s + .2).toFixed(1)); }) }, '➕'),
-    h('button', { 'aria-label': 'Flip', onclick: set(() => { d.f = d.f ? 0 : 1; }) }, '↔️'),
-    h('button', { 'aria-label': 'Put it away', onclick: set(() => { S.decor.splice(aqDec, 1); aqDec = -1; }) }, '📥'));
+  const turn = k => set(() => { d.r = ((d.r || 0) + k + 540) % 360 - 180; });
+  const t = h('div', { class: 'dtools', style: { left: Math.max(22, Math.min(78, d.x)) + '%', top: Math.max(14, d.y - (58 * d.s + 14) / Math.max(1, tank.clientHeight) * 100) + '%' } },
+    h('button', { 'aria-label': 'Smaller', title: 'Smaller', onclick: set(() => { d.s = Math.max(.6, +(d.s - .2).toFixed(1)); }) }, '➖'),
+    h('button', { 'aria-label': 'Bigger', title: 'Bigger', onclick: set(() => { d.s = Math.min(2.4, +(d.s + .2).toFixed(1)); }) }, '➕'),
+    h('button', { 'aria-label': 'Turn left', title: 'Turn left', onclick: turn(-15) }, '↺'),
+    h('button', { 'aria-label': 'Turn right', title: 'Turn right', onclick: turn(15) }, '↻'),
+    h('button', { 'aria-label': 'Flip', title: 'Flip', onclick: set(() => { d.f = d.f ? 0 : 1; }) }, '↔️'),
+    h('button', { 'aria-label': 'Bring to the front', title: 'Bring to the front', onclick: set(() => { S.decor.splice(aqDec, 1); S.decor.push(d); aqDec = S.decor.length - 1; }) }, '⬆️'),
+    h('button', { 'aria-label': 'Send to the back', title: 'Send to the back', onclick: set(() => { S.decor.splice(aqDec, 1); S.decor.unshift(d); aqDec = 0; }) }, '⬇️'),
+    h('button', { 'aria-label': 'Put it away', title: 'Put it away', onclick: set(() => { S.decor.splice(aqDec, 1); aqDec = -1; }) }, '📥'));
   return t;
 }
 function drawShop(shop) {
   shop.innerHTML = '';
   const sh = selShark();
-  shop.append(h('h2', {}, S.sharks.length > 1 ? `Dressing ${sh.name}` : `${sh.name}’s wardrobe`), h('div', { class: 'mini', html: sharkSVG({ shark: sh }) }), h('div', { class: 'note' }, `You have 🦷 ${S.teeth} teeth to spend.`));
+  if (adopting) shop.append(h('h2', {}, 'Adopt a shark'), h('div', { class: 'note' }, `You have 🦷 ${S.teeth} teeth to spend.`));
+  else shop.append(h('h2', {}, S.sharks.length > 1 ? `Dressing ${sh.name}` : `${sh.name}’s wardrobe`),
+    h('button', { class: 'mini', 'aria-label': `Open ${sh.name}’s studio`, onclick: openStudio, html: sharkSVG({ shark: sh }) }),
+    h('button', { class: 'btn sun', onclick: openStudio }, `✏️ Open ${sh.name}’s studio`),
+    h('div', { class: 'note' }, `You have 🦷 ${S.teeth} teeth to spend.`));
   const tabs = h('div', { class: 'tabs', role: 'tablist' });
-  [['sharks', '🦈 Sharks'], ['hats', '🎩 Hats'], ['colors', '🎨 Colours'], ['patterns', '✨ Patterns'], ['decor', '🪸 Decor']].forEach(([k, l]) => tabs.append(h('button', { class: 'tab', role: 'tab', 'aria-selected': aqTab === k ? 'true' : 'false', onclick: () => { aqTab = k; adopting = false; snd.pop(); drawShop(shop); } }, l)));
+  [['sharks', '🦈 Sharks'], ['wear', '🎩 Wear'], ['colors', '🎨 Colours'], ['patterns', '✨ Patterns'], ['decor', '🪸 Decor']].forEach(([k, l]) => tabs.append(h('button', { class: 'tab', role: 'tab', 'aria-selected': aqTab === k ? 'true' : 'false', onclick: () => { aqTab = k; adopting = null; snd.pop(); drawShop(shop); } }, l)));
   shop.append(tabs);
   const grid = h('div', { class: 'shopgrid' });
   const redraw = () => { save(); updateTop(); showAquarium(); };
-  const buy = (key, price, after) => {
-    if (!S.owned.includes(key)) { if (S.teeth < price) { snd.soft(); return; } S.teeth -= price; S.owned.push(key); snd.good(); }
-    else snd.pop();
-    after(); syncFinn(); redraw();
-  };
+  const buy = (key, price, after) => { if (!S.owned.includes(key) && price > 0) { if (!buyOnce(key, price)) return; } else snd.pop(); after(); syncFinn(); redraw(); };
   const own = (key, pr) => pr === 0 || S.owned.includes(key);
   if (aqTab === 'sharks') {
     grid.classList.add('wide');
-    S.sharks.forEach((s, k) => grid.append(h('button', { class: 'item' + (k === (S.sel || 0) ? ' on' : ''), onclick: () => { S.sel = k; snd.pop(); save(); drawShop(shop); } },
-      h('span', { class: 'ic shk', html: sharkSVG({ shark: s }) }), h('span', {}, s.name))));
     if (adopting) {
-      const inp = h('input', { class: 'namein', maxlength: 12, placeholder: 'Name', 'aria-label': 'New shark name', value: pick(SHARK_NAMES.filter(n => !S.sharks.some(s => s.name === n))) || 'Shark' });
+      // choose a species, then a name
+      grid.classList.add('kinds');
+      Object.entries(KINDS).forEach(([k, K]) => {
+        const pr = sharkPrice() + K.extra;
+        grid.append(h('button', { class: 'item' + (adopting.kind === k ? ' on' : ''), disabled: S.teeth < pr, onclick: () => { adopting.kind = k; snd.pop(); drawShop(shop); } },
+          h('span', { class: 'ic shk', html: sharkSVG({ shark: Object.assign({ kind: k, pattern: 'plain', acc: [] }, K.def) }) }), h('span', {}, K.name), h('span', { class: 'price' }, `🦷 ${pr}`)));
+      });
+      const K = KINDS[adopting.kind], pr = sharkPrice() + K.extra;
+      const inp = h('input', { class: 'namein', maxlength: 12, placeholder: 'Name', 'aria-label': 'New shark name', value: adopting.name });
+      inp.oninput = () => { adopting.name = inp.value; };
       const ok = () => {
-        const name = inp.value.trim().slice(0, 12) || 'Shark', pr = sharkPrice();
+        const name = inp.value.trim().slice(0, 12) || 'Shark';
         if (S.teeth < pr) return snd.soft();
-        S.teeth -= pr; S.sharks.push({ name, body: pick(['grey', 'blue']), fin: null, pattern: 'plain', hat: '' }); S.sel = S.sharks.length - 1; adopting = false; snd.good(); redraw();
+        S.teeth -= pr; S.sharks.push(Object.assign({ name, kind: adopting.kind, fin: null, pattern: 'plain', acc: [] }, K.def)); S.sel = S.sharks.length - 1; adopting = null; snd.good(); redraw();
       };
       inp.onkeydown = e => { if (e.key === 'Enter') ok(); };
-      shop.append(grid, h('div', { class: 'adopt' }, h('div', {}, 'What is the new shark called?'), inp,
-        h('div', { class: 'row' }, h('button', { class: 'btn', onclick: ok }, `Adopt · 🦷 ${sharkPrice()}`), h('button', { class: 'btn alt', onclick: () => { adopting = false; drawShop(shop); } }, 'Cancel'))));
-      setTimeout(() => { inp.focus(); inp.select(); }, 30);
+      shop.append(h('div', { class: 'note' }, 'Pick a kind of shark:'), grid, h('div', { class: 'adopt' }, h('div', {}, `Name your ${K.name.toLowerCase()}:`), inp,
+        h('div', { class: 'row' }, h('button', { class: 'btn', disabled: S.teeth < pr, onclick: ok }, `Adopt · 🦷 ${pr}`), h('button', { class: 'btn alt', onclick: () => { adopting = null; drawShop(shop); } }, 'Cancel'))));
       return;
     }
+    S.sharks.forEach((s, k) => grid.append(h('button', { class: 'item' + (k === (S.sel || 0) ? ' on' : ''), onclick: () => { S.sel = k; snd.pop(); save(); drawShop(shop); } },
+      h('span', { class: 'ic shk', html: sharkSVG({ shark: s }) }), h('span', {}, s.name), h('span', { class: 'price' }, (KINDS[s.kind] || REEF).name))));
     shop.append(grid);
-    if (S.sharks.length < MAX_SHARKS) shop.append(h('button', { class: 'btn coral', disabled: S.teeth < sharkPrice(), onclick: () => { adopting = true; snd.pop(); drawShop(shop); } }, `➕ Adopt a new shark · 🦷 ${sharkPrice()}`));
+    if (S.sharks.length < MAX_SHARKS) shop.append(h('button', { class: 'btn coral', disabled: S.teeth < sharkPrice(), onclick: () => { adopting = { kind: 'reef', name: pick(SHARK_NAMES.filter(n => !S.sharks.some(s => s.name === n))) || 'Shark' }; snd.pop(); drawShop(shop); } }, `➕ Adopt a new shark · from 🦷 ${sharkPrice()}`));
     else shop.append(h('div', { class: 'note' }, `The tank is full: ${MAX_SHARKS} sharks!`));
-    shop.append(h('div', { class: 'note' }, 'Pick a shark here or click one in the tank, then dress it with the other tabs.'));
+    shop.append(h('div', { class: 'note' }, 'Pick a shark here or click one in the tank, then dress it.'));
     return;
   }
-  if (aqTab === 'hats') SHOP.hats.forEach(([id, em, pr]) => {
-    const key = 'h-' + id, on = sh.hat === em;
-    grid.append(h('button', { class: 'item' + (on ? ' on' : ''), disabled: !own(key, pr) && S.teeth < pr, onclick: () => buy(key, pr, () => { sh.hat = em; }) }, h('span', { class: 'ic' }, em || '🚫'), h('span', {}, on ? 'Wearing' : own(key, pr) ? 'Wear' : `🦷 ${pr}`)));
-  });
+  if (aqTab === 'wear') {
+    grid.append(h('button', { class: 'item', onclick: () => { sh.acc = []; snd.pop(); redraw(); } }, h('span', { class: 'ic' }, '🚫'), h('span', {}, 'Take all off')));
+    SHOP.wear.forEach(([id, em, pr, slot]) => {
+      const key = 'h-' + id, on = (sh.acc || []).some(a => a.e === em);
+      grid.append(h('button', { class: 'item' + (on ? ' on' : ''), disabled: !own(key, pr) && S.teeth < pr, onclick: () => buy(key, pr, () => { if (on) sh.acc = sh.acc.filter(a => a.e !== em); else wearAdd(sh, em, slot); }) },
+        h('span', { class: 'ic' }, em), h('span', {}, on ? 'Wearing' : own(key, pr) ? 'Put on' : `🦷 ${pr}`)));
+    });
+    shop.append(grid, h('div', { class: 'note' }, 'In the studio you can move, turn and resize everything your shark wears.'));
+    return;
+  }
   if (aqTab === 'colors') {
     shop.append(h('div', { class: 'parts' }, [['body', 'Body'], ['fin', 'Fins and tail']].map(([k, l]) => h('button', { class: 'tab', 'aria-pressed': aqPart === k ? 'true' : 'false', 'aria-selected': aqPart === k ? 'true' : 'false', onclick: () => { aqPart = k; snd.pop(); drawShop(shop); } }, l))));
     const curC = aqPart === 'body' ? sh.body : (sh.fin || sh.body);
-    SHOP.colors.forEach(([id, pr]) => {
-      const key = 'c-' + id, on = curC === id;
-      grid.append(h('button', { class: 'item' + (on ? ' on' : ''), disabled: !own(key, pr) && S.teeth < pr, 'aria-label': id + ' colour', onclick: () => buy(key, pr, () => { if (aqPart === 'body') sh.body = id; else sh.fin = id; }) },
-        h('span', { class: 'ic' }, h('span', { class: 'sw', style: { background: `linear-gradient(135deg,${COLORS[id][0]} 50%,${COLORS[id][1]} 50%)` } })), h('span', {}, on ? 'On' : own(key, pr) ? id : `🦷 ${pr}`)));
+    SHOP.colors.concat((S.mixes || []).map(m => [m.id, 0])).forEach(([id, pr]) => {
+      const key = 'c-' + id, on = curC === id, cc = colOf(id);
+      grid.append(h('button', { class: 'item' + (on ? ' on' : ''), disabled: !own(key, pr) && S.teeth < pr, 'aria-label': colName(id) + ' colour', onclick: () => buy(key, pr, () => { if (aqPart === 'body') sh.body = id; else { sh.fin = id; sh.tail = null; } }) },
+        h('span', { class: 'ic' }, h('span', { class: 'sw', style: { background: `linear-gradient(135deg,${cc[0]} 50%,${cc[1]} 50%)` } })), h('span', {}, on ? 'On' : own(key, pr) ? colName(id) : `🦷 ${pr}`)));
     });
-    shop.append(grid, h('div', { class: 'note' }, 'Mix two colours: give the body one colour and the fins another. Patterns use both.'));
+    shop.append(grid, h('div', { class: 'note' }, 'Give the body one colour and the fins another. Mix brand-new colours in the studio.'));
     return;
   }
   if (aqTab === 'patterns') {
     grid.classList.add('wide');
-    SHOP.patterns.forEach(([id, label, pr]) => {
+    PATTERNS.forEach(([id, label, pr]) => {
       const key = 'p-' + id, on = (sh.pattern || 'plain') === id;
       grid.append(h('button', { class: 'item' + (on ? ' on' : ''), disabled: !own(key, pr) && S.teeth < pr, onclick: () => buy(key, pr, () => { sh.pattern = id; }) },
-        h('span', { class: 'ic shk', html: sharkSVG({ shark: Object.assign({}, sh, { pattern: id }) }) }), h('span', {}, on ? `${label} ✓` : own(key, pr) ? label : `${label} · 🦷 ${pr}`)));
+        h('span', { class: 'ic shk', html: sharkSVG({ shark: Object.assign({}, sh, { pattern: id, acc: [] }) }) }), h('span', {}, on ? `${label} ✓` : own(key, pr) ? label : `${label} · 🦷 ${pr}`)));
     });
-    shop.append(grid, h('div', { class: 'note' }, 'Fade, stripes and sparkles mix the body colour with the fin colour.'));
+    shop.append(grid, h('div', { class: 'note' }, 'Patterns use the fin colour. In the studio you can paint the pattern any colour.'));
     return;
   }
   if (aqTab === 'decor') SHOP.decor.forEach(([id, em, pr]) => {
     const key = 'd-' + id, owned = S.owned.includes(key), n = S.decor.filter(d => d.id === id).length;
-    grid.append(h('button', { class: 'item' + (n ? ' on' : ''), disabled: (!owned && S.teeth < pr) || n >= 6, onclick: () => buy(key, pr, () => { S.decor.push({ id, x: 8 + Math.random() * 84, y: 88 + Math.random() * 8, s: 1, f: 0 }); aqDec = S.decor.length - 1; }) },
+    grid.append(h('button', { class: 'item' + (n ? ' on' : ''), disabled: (!owned && S.teeth < pr) || n >= 6, onclick: () => buy(key, pr, () => { S.decor.push({ id, x: 8 + Math.random() * 84, y: 88 + Math.random() * 8, s: 1, f: 0, r: 0 }); aqDec = S.decor.length - 1; }) },
       h('span', { class: 'ic' }, em), h('span', {}, !owned ? `🦷 ${pr}` : n ? `Add one (${n})` : 'Put in')));
   });
-  shop.append(grid, h('div', { class: 'note' }, aqTab === 'decor' ? 'Drag decorations around the tank. Click one to make it bigger, smaller, flip it or put it away.' : 'Solve puzzles to earn teeth: 3 with no hints, 2 with hints, 1 if Finn shows you how.'));
+  shop.append(grid, h('div', { class: 'note' }, 'Drag decorations around the tank. Click one to resize, turn, flip, layer or put it away.'));
+}
+
+/* ============ shark studio: place things anywhere, paint any part, mix new colours ============ */
+const PARTS = [['body', 'Body'], ['fin', 'Fins'], ['tail', 'Tail'], ['belly', 'Belly'], ['pc', 'Pattern'], ['eye', 'Eyes']];
+let stTab = 'wear', stSel = -1, stPart = 'body', mixDrops = [];
+function partColour(sh, p) { return p === 'body' ? sh.body : p === 'fin' ? sh.fin || sh.body : p === 'tail' ? sh.tail || sh.fin || sh.body : sh[p] || null; }
+function openStudio() {
+  const sh = selShark(); sh.acc = sh.acc || [];
+  const m = $('#modal'); m.innerHTML = ''; m.hidden = false; stSel = -1;
+  const stage = h('div', { class: 'ststage' }), tools = h('div', { class: 'sttools' }), panel = h('div', { class: 'stpanel' }), teeth = h('span', { class: 'teeth' });
+  const close = () => { m.hidden = true; document.removeEventListener('keydown', keys); save(); showAquarium(); };
+  const box = h('div', { class: 'mbox studio', role: 'dialog', 'aria-label': `${sh.name}’s studio` },
+    h('div', { class: 'sthead' }, h('h2', {}, `✏️ ${sh.name}’s studio`), teeth, h('button', { class: 'btn big', onclick: close }, 'Done')),
+    h('div', { class: 'stbody' }, h('div', { class: 'stleft' }, stage, tools), panel));
+  m.append(box);
+  const changed = () => { save(); draw(); };
+  function draw() {
+    teeth.textContent = `🦷 ${S.teeth}`;
+    stage.innerHTML = sharkSVG({ shark: sh, edit: true, sel: stSel });
+    drawTools(); drawPanel();
+  }
+  // drag things on the shark; click a part to paint it
+  stage.addEventListener('pointerdown', ev => {
+    const svg = $('svg', stage), g = ev.target.closest('[data-acc]');
+    const pt = e => { const p = svg.createSVGPoint(); p.x = e.clientX; p.y = e.clientY; return p.matrixTransform(svg.getScreenCTM().inverse()); };
+    if (g) {
+      ev.preventDefault();
+      const i = +g.dataset.acc, a = sh.acc[i], p0 = pt(ev), x0 = a.x, y0 = a.y;
+      let moved = false;
+      if (stSel !== i) { stSel = i; snd.pop(); draw(); }
+      const gg = $(`[data-acc="${i}"]`, stage);
+      const move = e => {
+        const p = pt(e);
+        if (!moved && Math.hypot(p.x - p0.x, p.y - p0.y) < 2) return;
+        moved = true;
+        a.x = Math.round(Math.max(-15, Math.min(215, x0 + p.x - p0.x))); a.y = Math.round(Math.max(-15, Math.min(145, y0 + p.y - p0.y)));
+        gg.setAttribute('transform', `translate(${a.x} ${a.y}) rotate(${a.r || 0}) scale(${(a.f ? -1 : 1) * (a.s || 1)} ${a.s || 1})`);
+      };
+      const up = () => { removeEventListener('pointermove', move); removeEventListener('pointerup', up); if (moved) { snd.pop(); changed(); } };
+      addEventListener('pointermove', move); addEventListener('pointerup', up);
+      return;
+    }
+    const part = ev.target.closest('[data-part]');
+    if (part) {
+      stPart = part.dataset.part;
+      if (stTab === 'paint' && stBrush) { paint(stBrush); return; }
+      stTab = 'paint'; stSel = -1; snd.pop(); draw(); return;
+    }
+    if (stSel >= 0) { stSel = -1; draw(); }
+  });
+  let stBrush = null;
+  function paint(id) {
+    stBrush = id;
+    if (stPart === 'body') sh.body = id; else sh[stPart] = id;
+    if (stPart === 'pc' && (sh.pattern || 'plain') === 'plain') say('Pick a pattern first, then paint it.');
+    snd.drop(); changed();
+  }
+  const say = t => { const n = $('.stsay', panel); if (n) { n.textContent = t; n.classList.remove('flash'); void n.offsetWidth; n.classList.add('flash'); } };
+  function drawTools() {
+    tools.innerHTML = '';
+    const a = sh.acc[stSel];
+    if (!a) { tools.append(h('div', { class: 'note' }, stTab === 'paint' ? 'Pick a colour, then click any part of the shark to paint it.' : 'Drag anything on the shark to move it. Click it to turn, resize or flip it.')); return; }
+    const set = fn => () => { fn(); snd.pop(); changed(); };
+    tools.append(h('span', { class: 'stwhat' }, a.e),
+      h('button', { title: 'Smaller', 'aria-label': 'Smaller', onclick: set(() => { a.s = Math.max(.3, +((a.s || 1) - .15).toFixed(2)); }) }, '➖'),
+      h('button', { title: 'Bigger', 'aria-label': 'Bigger', onclick: set(() => { a.s = Math.min(3, +((a.s || 1) + .15).toFixed(2)); }) }, '➕'),
+      h('button', { title: 'Turn left', 'aria-label': 'Turn left', onclick: set(() => { a.r = ((a.r || 0) - 15 + 540) % 360 - 180; }) }, '↺'),
+      h('button', { title: 'Turn right', 'aria-label': 'Turn right', onclick: set(() => { a.r = ((a.r || 0) + 15 + 540) % 360 - 180; }) }, '↻'),
+      h('button', { title: 'Flip', 'aria-label': 'Flip', onclick: set(() => { a.f = a.f ? 0 : 1; }) }, '↔️'),
+      h('button', { title: a.b ? 'Bring in front of the shark' : 'Put behind the shark', 'aria-label': a.b ? 'Bring in front of the shark' : 'Put behind the shark', onclick: set(() => { a.b = a.b ? 0 : 1; }) }, a.b ? '⬆️ Front' : '⬇️ Behind'),
+      h('button', { title: 'Copy', 'aria-label': 'Copy', disabled: sh.acc.length >= MAX_WEAR, onclick: set(() => { sh.acc.push(Object.assign({}, a, { x: a.x + 12, y: a.y + 8 })); stSel = sh.acc.length - 1; }) }, '📄'),
+      h('button', { title: 'Take it off', 'aria-label': 'Take it off', onclick: set(() => { sh.acc.splice(stSel, 1); stSel = -1; }) }, '🗑️'));
+  }
+  function drawPanel() {
+    panel.innerHTML = '';
+    const tabs = h('div', { class: 'tabs', role: 'tablist' });
+    [['wear', '🎩 Wear'], ['paint', '🖌️ Paint'], ['patterns', '✨ Patterns'], ['mix', '🧪 Mix']].forEach(([k, l]) => tabs.append(h('button', { class: 'tab', role: 'tab', 'aria-selected': stTab === k ? 'true' : 'false', onclick: () => { stTab = k; snd.pop(); draw(); } }, l)));
+    panel.append(tabs);
+    const grid = h('div', { class: 'shopgrid' });
+    if (stTab === 'wear') {
+      SHOP.wear.forEach(([id, em, pr, slot]) => {
+        const key = 'h-' + id, owned = pr === 0 || S.owned.includes(key), n = sh.acc.filter(a => a.e === em).length;
+        grid.append(h('button', { class: 'item' + (n ? ' on' : ''), disabled: !owned && S.teeth < pr, onclick: () => { if (!buyOnce(key, pr)) return; const i = wearAdd(sh, em, slot); if (i >= 0) { stSel = i; snd.pop(); changed(); } else say(`That's ${MAX_WEAR} things already! Take something off first.`); } },
+          h('span', { class: 'ic' }, em), h('span', {}, !owned ? `🦷 ${pr}` : n ? `Add (${n})` : 'Add')));
+      });
+      panel.append(grid, h('div', { class: 'stsay note' }, `Click to put it on. You can wear up to ${MAX_WEAR} things, even two of the same.`));
+    }
+    if (stTab === 'paint') {
+      panel.append(h('div', { class: 'parts wrap' }, PARTS.map(([k, l]) => { const cc = partColour(sh, k); return h('button', { class: 'tab', 'aria-pressed': stPart === k ? 'true' : 'false', 'aria-selected': stPart === k ? 'true' : 'false', onclick: () => { stPart = k; snd.pop(); draw(); } },
+        h('span', { class: 'dotc', style: { background: cc ? colOf(cc)[0] : 'repeating-linear-gradient(45deg,#fff 0 3px,#dde 3px 6px)' } }), l); })));
+      grid.classList.add('swatches');
+      if (stPart !== 'body') grid.append(h('button', { class: 'item' + (partColour(sh, stPart) === null || (stPart === 'fin' && !sh.fin) || (stPart === 'tail' && !sh.tail) ? ' on' : ''), title: 'Normal colour', onclick: () => { sh[stPart] = null; snd.pop(); changed(); } }, h('span', { class: 'ic' }, '↩️'), h('span', {}, 'normal')));
+      SHOP.colors.concat((S.mixes || []).map(m => [m.id, 0])).forEach(([id, pr]) => {
+        const key = 'c-' + id, owned = pr === 0 || S.owned.includes(key), cc = colOf(id), on = partColour(sh, stPart) === id && (stPart !== 'fin' || sh.fin) && (stPart !== 'tail' || sh.tail);
+        grid.append(h('button', { class: 'item' + (on ? ' on' : ''), disabled: !owned && S.teeth < pr, title: colName(id), 'aria-label': colName(id) + ' colour', onclick: () => { if (buyOnce(key, pr)) paint(id); } },
+          h('span', { class: 'ic' }, h('span', { class: 'sw', style: { background: `linear-gradient(135deg,${cc[0]} 50%,${cc[1]} 50%)` } })), h('span', {}, owned ? colName(id) : `🦷 ${pr}`)));
+      });
+      panel.append(grid, h('div', { class: 'stsay note' }, `Painting: ${PARTS.find(p => p[0] === stPart)[1].toLowerCase()}. You can also click a part of the shark.`));
+    }
+    if (stTab === 'patterns') {
+      grid.classList.add('wide');
+      PATTERNS.forEach(([id, label, pr]) => {
+        const key = 'p-' + id, owned = pr === 0 || S.owned.includes(key), on = (sh.pattern || 'plain') === id;
+        grid.append(h('button', { class: 'item' + (on ? ' on' : ''), disabled: !owned && S.teeth < pr, onclick: () => { if (!buyOnce(key, pr)) return; sh.pattern = id; snd.pop(); changed(); } },
+          h('span', { class: 'ic shk', html: sharkSVG({ shark: Object.assign({}, sh, { pattern: id, acc: [] }) }) }), h('span', {}, on ? `${label} ✓` : owned ? label : `${label} · 🦷 ${pr}`)));
+      });
+      panel.append(grid, h('div', { class: 'stsay note' }, 'Change the pattern colour in Paint → Pattern.'));
+    }
+    if (stTab === 'mix') drawMix(grid);
+  }
+  // mixing lab: drops of paint in a bucket; the parts make the colour
+  function drawMix(grid) {
+    const tot = mixDrops.reduce((a, d) => a + d[1], 0);
+    const res = tot ? mixPaint(mixDrops.map(([id, n]) => [colOf(id)[0], n])) : null;
+    const bucket = h('div', { class: 'bucket' }, h('div', { class: 'paint', style: { background: res ? res[0] : '#eef3f5' } }, tot ? '' : 'Empty'),
+      h('div', { class: 'drops' }, tot ? mixDrops.map(([id, n]) => h('button', { class: 'drop', title: 'Take one drop out', onclick: () => { const d = mixDrops.find(x => x[0] === id); d[1]--; mixDrops = mixDrops.filter(x => x[1] > 0); snd.pop(); drawPanel(); } },
+        h('span', { class: 'sw', style: { background: colOf(id)[0] } }), ` ${n} ${n === 1 ? 'drop' : 'drops'} ${colName(id)}`, h('small', {}, ` = ${n}/${tot}`))) : h('span', { class: 'note' }, 'Click colours below to drip them in.')));
+    panel.append(bucket);
+    grid.classList.add('swatches');
+    ownedColors().forEach(id => grid.append(h('button', { class: 'item', title: colName(id), 'aria-label': 'Add a drop of ' + colName(id), disabled: tot >= 12, onclick: () => { const d = mixDrops.find(x => x[0] === id); d ? d[1]++ : mixDrops.push([id, 1]); snd.drop(); drawPanel(); } },
+      h('span', { class: 'ic' }, h('span', { class: 'sw', style: { background: colOf(id)[0] } })), h('span', {}, colName(id)))));
+    const full = (S.mixes || []).length >= MAX_MIXES;
+    panel.append(h('div', { class: 'row' },
+      h('button', { class: 'btn', disabled: !tot || mixDrops.length < 2 || S.teeth < MIX_PRICE || full, onclick: () => {
+        S.mixes = S.mixes || [];
+        const n = S.mixes.length ? Math.max(...S.mixes.map(m => +m.id.slice(3))) + 1 : 1;
+        S.teeth -= MIX_PRICE; S.mixes.push({ id: 'mix' + n, name: 'mix ' + n, c: res, from: mixDrops.map(([id, k]) => `${k} ${colName(id)}`).join(' + ') });
+        stPart = stPart || 'body'; mixDrops = []; snd.good(); updateTop(); save(); stTab = 'paint'; draw(); say(`Your new colour "mix ${n}" is at the end of the list. Paint something with it!`);
+      } }, `Keep this colour · 🦷 ${MIX_PRICE}`),
+      h('button', { class: 'btn alt', disabled: !tot, onclick: () => { mixDrops = []; snd.bloop(); drawPanel(); } }, 'Empty the bucket')),
+      grid, h('div', { class: 'stsay note' }, full ? `You have ${MAX_MIXES} mixed colours, that's the most.` : 'Try 1 drop of red and 2 drops of white. What about 2 red and 1 white?'));
+  }
+  const keys = e => {
+    if (m.hidden) return document.removeEventListener('keydown', keys);
+    if (e.key === 'Escape') return close();
+    const a = sh.acc[stSel]; if (!a || e.target.closest('input')) return;
+    const step = { ArrowLeft: [-3, 0], ArrowRight: [3, 0], ArrowUp: [0, -3], ArrowDown: [0, 3] }[e.key];
+    if (step) { e.preventDefault(); a.x += step[0]; a.y += step[1]; changed(); }
+    if (e.key === 'Delete' || e.key === 'Backspace') { e.preventDefault(); sh.acc.splice(stSel, 1); stSel = -1; changed(); }
+  };
+  document.addEventListener('keydown', keys);
+  snd.pop(); draw();
 }
 
 /* ============ grown-ups corner ============ */
@@ -2470,5 +2785,6 @@ addEventListener('DOMContentLoaded', () => { updateTop(); showMap(); });
 window.SM = { get S() { return S; }, WORLDS, CHAPTERS, chWorlds, openPuzzle, showMap, showAquarium, showParent, get cur() { return cur; }, liarSolutions, seatSolutions, sumSolutions, pid };
 </script>
 <script src="chapter2.js"></script>
+<script src="chapter3.js"></script>
 </body>
 </html>
